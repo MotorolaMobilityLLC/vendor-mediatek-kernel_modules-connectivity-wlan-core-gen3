@@ -14,6 +14,25 @@
 
 #include "precomp.h"
 
+struct _PKT_STATUS_ENTRY {
+	UINT_8 u1Type;
+	UINT_16 u2IpId;
+	UINT_8 status;
+};
+
+struct _PKT_STATUS_RECORD {
+	struct _PKT_STATUS_ENTRY *pTxPkt;
+	struct _PKT_STATUS_ENTRY *pRxPkt;
+	UINT_32 u4TxIndex;
+	UINT_32 u4RxIndex;
+};
+
+#define PKT_STATUS_BUF_MAX_NUM 450
+#define PKT_STATUS_MSG_GROUP_RANGE 80
+#define PKT_STATUS_MSG_LENGTH 900
+
+static PKT_STATUS_RECORD grPktStaRec;
+
 #if (CFG_SUPPORT_TRACE_TC4 == 1)
 struct COMMAND {
 	UINT_8 ucCID;
@@ -179,6 +198,158 @@ VOID wlanDumpTcResAndTxedCmd(PUINT_8 pucBuf, UINT_32 maxLen)
 	}
 }
 #endif
+
+VOID wlanPktStatusDebugTraceInfoARP(UINT_8 status, UINT_8 eventType, UINT_16 u2ArpOpCode, PUINT_8 pucPkt)
+{
+	if (eventType == PKT_TX)
+		status = 0xFF;
+	wlanPktStatusDebugTraceInfo(status, eventType, ETH_P_ARP, 0, 0, u2ArpOpCode, pucPkt);
+}
+
+VOID wlanPktStatusDebugTraceInfoIP(UINT_8 status, UINT_8 eventType, UINT_8 ucIpProto, UINT_16 u2IpId, PUINT_8 pucPkt)
+{
+	if (eventType == PKT_TX)
+		status = 0xFF;
+	wlanPktStatusDebugTraceInfo(status, eventType, ETH_P_IP, ucIpProto, u2IpId, 0, pucPkt);
+}
+
+VOID wlanPktStatusDebugTraceInfo(UINT_8 status, UINT_8 eventType
+	, UINT_16 u2EtherType, UINT_8 ucIpProto, UINT_16 u2IpId, UINT_16 u2ArpOpCode, PUINT_8 pucPkt)
+{
+	struct _PKT_STATUS_ENTRY *prPktSta = NULL;
+	UINT_32 index;
+
+	DBGLOG(TX, LOUD, "PKT id = 0x%02x, status =%d, Proto = %d, type =%d\n"
+		, u2IpId, status, ucIpProto, eventType);
+	do {
+		if (grPktStaRec.pTxPkt == NULL) {
+			DBGLOG(TX, ERROR, "pTxStaPkt is null point !");
+			break;
+		}
+
+		/* debug for Package info begin */
+		if (eventType == PKT_TX) {
+			prPktSta = &grPktStaRec.pTxPkt[grPktStaRec.u4TxIndex];
+			grPktStaRec.u4TxIndex++;
+			if (grPktStaRec.u4TxIndex == PKT_STATUS_BUF_MAX_NUM) {
+				DBGLOG(TX, INFO, "grPktStaRec.u4TxIndex reset");
+				grPktStaRec.u4TxIndex = 0;
+			}
+		} else if (eventType == PKT_RX) {
+			prPktSta = &grPktStaRec.pRxPkt[grPktStaRec.u4RxIndex];
+			grPktStaRec.u4RxIndex++;
+			if (grPktStaRec.u4RxIndex == PKT_STATUS_BUF_MAX_NUM) {
+				DBGLOG(TX, INFO, "grPktStaRec.u4RxIndex reset");
+				grPktStaRec.u4RxIndex = 0;
+			}
+		}
+
+		if (prPktSta) {
+			prPktSta->u1Type = kalGetPktEtherType(pucPkt);
+			prPktSta->status = status;
+			prPktSta->u2IpId = u2IpId;
+		}
+
+		/* Update tx status */
+		if (eventType == PKT_TX_DONE) {
+			/* Support Ethernet type = IP*/
+			if (u2EtherType == ETH_P_IP) {
+				for (index = 0; index < PKT_STATUS_BUF_MAX_NUM; index++) {
+					if (grPktStaRec.pTxPkt[index].u2IpId == u2IpId) {
+						grPktStaRec.pTxPkt[index].status = status;
+						DBGLOG(TX, INFO, "Status: PKT_TX_DONE match\n");
+						break;
+					}
+				}
+			}
+		}
+	} while (FALSE);
+}
+
+VOID wlanPktStatusDebugDumpInfo(P_ADAPTER_T prAdapter)
+{
+	UINT_32 i;
+	UINT_32 index;
+	UINT_32 offsetMsg;
+	struct _PKT_STATUS_ENTRY *prPktInfo;
+	UINT_8 pucMsg[PKT_STATUS_MSG_LENGTH];
+	UINT_32 u4PktCnt;
+
+	do {
+
+		if (grPktStaRec.pTxPkt == NULL || grPktStaRec.pRxPkt == NULL)
+			break;
+
+		if (grPktStaRec.u4TxIndex == 0 && grPktStaRec.u4RxIndex == 0)
+			break;
+
+		DBGLOG(TX, INFO, "Pkt dump: TxCnt %d, RxCnt %d\n", grPktStaRec.u4TxIndex, grPktStaRec.u4RxIndex);
+		offsetMsg = 0;
+		/* start dump pkt info of tx/rx by decrease timestap */
+		for (i = 0 ; i < 2 ; i++) {
+			if (i == 0)
+				u4PktCnt = grPktStaRec.u4TxIndex;
+			else
+				u4PktCnt = grPktStaRec.u4RxIndex;
+
+			for (index = 0; index < u4PktCnt; index++) {
+				if (i == 0)
+					prPktInfo = &grPktStaRec.pTxPkt[index];
+				else
+					prPktInfo = &grPktStaRec.pRxPkt[index];
+				/*ucIpProto = 0x01 ICMP */
+				/*ucIpProto = 0x11 UPD */
+				/*ucIpProto = 0x06 TCP */
+				offsetMsg += kalSnprintf(pucMsg + offsetMsg
+				, PKT_STATUS_MSG_LENGTH
+				, "%d,%02x,%x"
+				, prPktInfo->u1Type
+				, prPktInfo->u2IpId
+				, prPktInfo->status);
+
+				if (((index + 1) % PKT_STATUS_MSG_GROUP_RANGE == 0) || (index == (u4PktCnt - 1))) {
+					if (i == 0)
+						DBGLOG(TX, INFO, "%s\n", pucMsg);
+					else if (i == 1)
+						DBGLOG(RX, INFO, "%s\n", pucMsg);
+
+					offsetMsg = 0;
+					kalMemSet(pucMsg, '\0', PKT_STATUS_MSG_LENGTH);
+				}
+			}
+		}
+	} while (FALSE);
+	u4PktCnt = grPktStaRec.u4TxIndex = 0;
+	u4PktCnt = grPktStaRec.u4RxIndex = 0;
+}
+
+VOID wlanDebugTC4AndPktInit(VOID)
+{
+#if (CFG_SUPPORT_TRACE_TC4 == 1)
+	wlanDebugTC4Init();
+#endif
+	/* debug for package info begin */
+	grPktStaRec.pTxPkt = kalMemAlloc(PKT_STATUS_BUF_MAX_NUM * sizeof(PKT_STATUS_ENTRY), VIR_MEM_TYPE);
+	kalMemZero(grPktStaRec.pTxPkt, PKT_STATUS_BUF_MAX_NUM * sizeof(PKT_STATUS_ENTRY));
+	grPktStaRec.u4TxIndex = 0;
+	grPktStaRec.pRxPkt = kalMemAlloc(PKT_STATUS_BUF_MAX_NUM * sizeof(PKT_STATUS_ENTRY), VIR_MEM_TYPE);
+	kalMemZero(grPktStaRec.pRxPkt, PKT_STATUS_BUF_MAX_NUM * sizeof(PKT_STATUS_ENTRY));
+	grPktStaRec.u4RxIndex = 0;
+	/* debug for package info end */
+}
+
+VOID wlanDebugTC4AndPktUninit(VOID)
+{
+#if (CFG_SUPPORT_TRACE_TC4 == 1)
+	wlanDebugTC4Uninit();
+#endif
+	/* debug for package status info begin */
+	kalMemFree(grPktStaRec.pTxPkt, VIR_MEM_TYPE, PKT_STATUS_BUF_MAX_NUM * sizeof(PKT_STATUS_ENTRY));
+	grPktStaRec.u4TxIndex = 0;
+	kalMemFree(grPktStaRec.pRxPkt, VIR_MEM_TYPE, PKT_STATUS_BUF_MAX_NUM * sizeof(PKT_STATUS_ENTRY));
+	grPktStaRec.u4RxIndex = 0;
+	/* debug for package status info end */
+}
 
 static UINT_32 gu4LogLevel[ENUM_WIFI_LOG_MODULE_NUM];
 
