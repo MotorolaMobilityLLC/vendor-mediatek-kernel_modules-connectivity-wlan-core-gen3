@@ -1074,7 +1074,7 @@ static ssize_t procDrvStatusCfg(struct file *file, const char *buffer, size_t co
 		return -EFAULT;
 	}
 
-	aucProcBuf[-1] = '\0';
+	aucProcBuf[count] = '\0';
 
 	if (!kalStrnCmp(aucProcBuf, "enable", 6)) {
 		fgDrvStatus = TRUE;
