@@ -14,6 +14,7 @@
 
 #include "precomp.h"
 
+#if (CFG_SUPPORT_DEBUG_STATISTICS == 1)
 struct _PKT_STATUS_ENTRY {
 	UINT_8 u1Type;
 	UINT_16 u2IpId;
@@ -32,6 +33,7 @@ struct _PKT_STATUS_RECORD {
 #define PKT_STATUS_MSG_LENGTH 900
 
 static PKT_STATUS_RECORD grPktStaRec;
+#endif
 
 #if (CFG_SUPPORT_TRACE_TC4 == 1)
 struct COMMAND {
@@ -199,6 +201,7 @@ VOID wlanDumpTcResAndTxedCmd(PUINT_8 pucBuf, UINT_32 maxLen)
 }
 #endif
 
+#if (CFG_SUPPORT_DEBUG_STATISTICS == 1)
 VOID wlanPktStatusDebugTraceInfoARP(UINT_8 status, UINT_8 eventType, UINT_16 u2ArpOpCode, PUINT_8 pucPkt)
 {
 	if (eventType == PKT_TX)
@@ -322,12 +325,14 @@ VOID wlanPktStatusDebugDumpInfo(P_ADAPTER_T prAdapter)
 	u4PktCnt = grPktStaRec.u4TxIndex = 0;
 	u4PktCnt = grPktStaRec.u4RxIndex = 0;
 }
+#endif
 
 VOID wlanDebugTC4AndPktInit(VOID)
 {
 #if (CFG_SUPPORT_TRACE_TC4 == 1)
 	wlanDebugTC4Init();
 #endif
+#if (CFG_SUPPORT_DEBUG_STATISTICS == 1)
 	/* debug for package info begin */
 	grPktStaRec.pTxPkt = kalMemAlloc(PKT_STATUS_BUF_MAX_NUM * sizeof(PKT_STATUS_ENTRY), VIR_MEM_TYPE);
 	kalMemZero(grPktStaRec.pTxPkt, PKT_STATUS_BUF_MAX_NUM * sizeof(PKT_STATUS_ENTRY));
@@ -336,6 +341,7 @@ VOID wlanDebugTC4AndPktInit(VOID)
 	kalMemZero(grPktStaRec.pRxPkt, PKT_STATUS_BUF_MAX_NUM * sizeof(PKT_STATUS_ENTRY));
 	grPktStaRec.u4RxIndex = 0;
 	/* debug for package info end */
+#endif
 }
 
 VOID wlanDebugTC4AndPktUninit(VOID)
@@ -343,12 +349,15 @@ VOID wlanDebugTC4AndPktUninit(VOID)
 #if (CFG_SUPPORT_TRACE_TC4 == 1)
 	wlanDebugTC4Uninit();
 #endif
+#if (CFG_SUPPORT_DEBUG_STATISTICS == 1)
+
 	/* debug for package status info begin */
 	kalMemFree(grPktStaRec.pTxPkt, VIR_MEM_TYPE, PKT_STATUS_BUF_MAX_NUM * sizeof(PKT_STATUS_ENTRY));
 	grPktStaRec.u4TxIndex = 0;
 	kalMemFree(grPktStaRec.pRxPkt, VIR_MEM_TYPE, PKT_STATUS_BUF_MAX_NUM * sizeof(PKT_STATUS_ENTRY));
 	grPktStaRec.u4RxIndex = 0;
 	/* debug for package status info end */
+#endif
 }
 
 static UINT_32 gu4LogLevel[ENUM_WIFI_LOG_MODULE_NUM];
