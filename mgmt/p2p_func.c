@@ -1017,6 +1017,9 @@ p2pFuncStartGO(IN P_ADAPTER_T prAdapter,
 		/* 4 <3.4> Start Beaconing */
 		nicPmIndicateBssCreated(prAdapter, prBssInfo->ucBssIndex);
 
+		/* 4 <3.5> Glue layer indication */
+		kalP2PGOIndicateStatus(prAdapter->prGlueInfo, TRUE);
+
 	} while (FALSE);
 
 }				/* p2pFuncStartGO() */
@@ -1031,6 +1034,8 @@ VOID p2pFuncStopGO(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prP2pBssInfo)
 		if ((prP2pBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)
 		    && (prP2pBssInfo->eIntendOPMode == OP_MODE_NUM)) {
 			/* AP is created, Beacon Update. */
+			/* Glue layer indication */
+			kalP2PGOIndicateStatus(prAdapter->prGlueInfo, FALSE);
 
 			p2pFuncDissolve(prAdapter, prP2pBssInfo, TRUE, REASON_CODE_DEAUTH_LEAVING_BSS);
 
