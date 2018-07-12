@@ -484,9 +484,9 @@ VOID wlanDbgSetLogLevelImpl(IN P_ADAPTER_T prAdapter, UINT_32 u4Version,
 				   CMD_ID_WIFI_LOG_LEVEL,
 				   TRUE,
 				   FALSE,
-				   TRUE,
-				   nicCmdEventSetCommon,
-				   nicOidCmdTimeoutCommon,
+				   FALSE,
+				   NULL,
+				   NULL,
 				   sizeof(struct CMD_EVENT_LOG_LEVEL), (PUINT_8)&cmd, NULL, 0);
 		}
 			break;
