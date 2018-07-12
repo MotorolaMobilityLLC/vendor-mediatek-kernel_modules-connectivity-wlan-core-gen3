@@ -933,7 +933,7 @@ struct _ADAPTER_T {
 
 	UINT_8 ucCmdSeqNum;
 	UINT_8 ucTxSeqNum;
-	UINT_8 aucPidPool[WTBL_SIZE];
+	UINT_64 au8PidPool[WTBL_SIZE][2]; /* PID bit map for each wlan-index. PID range: 1 ~ 127 */
 
 #if 1				/* CFG_SUPPORT_WAPI */
 	BOOLEAN fgUseWapi;
