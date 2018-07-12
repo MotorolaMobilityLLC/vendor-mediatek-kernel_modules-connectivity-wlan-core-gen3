@@ -415,12 +415,13 @@ VOID scnFsmMsgStart(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr)
 	} else if (prScanInfo->eCurrentState == SCAN_STATE_IDLE && !cnmChUtilIsRunning(prAdapter)) {
 		if (prMsgHdr->eMsgId == MID_AIS_SCN_SCAN_REQ
 		    || prMsgHdr->eMsgId == MID_BOW_SCN_SCAN_REQ
-		    || prMsgHdr->eMsgId == MID_P2P_SCN_SCAN_REQ || prMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ) {
+		    || prMsgHdr->eMsgId == MID_P2P_SCN_SCAN_REQ) {
 			scnFsmHandleScanMsg(prAdapter, (P_MSG_SCN_SCAN_REQ) prMsgHdr);
 		} else if (prMsgHdr->eMsgId == MID_AIS_SCN_SCAN_REQ_V2
 			   || prMsgHdr->eMsgId == MID_BOW_SCN_SCAN_REQ_V2
 			   || prMsgHdr->eMsgId == MID_P2P_SCN_SCAN_REQ_V2
-			   || prMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ_V2) {
+			   || prMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ_V2
+			   || prMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ) {
 			scnFsmHandleScanMsgV2(prAdapter, (P_MSG_SCN_SCAN_REQ_V2) prMsgHdr);
 		} else {
 			/* should not deliver to this function */
