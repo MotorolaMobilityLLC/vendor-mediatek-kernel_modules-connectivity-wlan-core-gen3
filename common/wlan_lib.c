@@ -6929,12 +6929,41 @@ wlanDhcpTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX
 WLAN_STATUS
 wlanArpTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus)
 {
-	if (rTxDoneStatus)
-		DBGLOG(TX, INFO, "ARP PKT TX DONE WIDX:PID[%u:%u] Status[%u] SeqNo[%u]\n",
-		       prMsduInfo->ucWlanIndex, prMsduInfo->ucPID, rTxDoneStatus, prMsduInfo->ucTxSeqNum);
-	else
-		DBGLOG_LIMITED(TX, INFO, "ARP PKT TX DONE WIDX:PID[%u:%u] Status[%u] SeqNo[%u]\n",
-		       prMsduInfo->ucWlanIndex, prMsduInfo->ucPID, rTxDoneStatus, prMsduInfo->ucTxSeqNum);
+	UINT_16 u2ArpOp;
+	PUINT_8 pucAheadBuf = NULL;
+	PUINT_8 pucArp = NULL;
+	UINT_32 u4PacketLen = 0;
+
+	/*WLAN_GET_FIELD_BE16(&pucAheadBuf[ARP_OPERATION_OFFSET], &u2ArpOp);*/
+
+	if (prMsduInfo->pucCookie) {
+		pucAheadBuf = prMsduInfo->pucCookie;
+		u4PacketLen = prMsduInfo->u2CookieLen;
+		pucArp = pucAheadBuf + ETH_HLEN;
+		if (rTxDoneStatus)
+			DBGLOG(TX, INFO,
+			       "ARP %s PKT[0x%p] WIDX:PID[%u:%u] SN[%d] TxDone[%u] TMAC&IP[" MACSTR "]&[" IPV4STR "]\n",
+			       u2ArpOp == ARP_OPERATION_REQUEST ? "REQ" : "RSP",
+			       prMsduInfo->pucCookie, prMsduInfo->ucWlanIndex,
+			       prMsduInfo->ucPID, prMsduInfo->ucTxSeqNum, rTxDoneStatus,
+			       MAC2STR(&pucArp[ARP_TARGET_MAC_OFFSET]),
+			       IPV4TOSTR(&pucArp[ARP_TARGET_IP_OFFSET]));
+		else
+			DBGLOG_LIMITED(TX, INFO,
+			       "ARP %s PKT[0x%p] WIDX:PID[%u:%u] SN[%d] TxDone[%u] TMAC&IP[" MACSTR "]&[" IPV4STR "]\n",
+			       u2ArpOp == ARP_OPERATION_REQUEST ? "REQ" : "RSP",
+			       prMsduInfo->pucCookie, prMsduInfo->ucWlanIndex,
+			       prMsduInfo->ucPID, prMsduInfo->ucTxSeqNum, rTxDoneStatus,
+			       MAC2STR(&pucArp[ARP_TARGET_MAC_OFFSET]),
+			       IPV4TOSTR(&pucArp[ARP_TARGET_IP_OFFSET]));
+	} else {
+		if (rTxDoneStatus)
+			DBGLOG(TX, INFO, "ARP PKT WIDX:PID[%u:%u] SN[%u] TXDONE[%u]\n",
+			       prMsduInfo->ucWlanIndex, prMsduInfo->ucPID, prMsduInfo->ucTxSeqNum, rTxDoneStatus);
+		else
+			DBGLOG_LIMITED(TX, INFO, "ARP PKT WIDX:PID[%u:%u] SN[%u] TXDONE[%u]\n",
+			       prMsduInfo->ucWlanIndex, prMsduInfo->ucPID, prMsduInfo->ucTxSeqNum, rTxDoneStatus);
+	}
 
 	return WLAN_STATUS_SUCCESS;
 }

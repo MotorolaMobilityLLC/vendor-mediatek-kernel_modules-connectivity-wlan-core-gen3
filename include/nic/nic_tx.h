@@ -646,6 +646,8 @@ struct _MSDU_INFO_T {
 	/* Compose TxDesc in tx_thread and place here */
 	UINT_8 aucTxDescBuffer[NIC_TX_DESC_AND_PADDING_LENGTH];
 #endif
+	UINT_16 u2CookieLen;
+	PUINT_8 pucCookie;
 };
 
 /*!A data structure which is identical with HW MAC TX DMA Descriptor */
