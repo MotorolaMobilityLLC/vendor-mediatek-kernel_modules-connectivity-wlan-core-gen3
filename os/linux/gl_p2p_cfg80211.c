@@ -1472,10 +1472,17 @@ int mtk_p2p_cfg80211_disconnect(struct wiphy *wiphy, struct net_device *dev, u16
 	return i4Rslt;
 }				/* mtk_p2p_cfg80211_disconnect */
 
+#if (KERNEL_VERSION(4, 12, 0) <= LINUX_VERSION_CODE)
+int
+mtk_p2p_cfg80211_change_iface(IN struct wiphy *wiphy,
+			      IN struct net_device *ndev,
+			      IN enum nl80211_iftype type, IN struct vif_params *params)
+#else
 int
 mtk_p2p_cfg80211_change_iface(IN struct wiphy *wiphy,
 			      IN struct net_device *ndev,
 			      IN enum nl80211_iftype type, IN u32 *flags, IN struct vif_params *params)
+#endif
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
 	INT_32 i4Rslt = -EINVAL;
