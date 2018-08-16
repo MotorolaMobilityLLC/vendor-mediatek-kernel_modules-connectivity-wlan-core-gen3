@@ -3837,10 +3837,8 @@ WLAN_STATUS nicRxProcessActionFrame(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSw
 #if CFG_SUPPORT_DFS
 	case CATEGORY_SPEC_MGT:
 		{
-			if (prAdapter->fgEnable5GBand) {
-				DBGLOG(RLM, INFO, "[Channel Switch]nicRxProcessActionFrame\n");
+			if (prAdapter->fgEnable5GBand)
 				rlmProcessSpecMgtAction(prAdapter, prSwRfb);
-			}
 		}
 		break;
 #endif
