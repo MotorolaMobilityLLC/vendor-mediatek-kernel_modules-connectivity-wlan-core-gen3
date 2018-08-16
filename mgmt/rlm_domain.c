@@ -1191,7 +1191,7 @@ rlmDomainIsValidRfSetting(P_ADAPTER_T prAdapter,
 	} else {
 		if (eChannelWidth == CW_80MHZ) {
 			u4PrimaryOffset = CAL_CH_OFFSET_80M(ucPriChannel, ucCenterChannel);
-			if (u4PrimaryOffset > 4)
+			if (u4PrimaryOffset >= 4)
 				fgValidBW = FALSE;
 			if (ucPriChannel == 165)
 				fgValidBW = FALSE;
