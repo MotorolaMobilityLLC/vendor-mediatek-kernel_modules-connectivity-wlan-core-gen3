@@ -1343,9 +1343,9 @@ typedef struct _CMD_UPDATE_STA_RECORD_T {
 
 	UINT_8 ucTxBaSize;
 	UINT_8 ucRxBaSize;
-	UINT_8 ucKeepAliveDuration; /* unit is 1s */
+	UINT_16 u2KeepAliveDuration; /* unit is 1s */
 	UINT_8 ucKeepAliveOption; /* only bit0 is used now */
-	UINT_8 aucReserved4[28];
+	UINT_8 aucReserved4[27];
 } CMD_UPDATE_STA_RECORD_T, *P_CMD_UPDATE_STA_RECORD_T;
 
 typedef struct _CMD_REMOVE_STA_RECORD_T {

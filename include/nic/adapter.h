@@ -661,6 +661,8 @@ typedef struct _WIFI_VAR_T {
 	UINT_8 ucStaVht;
 	UINT_8 ucApHt;
 	UINT_8 ucApVht;
+	UINT_16 u2ApMaxIdlePeriod;
+	UINT_8 ucApIdleOption;
 	UINT_8 ucP2pGoHt;
 	UINT_8 ucP2pGoVht;
 	UINT_8 ucP2pGcHt;

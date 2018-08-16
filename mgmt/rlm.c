@@ -431,6 +431,41 @@ VOID rlmRspGenerateErpIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo)
 	}
 }
 
+#if CFG_SUPPORT_802_11V
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief This function is used to generate Bss Max Idle Period IE
+*
+* \param[in]
+*
+* \return none
+*/
+/*----------------------------------------------------------------------------*/
+VOID rlmRspGenerateBssMaxIdlePeriodIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo)
+{
+	P_BSS_INFO_T prBssInfo;
+	struct IE_BSS_MAX_IDLE_PERIOD_T *prBssMaxIdlePeriod;
+
+	ASSERT(prAdapter);
+	ASSERT(prMsduInfo);
+	if (prAdapter->rWifiVar.u2ApMaxIdlePeriod == FEATURE_DISABLED)
+		return;
+	prBssInfo = prAdapter->aprBssInfo[prMsduInfo->ucBssIndex];
+	if (!prBssInfo)
+		return;
+	prBssMaxIdlePeriod = (struct IE_BSS_MAX_IDLE_PERIOD_T *)
+		(((PUINT_8) prMsduInfo->prPacket) + prMsduInfo->u2FrameLength);
+	prBssMaxIdlePeriod->ucId = ELEM_ID_BSS_MAX_IDLE_PERIOD;
+	prBssMaxIdlePeriod->ucLength = ELEM_MAX_LEN_BSS_MAX_IDLE_PERIOD;
+	prBssMaxIdlePeriod->u2MaxIdlePeriod = prAdapter->rWifiVar.u2ApMaxIdlePeriod & BITS(0, 15);
+	/*Only support non PMF now, PMF need further develop*/
+	prBssMaxIdlePeriod->ucIdleOption = prAdapter->rWifiVar.ucApIdleOption & BIT(0);
+	prMsduInfo->u2FrameLength += IE_SIZE(prBssMaxIdlePeriod);
+
+}
+#endif
+
+
 #if CFG_SUPPORT_MTK_SYNERGY
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1785,7 +1820,7 @@ static VOID rlmParseIeInfoForAssocRsp(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssI
 #endif
 		case ELEM_ID_BSS_MAX_IDLE_PERIOD:
 		{
-			struct IE_BSS_MAX_IDLE_PERIOD *prBssMaxIdle = (struct IE_BSS_MAX_IDLE_PERIOD *)pucIE;
+			struct IE_BSS_MAX_IDLE_PERIOD_T *prBssMaxIdle = (struct IE_BSS_MAX_IDLE_PERIOD_T *)pucIE;
 
 			prStaRec->u2MaxIdlePeriod = prBssMaxIdle->u2MaxIdlePeriod;
 			prStaRec->ucIdleOption = prBssMaxIdle->ucIdleOption;
