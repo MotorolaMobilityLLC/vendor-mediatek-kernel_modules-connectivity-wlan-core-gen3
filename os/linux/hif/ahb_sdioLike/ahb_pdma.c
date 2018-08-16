@@ -184,9 +184,7 @@ VOID HifDmaInit(GL_HIF_INFO_T *HifInfo)
 
 VOID HifDmaUnInit(GL_HIF_INFO_T *HifInfo)
 {
-#ifndef CONFIG_OF
 	iounmap(HifInfo->DmaRegBaseAddr);
-#endif
 }
 
 /*******************************************************************************
