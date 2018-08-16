@@ -800,6 +800,14 @@ kalProcessRxPacket(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket, IN PUINT_8 pu
 	skb_reset_tail_pointer(skb);
 	skb_trim(skb, 0);
 
+	if (skb->tail > skb->end) {
+		DBGLOG(RX, ERROR,
+		       "[skb:0x%p][skb->len:%d][skb->protocol:0x%02X] tail:%p, end:%p, data:%p\n",
+			(PUINT_8) skb, skb->len, skb->protocol, skb->tail, skb->end, skb->data);
+		DBGLOG_MEM32(RX, ERROR, (PUINT_32) skb->data, skb->len);
+		return WLAN_STATUS_FAILURE;
+	}
+
 	/* Put data */
 	skb_put(skb, u4PacketLen);
 
