@@ -451,7 +451,11 @@ VOID rlmUpdateParamsForAP(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo, BOOLEAN
 	eGfOperationMode = GF_MODE_NORMAL;
 	fgSta40mIntolerant = FALSE;
 	fgUseShortPreamble = prBssInfo->fgIsShortPreambleAllowed;
-	fgUseShortSlotTime = TRUE;
+	if (rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].fgIsShortSlotTimeOptionImplemented &&
+	    prAdapter->rWifiVar.fgIsShortSlotTimeOptionEnable)
+		fgUseShortSlotTime = TRUE;
+	else
+		fgUseShortSlotTime = FALSE;
 	ucHtOpInfo1 = (UINT_8) CHNL_EXT_SCN;
 
 	prStaList = &prBssInfo->rStaRecOfClientList;
