@@ -38,8 +38,7 @@
 #include "gl_os.h"
 #include "mt6630_reg.h"
 #include "sdio.h"
-
-#include "wmt_exp.h"
+#include "gl_rst.h"
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -1251,7 +1250,7 @@ static int HifAhbMiscClose(IN struct inode *Inodep, IN struct file *Filp)
 /*----------------------------------------------------------------------------*/
 static int HifAhbPltmProbe(IN struct platform_device *pDev)
 {
-	MTK_WCN_WMT_WLAN_CB_INFO rWmtCb;
+	struct MTK_WCN_WMT_WLAN_CB_INFO rWmtCb;
 
 	DBGLOG(INIT, INFO, "HifAhbPltmProbe\n");
 
@@ -1261,7 +1260,7 @@ static int HifAhbPltmProbe(IN struct platform_device *pDev)
 	wmt_set_jtag_for_mcu();
 	wmt_set_jtag_for_gps();
 #endif /* CONF_HIF_PMIC_TEST */
-	kalMemZero(&rWmtCb, sizeof(MTK_WCN_WMT_WLAN_CB_INFO));
+	kalMemZero(&rWmtCb, sizeof(struct MTK_WCN_WMT_WLAN_CB_INFO));
 	/* Register WIFI probe/remove functions to WMT */
 	rWmtCb.wlan_probe_cb = HifAhbProbe;
 	rWmtCb.wlan_remove_cb = HifAhbRemove;
