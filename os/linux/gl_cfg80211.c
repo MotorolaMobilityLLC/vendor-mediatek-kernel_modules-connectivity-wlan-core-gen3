@@ -2504,7 +2504,11 @@ mtk_cfg80211_sched_scan_start(IN struct wiphy *wiphy,
 	return 0;
 }
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0))
 int mtk_cfg80211_sched_scan_stop(IN struct wiphy *wiphy, IN struct net_device *ndev)
+#else
+int mtk_cfg80211_sched_scan_stop(IN struct wiphy *wiphy, IN struct net_device *ndev, IN UINT_64 reqid)
+#endif
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	WLAN_STATUS rStatus;

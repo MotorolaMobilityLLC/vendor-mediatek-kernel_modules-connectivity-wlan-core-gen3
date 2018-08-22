@@ -4438,7 +4438,11 @@ VOID kalSchedScanResults(IN P_GLUE_INFO_T prGlueInfo)
 {
 	ASSERT(prGlueInfo);
 	scanReportBss2Cfg80211(prGlueInfo->prAdapter, BSS_TYPE_INFRASTRUCTURE, NULL);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0))
 	cfg80211_sched_scan_results(priv_to_wiphy(prGlueInfo));
+#else
+	cfg80211_sched_scan_results(priv_to_wiphy(prGlueInfo), 0);
+#endif
 }
 
 /*----------------------------------------------------------------------------*/
