@@ -49,6 +49,9 @@
 #ifndef MTK_WCN_BUILT_IN_DRIVER
 #include "connectivity_build_in_adapter.h"
 #endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0))
+#include "linux/sched/types.h"
+#endif
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
