@@ -78,6 +78,13 @@
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
+
+#ifdef CFG_CFG80211_VERSION
+#define CFG80211_VERSION_CODE CFG_CFG80211_VERSION
+#else
+#define CFG80211_VERSION_CODE LINUX_VERSION_CODE
+#endif
+
 #include <linux/version.h>	/* constant of kernel version */
 
 #include <linux/kernel.h>	/* bitops.h */
