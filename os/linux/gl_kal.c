@@ -335,7 +335,9 @@ WLAN_STATUS kalFirmwareLoad(IN P_GLUE_INFO_T prGlueInfo, OUT PVOID prBuf, IN UIN
 		goto error_read;
 	} else {
 		filp->f_pos = u4Offset;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
+		*pu4Size = kernel_read(filp, (__force void __user *)prBuf, *pu4Size, &filp->f_pos);
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0))
 		*pu4Size = __vfs_read(filp, (__force void __user *)prBuf, *pu4Size, &filp->f_pos);
 #else
 		*pu4Size = filp->f_op->read(filp, prBuf, *pu4Size, &filp->f_pos);

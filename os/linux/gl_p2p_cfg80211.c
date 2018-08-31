@@ -1570,7 +1570,7 @@ int mtk_p2p_cfg80211_set_channel(IN struct wiphy *wiphy,
 
 		prGlueInfo = *((P_GLUE_INFO_T *) wiphy_priv(wiphy));
 
-		__channel_format_switch(chandef->chan, chandef->width, &rRfChnlInfo, NULL);
+		__channel_format_switch(chandef->chan, 0, &rRfChnlInfo, NULL);
 
 		if (mtk_Netdev_To_RoleIdx(prGlueInfo->prP2PInfo, dev, &ucRoleIdx) < 0)
 			break;
