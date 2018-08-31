@@ -12478,3 +12478,73 @@ wlanoidConfigRoaming(IN P_ADAPTER_T prAdapter,
 
 	return WLAN_STATUS_SUCCESS;
 }
+
+uint32_t wlanoidGetWifiType(IN P_ADAPTER_T prAdapter,
+			    IN void *pvSetBuffer,
+			    IN uint32_t u4SetBufferLen,
+			    OUT uint32_t *pu4SetInfoLen)
+{
+	struct PARAM_GET_WIFI_TYPE *prParamGetWifiType;
+	P_NETDEV_PRIVATE_GLUE_INFO prNetDevPrivate;
+	P_BSS_INFO_T prBssInfo = NULL;
+	uint8_t ucBssIdx;
+	uint8_t ucPhyType;
+	uint8_t ucMaxCopySize;
+	uint8_t *pNameBuf;
+
+	*pu4SetInfoLen = 0;
+
+	if (prAdapter->rAcpiState == ACPI_STATE_D3) {
+		DBGLOG(OID, ERROR,
+		       "Fail in query receive error! (Adapter not ready). ACPI=D%d, Radio=%d\n",
+		       prAdapter->rAcpiState, prAdapter->fgIsRadioOff);
+		return WLAN_STATUS_ADAPTER_NOT_READY;
+	}
+
+	prParamGetWifiType = (struct PARAM_GET_WIFI_TYPE *)pvSetBuffer;
+	prNetDevPrivate = (P_NETDEV_PRIVATE_GLUE_INFO)
+				netdev_priv(prParamGetWifiType->prNetDev);
+	ucBssIdx = prNetDevPrivate->ucBssIdx;
+
+	DBGLOG(OID, INFO, "bss index=%d\n", ucBssIdx);
+
+	kalMemZero(prParamGetWifiType->arWifiTypeName,
+		   sizeof(prParamGetWifiType->arWifiTypeName));
+	pNameBuf = &prParamGetWifiType->arWifiTypeName[0];
+	ucMaxCopySize = sizeof(prParamGetWifiType->arWifiTypeName) - 1;
+
+	if (ucBssIdx > HW_BSSID_NUM) {
+		DBGLOG(OID, ERROR, "invalid bss index: %u\n", ucBssIdx);
+		return WLAN_STATUS_INVALID_DATA;
+	}
+
+	prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIdx);
+	if ((!prBssInfo) || (!IS_BSS_ACTIVE(prBssInfo))) {
+		DBGLOG(OID, ERROR, "invalid BssInfo: %p, %u\n",
+		       prBssInfo, ucBssIdx);
+		return WLAN_STATUS_INVALID_DATA;
+	}
+
+	ucPhyType = prBssInfo->ucPhyTypeSet;
+	if (ucPhyType & PHY_TYPE_SET_802_11AC)
+		kalStrnCpy(pNameBuf, "11AC", ucMaxCopySize);
+	else if (ucPhyType & PHY_TYPE_SET_802_11N)
+		kalStrnCpy(pNameBuf, "11N", ucMaxCopySize);
+	else if (ucPhyType & PHY_TYPE_SET_802_11B)
+		kalStrnCpy(pNameBuf, "11B", ucMaxCopySize);
+	else if (ucPhyType & PHY_TYPE_SET_802_11G)
+		kalStrnCpy(pNameBuf, "11G", ucMaxCopySize);
+	else if (ucPhyType & PHY_TYPE_SET_802_11A)
+		kalStrnCpy(pNameBuf, "11A", ucMaxCopySize);
+	else
+		DBGLOG(OID, INFO,
+		       "unknown wifi type, prBssInfo->ucPhyTypeSet: %u\n",
+		       ucPhyType);
+
+	*pu4SetInfoLen = kalStrLen(pNameBuf);
+
+	DBGLOG(OID, INFO, "wifi type=[%s](%d), phyType=%u\n",
+	       pNameBuf, *pu4SetInfoLen, ucPhyType);
+
+	return WLAN_STATUS_SUCCESS;
+}
