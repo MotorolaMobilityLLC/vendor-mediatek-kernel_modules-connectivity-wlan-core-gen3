@@ -6931,17 +6931,17 @@ wlanDhcpTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX
 WLAN_STATUS
 wlanArpTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus)
 {
-	UINT_16 u2ArpOp;
+	UINT_16 u2ArpOp = 0;
 	PUINT_8 pucAheadBuf = NULL;
 	PUINT_8 pucArp = NULL;
 	UINT_32 u4PacketLen = 0;
 
-	/*WLAN_GET_FIELD_BE16(&pucAheadBuf[ARP_OPERATION_OFFSET], &u2ArpOp);*/
 
 	if (prMsduInfo->pucCookie) {
 		pucAheadBuf = prMsduInfo->pucCookie;
 		u4PacketLen = prMsduInfo->u2CookieLen;
 		pucArp = pucAheadBuf + ETH_HLEN;
+		WLAN_GET_FIELD_BE16(&pucAheadBuf[ARP_OPERATION_OFFSET], &u2ArpOp);
 		if (rTxDoneStatus)
 			DBGLOG(TX, INFO,
 			       "ARP %s PKT[0x%p] WIDX:PID[%u:%u] SN[%d] TxDone[%u] TMAC&IP[" MACSTR "]&[" IPV4STR "]\n",

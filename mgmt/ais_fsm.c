@@ -2016,7 +2016,8 @@ VOID AisFsmHandlePendingScan(IN P_ADAPTER_T prAdapter,
 	    (aisFsmIsRequestPending(prAdapter, AIS_REQUEST_SCAN, FALSE) == FALSE))
 		return;
 
-	aisFsmIsRequestPending(prAdapter, AIS_REQUEST_SCAN, TRUE);
+	if (aisFsmIsRequestPending(prAdapter, AIS_REQUEST_SCAN, TRUE) == FALSE)
+		DBGLOG(AIS, WARN, "Not find AIS_REQUEST_SCAN from pending req list\n");
 	if (prAdapter->fgAbortScan) {
 		DBGLOG(AIS, INFO,
 		       "Remove pending scan, no need insert new scan req\n");
