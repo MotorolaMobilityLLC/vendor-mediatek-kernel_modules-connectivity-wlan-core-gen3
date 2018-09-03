@@ -5667,6 +5667,8 @@ VOID wlanInitFeatureOption(IN P_ADAPTER_T prAdapter)
 	prWifiVar->ucAp5gBandwidth = (UINT_8) wlanCfgGetUint32(prAdapter, "Ap5gBw", MAX_BW_40MHZ);
 	prWifiVar->ucP2p2gBandwidth = (UINT_8) wlanCfgGetUint32(prAdapter, "P2p2gBw", MAX_BW_20MHZ);
 	prWifiVar->ucP2p5gBandwidth = (UINT_8) wlanCfgGetUint32(prAdapter, "P2p5gBw", MAX_BW_40MHZ);
+	prWifiVar->u2ApMaxIdlePeriod = (UINT_16) wlanCfgGetUint32(prAdapter, "ApMaxIdlePeriod", FEATURE_DISABLED);
+	prWifiVar->ucApIdleOption = (UINT_8) wlanCfgGetUint32(prAdapter, "ApIdleOption", 0);
 
 	prWifiVar->ucStaDisconnectDetectTh = (UINT_8) wlanCfgGetUint32(prAdapter, "StaDisconnectDetectTh", 0);
 	prWifiVar->ucApDisconnectDetectTh = (UINT_8) wlanCfgGetUint32(prAdapter, "ApDisconnectDetectTh", 0);
@@ -6929,12 +6931,43 @@ wlanDhcpTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX
 WLAN_STATUS
 wlanArpTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_RESULT_CODE_T rTxDoneStatus)
 {
-	if (rTxDoneStatus)
-		DBGLOG(TX, INFO, "ARP PKT TX DONE WIDX:PID[%u:%u] Status[%u] SeqNo[%u]\n",
-		       prMsduInfo->ucWlanIndex, prMsduInfo->ucPID, rTxDoneStatus, prMsduInfo->ucTxSeqNum);
-	else
-		DBGLOG_LIMITED(TX, INFO, "ARP PKT TX DONE WIDX:PID[%u:%u] Status[%u] SeqNo[%u]\n",
-		       prMsduInfo->ucWlanIndex, prMsduInfo->ucPID, rTxDoneStatus, prMsduInfo->ucTxSeqNum);
+	UINT_16 u2ArpOp = 0;
+	PUINT_8 pucAheadBuf = NULL;
+	PUINT_8 pucArp = NULL;
+	UINT_32 u4PacketLen = 0;
+
+	if (prMsduInfo->pucCookie) {
+		pucAheadBuf = prMsduInfo->pucCookie;
+		u4PacketLen = prMsduInfo->u2CookieLen;
+		pucArp = pucAheadBuf + ETH_HLEN;
+		if (u4PacketLen > (ETHER_HEADER_LEN+ARP_OPERATION_OFFSET)) {
+			WLAN_GET_FIELD_BE16(&pucAheadBuf[ETHER_HEADER_LEN+ARP_OPERATION_OFFSET], &u2ArpOp);
+		} else
+			DBGLOG(TX, WARN, "packet len:%u\n", u4PacketLen);
+		if (rTxDoneStatus)
+			DBGLOG(TX, INFO,
+			       "ARP %s PKT[0x%p] WIDX:PID[%u:%u] SN[%d] TxDone[%u] TMAC&IP[" MACSTR "]&[" IPV4STR "]\n",
+			       u2ArpOp == ARP_OPERATION_REQUEST ? "REQ" : "RSP",
+			       prMsduInfo->pucCookie, prMsduInfo->ucWlanIndex,
+			       prMsduInfo->ucPID, prMsduInfo->ucTxSeqNum, rTxDoneStatus,
+			       MAC2STR(&pucArp[ARP_TARGET_MAC_OFFSET]),
+			       IPV4TOSTR(&pucArp[ARP_TARGET_IP_OFFSET]));
+		else
+			DBGLOG_LIMITED(TX, INFO,
+			       "ARP %s PKT[0x%p] WIDX:PID[%u:%u] SN[%d] TxDone[%u] TMAC&IP[" MACSTR "]&[" IPV4STR "]\n",
+			       u2ArpOp == ARP_OPERATION_REQUEST ? "REQ" : "RSP",
+			       prMsduInfo->pucCookie, prMsduInfo->ucWlanIndex,
+			       prMsduInfo->ucPID, prMsduInfo->ucTxSeqNum, rTxDoneStatus,
+			       MAC2STR(&pucArp[ARP_TARGET_MAC_OFFSET]),
+			       IPV4TOSTR(&pucArp[ARP_TARGET_IP_OFFSET]));
+	} else {
+		if (rTxDoneStatus)
+			DBGLOG(TX, INFO, "ARP PKT WIDX:PID[%u:%u] SN[%u] TXDONE[%u]\n",
+			       prMsduInfo->ucWlanIndex, prMsduInfo->ucPID, prMsduInfo->ucTxSeqNum, rTxDoneStatus);
+		else
+			DBGLOG_LIMITED(TX, INFO, "ARP PKT WIDX:PID[%u:%u] SN[%u] TXDONE[%u]\n",
+			       prMsduInfo->ucWlanIndex, prMsduInfo->ucPID, prMsduInfo->ucTxSeqNum, rTxDoneStatus);
+	}
 
 	return WLAN_STATUS_SUCCESS;
 }

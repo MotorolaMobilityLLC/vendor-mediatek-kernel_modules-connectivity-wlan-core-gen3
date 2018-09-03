@@ -78,6 +78,13 @@
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
+
+#ifdef CFG_CFG80211_VERSION
+#define CFG80211_VERSION_CODE CFG_CFG80211_VERSION
+#else
+#define CFG80211_VERSION_CODE LINUX_VERSION_CODE
+#endif
+
 #include <linux/version.h>	/* constant of kernel version */
 
 #include <linux/kernel.h>	/* bitops.h */
@@ -87,7 +94,11 @@
 #include <linux/delay.h>	/* udelay and mdelay macro */
 
 #if CONFIG_ANDROID
+#ifdef CONFIG_WAKELOCK
 #include <linux/wakelock.h>
+#else
+#include <linux/device.h>
+#endif /*CONFIG_WAKELOCK*/
 #endif
 
 #include <linux/irq.h>		/* IRQT_FALLING */
@@ -173,6 +184,7 @@
 #endif
 
 extern BOOLEAN fgIsBusAccessFailed;
+extern UINT_8 g_aucNvram[];
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -299,6 +311,14 @@ typedef enum _ENUM_PKT_FLAG_T {
 
 	ENUM_PKT_FLAG_NUM
 } ENUM_PKT_FLAG_T;
+
+enum ENUM_WLAN_DRV_BUF_TYPE_T {
+	ENUM_BUF_TYPE_NVRAM,
+	ENUM_BUF_TYPE_DRV_CFG,
+	ENUM_BUF_TYPE_FW_CFG,
+	ENUM_BUF_TYPE_NUM
+};
+
 
 typedef struct _GL_IO_REQ_T {
 	QUE_ENTRY_T rQueEntry;
@@ -975,4 +995,8 @@ VOID wlanUpdateChannelTable(P_GLUE_INFO_T prGlueInfo);
 INT_32 cfgCreateProcEntry(P_GLUE_INFO_T prGlueInfo);
 INT_32 cfgRemoveProcEntry(void);
 #endif
+
+typedef UINT_8 (*file_buf_handler) (PVOID ctx, const CHAR __user *buf, UINT_16 length);
+extern VOID register_file_buf_handler(file_buf_handler handler, PVOID ctx, UINT_8 ucType);
+
 #endif /* _GL_OS_H */

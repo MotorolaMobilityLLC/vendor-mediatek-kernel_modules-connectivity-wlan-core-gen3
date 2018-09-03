@@ -850,7 +850,6 @@ VOID nicRxProcessPktWithoutReorder(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 			       prSwRfb->pvHeader,
 			       (UINT_32) prSwRfb->u2PacketLen, fgIsRetained, prSwRfb->aeCSUM) != WLAN_STATUS_SUCCESS) {
 		DBGLOG(RX, ERROR, "kalProcessRxPacket return value != WLAN_STATUS_SUCCESS\n");
-		ASSERT(0);
 
 		nicRxReturnRFB(prAdapter, prSwRfb);
 		return;
@@ -3581,6 +3580,7 @@ nicRxWaitResponse(IN P_ADAPTER_T prAdapter,
 	UINT_32 u4Time, u4Current;
 	P_RX_CTRL_T prRxCtrl;
 	P_WIFI_EVENT_T prEvent;
+	UINT_32 loop = 0;
 
 	DEBUGFUNC("nicRxWaitResponse");
 
@@ -3612,37 +3612,48 @@ nicRxWaitResponse(IN P_ADAPTER_T prAdapter,
 				DBGLOG(RX, ERROR, "Wait Response packet timeout!\n");
 				return WLAN_STATUS_FAILURE;
 			}
-
 			/* Response packet is not ready */
 			kalUdelay(50);
 
 		} else {
-
-			if (u4PktLen > u4MaxRespBufferLen) {
-				DBGLOG(RX, ERROR, "Not enough buffer length: required %u, available %u\n",
-				       u4PktLen, u4MaxRespBufferLen);
+			if (loop >= 5)
 				return WLAN_STATUS_FAILURE;
-			}
+			loop++;
+			if (u4PktLen > u4MaxRespBufferLen) {
+				DBGLOG(RX, ERROR, "loop:%u, Not enough buffer length: required %u, available %u\n",
+				       loop, u4PktLen, u4MaxRespBufferLen);
+#if CFG_SDIO_RX_AGG
+				HAL_PORT_RD(prAdapter,
+					    ucPortIdx == 0 ? MCR_WRDR0 : MCR_WRDR1,
+					    ALIGN_4(u4PktLen) + 4,
+					    prRxCtrl->pucRxCoalescingBufPtr, CFG_RX_COALESCING_BUFFER_SIZE);
+#else
+#error "Please turn on RX coalescing"
+#endif
+				DBGLOG_MEM8(RX, WARN, prRxCtrl->pucRxCoalescingBufPtr, u4PktLen > 200 ? 200:u4PktLen);
+				/*return WLAN_STATUS_FAILURE;*/
+			} else {
 
 #if CFG_SDIO_RX_AGG
-			HAL_PORT_RD(prAdapter,
-				    ucPortIdx == 0 ? MCR_WRDR0 : MCR_WRDR1,
-				    ALIGN_4(u4PktLen) + 4,
-				    prRxCtrl->pucRxCoalescingBufPtr, CFG_RX_COALESCING_BUFFER_SIZE);
-			kalMemCopy(pucRspBuffer, prRxCtrl->pucRxCoalescingBufPtr, u4PktLen);
+				HAL_PORT_RD(prAdapter,
+					    ucPortIdx == 0 ? MCR_WRDR0 : MCR_WRDR1,
+					    ALIGN_4(u4PktLen) + 4,
+					    prRxCtrl->pucRxCoalescingBufPtr, CFG_RX_COALESCING_BUFFER_SIZE);
+				kalMemCopy(pucRspBuffer, prRxCtrl->pucRxCoalescingBufPtr, u4PktLen);
 #else
 #error "Please turn on RX coalescing"
 #endif
 
-			DBGLOG(RX, LOUD, "Dump Response buffer, length = %u\n", u4PktLen);
-			DBGLOG_MEM8(RX, LOUD, pucRspBuffer, u4PktLen);
+				DBGLOG(RX, LOUD, "Dump Response buffer, length = %u\n", u4PktLen);
+				DBGLOG_MEM8(RX, LOUD, pucRspBuffer, u4PktLen);
 
-			prEvent = (P_WIFI_EVENT_T) pucRspBuffer;
-			DBGLOG(RX, TRACE, "RX EVENT: ID[0x%02X] SEQ[%u] LEN[%u]\n",
-			       prEvent->ucEID, prEvent->ucSeqNum, prEvent->u2PacketLength);
+				prEvent = (P_WIFI_EVENT_T) pucRspBuffer;
+				DBGLOG(RX, TRACE, "RX EVENT: ID[0x%02X] SEQ[%u] LEN[%u]\n",
+				       prEvent->ucEID, prEvent->ucSeqNum, prEvent->u2PacketLength);
 
-			*pu4Length = u4PktLen;
-			break;
+				*pu4Length = u4PktLen;
+				break;
+			}
 		}
 	} while (TRUE);
 
@@ -3838,10 +3849,8 @@ WLAN_STATUS nicRxProcessActionFrame(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSw
 #if CFG_SUPPORT_DFS
 	case CATEGORY_SPEC_MGT:
 		{
-			if (prAdapter->fgEnable5GBand) {
-				DBGLOG(RLM, INFO, "[Channel Switch]nicRxProcessActionFrame\n");
+			if (prAdapter->fgEnable5GBand)
 				rlmProcessSpecMgtAction(prAdapter, prSwRfb);
-			}
 		}
 		break;
 #endif

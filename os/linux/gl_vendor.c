@@ -42,7 +42,75 @@
 *                              C O N S T A N T S
 ********************************************************************************
 */
+/* These values must sync from Wifi HAL
+ * /hardware/libhardware_legacy/include/hardware_legacy/wifi_hal.h
+ */
+/* Basic infrastructure mode */
+#define WIFI_FEATURE_INFRA              (0x0001)
+/* Support for 5 GHz Band */
+#define WIFI_FEATURE_INFRA_5G           (0x0002)
+/* Support for GAS/ANQP */
+#define WIFI_FEATURE_HOTSPOT            (0x0004)
+/* Wifi-Direct */
+#define WIFI_FEATURE_P2P                (0x0008)
+/* Soft AP */
+#define WIFI_FEATURE_SOFT_AP            (0x0010)
+/* Google-Scan APIs */
+#define WIFI_FEATURE_GSCAN              (0x0020)
+/* Neighbor Awareness Networking */
+#define WIFI_FEATURE_NAN                (0x0040)
+/* Device-to-device RTT */
+#define WIFI_FEATURE_D2D_RTT            (0x0080)
+/* Device-to-AP RTT */
+#define WIFI_FEATURE_D2AP_RTT           (0x0100)
+/* Batched Scan (legacy) */
+#define WIFI_FEATURE_BATCH_SCAN         (0x0200)
+/* Preferred network offload */
+#define WIFI_FEATURE_PNO                (0x0400)
+/* Support for two STAs */
+#define WIFI_FEATURE_ADDITIONAL_STA     (0x0800)
+/* Tunnel directed link setup */
+#define WIFI_FEATURE_TDLS               (0x1000)
+/* Support for TDLS off channel */
+#define WIFI_FEATURE_TDLS_OFFCHANNEL    (0x2000)
+/* Enhanced power reporting */
+#define WIFI_FEATURE_EPR                (0x4000)
+/* Support for AP STA Concurrency */
+#define WIFI_FEATURE_AP_STA             (0x8000)
+/* Link layer stats collection */
+#define WIFI_FEATURE_LINK_LAYER_STATS   (0x10000)
+/* WiFi Logger */
+#define WIFI_FEATURE_LOGGER             (0x20000)
+/* WiFi PNO enhanced */
+#define WIFI_FEATURE_HAL_EPNO           (0x40000)
+/* RSSI Monitor */
+#define WIFI_FEATURE_RSSI_MONITOR       (0x80000)
+/* WiFi mkeep_alive */
+#define WIFI_FEATURE_MKEEP_ALIVE        (0x100000)
+/* ND offload configure */
+#define WIFI_FEATURE_CONFIG_NDO         (0x200000)
+/* Capture Tx transmit power levels */
+#define WIFI_FEATURE_TX_TRANSMIT_POWER  (0x400000)
+/* Enable/Disable firmware roaming */
+#define WIFI_FEATURE_CONTROL_ROAMING    (0x800000)
+/* Support Probe IE white listing */
+#define WIFI_FEATURE_IE_WHITELIST       (0x1000000)
+/* Support MAC & Probe Sequence Number randomization */
+#define WIFI_FEATURE_SCAN_RAND          (0x2000000)
+/* Support Tx Power Limit setting */
+#define WIFI_FEATURE_SET_TX_POWER_LIMIT (0x4000000)
+/* Support Using Body/Head Proximity for SAR */
+#define WIFI_FEATURE_USE_BODY_HEAD_SAR  (0x8000000)
 
+/* note: WIFI_FEATURE_GSCAN be enabled just for ACTS test item: scanner */
+#define WIFI_HAL_FEATURE_SET ((WIFI_FEATURE_P2P) |\
+			      (WIFI_FEATURE_SOFT_AP) |\
+			      (WIFI_FEATURE_PNO) |\
+			      (WIFI_FEATURE_TDLS) |\
+			      (WIFI_FEATURE_RSSI_MONITOR) |\
+			      (WIFI_FEATURE_CONTROL_ROAMING) |\
+			      (WIFI_FEATURE_SET_TX_POWER_LIMIT)\
+			      )
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -308,11 +376,7 @@ int mtk_cfg80211_vendor_config_roaming(struct wiphy *wiphy,
 				 struct wireless_dev *wdev, const void *data, int data_len)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
-	struct nlattr *attrlist;
-	struct AIS_BLACKLIST_ITEM *prBlackList;
-	UINT_32 len_shift = 0;
-	UINT_32 numOfList[2] = { 0 };
-	int i;
+	UINT_32 u4ResultLen = 0;
 
 	DBGLOG(REQ, TRACE, "Receives roaming blacklist & whitelist with data_len=%d\n", data_len);
 	if ((wiphy == NULL) || (wdev == NULL)) {
@@ -334,30 +398,7 @@ int mtk_cfg80211_vendor_config_roaming(struct wiphy *wiphy,
 		DBGLOG(REQ, INFO, "FWRoaming is disabled (FWRoamingEnable=%d)\n", prGlueInfo->u4FWRoamingEnable);
 		return WLAN_STATUS_SUCCESS;
 	}
-
-	attrlist = (struct nlattr *)data;
-
-	/* get the number of blacklist and copy those mac addresses from HAL */
-	if (attrlist->nla_type == WIFI_ATTRIBUTE_ROAMING_BLACKLIST_NUM) {
-		numOfList[0] = nla_get_u32(attrlist);
-		len_shift += NLA_ALIGN(attrlist->nla_len);
-	}
-	DBGLOG(REQ, TRACE, "Get the number of blacklist=%d\n", numOfList[0]);
-
-	if (numOfList[0] >= 0 && numOfList[0] <= MAX_FW_ROAMING_BLACKLIST_SIZE) {
-		/*Refresh all the FWKBlacklist */
-		aisRemoveBlacklistBySource(prGlueInfo->prAdapter, AIS_BLACK_LIST_FROM_FWK);
-
-		/* Start to receive blacklist mac addresses and set to FWK blacklist */
-		attrlist = (struct nlattr *)((UINT_8 *) data + len_shift);
-		for (i = 0; i < numOfList[0]; i++) {
-			if (attrlist->nla_type == WIFI_ATTRIBUTE_ROAMING_BLACKLIST_BSSID)
-				prBlackList = aisAddBlacklistByBssid(prGlueInfo->prAdapter, nla_data(attrlist),
-									AIS_BLACK_LIST_FROM_FWK);
-			len_shift += NLA_ALIGN(attrlist->nla_len);
-			attrlist = (struct nlattr *)((UINT_8 *) data + len_shift);
-		}
-	}
+	kalIoctl(prGlueInfo, wlanoidConfigRoaming, (PVOID)data, data_len, FALSE, FALSE, FALSE, &u4ResultLen);
 
 	return WLAN_STATUS_SUCCESS;
 }
@@ -366,6 +407,7 @@ int mtk_cfg80211_vendor_enable_roaming(struct wiphy *wiphy,
 				       struct wireless_dev *wdev, const void *data, int data_len)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
+	UINT_32 u4ResultLen = 0;
 	struct nlattr *attr;
 
 	if ((wiphy == NULL) || (wdev == NULL)) {
@@ -382,7 +424,7 @@ int mtk_cfg80211_vendor_enable_roaming(struct wiphy *wiphy,
 		prGlueInfo->u4FWRoamingEnable = nla_get_u32(attr);
 
 	if (prGlueInfo->u4FWRoamingEnable == 0)
-		aisRemoveBlacklistBySource(prGlueInfo->prAdapter, AIS_BLACK_LIST_FROM_FWK);
+		kalIoctl(prGlueInfo, wlanoidEnableRoaming, NULL, 0, FALSE, FALSE, FALSE, &u4ResultLen);
 
 	DBGLOG(REQ, INFO, "FWK set FWRoamingEnable = %d\n", prGlueInfo->u4FWRoamingEnable);
 
@@ -472,7 +514,7 @@ int mtk_cfg80211_vendor_set_config(struct wiphy *wiphy, struct wireless_dev *wde
 	kalMemZero(prWifiScanCmd, sizeof(PARAM_WIFI_GSCAN_CMD_PARAMS));
 	kalMemZero(attr, sizeof(struct nlattr *) * (GSCAN_ATTRIBUTE_BUCKET_MAX_PERIOD + 1));
 
-	nla_parse_nested(attr, GSCAN_ATTRIBUTE_BUCKET_MAX_PERIOD, (struct nlattr *)(data - NLA_HDRLEN),
+	NLA_PARSE_NESTED(attr, GSCAN_ATTRIBUTE_BUCKET_MAX_PERIOD, (struct nlattr *)(data - NLA_HDRLEN),
 			nla_parse_gscan_policy);
 	len_basic = 0;
 	for (k = GSCAN_ATTRIBUTE_NUM_BUCKETS; k <= GSCAN_ATTRIBUTE_BUCKET_MAX_PERIOD; k++) {
@@ -498,7 +540,7 @@ int mtk_cfg80211_vendor_set_config(struct wiphy *wiphy, struct wireless_dev *wde
 	DBGLOG(REQ, TRACE, "+++basic attribute size=%d pbucket=%p\r\n", len_basic, pbucket);
 
 	for (i = 0; i < prWifiScanCmd->num_buckets; i++) {
-		if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_BUCKET_MAX_PERIOD, (struct nlattr *)pbucket,
+		if (NLA_PARSE_NESTED(attr, GSCAN_ATTRIBUTE_BUCKET_MAX_PERIOD, (struct nlattr *)pbucket,
 			nla_parse_gscan_policy) < 0)
 			goto nla_put_failure;
 		len_bucket = 0;
@@ -619,7 +661,7 @@ int mtk_cfg80211_vendor_set_scan_config(struct wiphy *wiphy, struct wireless_dev
 	kalMemZero(prWifiScanCmd, sizeof(PARAM_WIFI_GSCAN_CMD_PARAMS));
 	kalMemZero(attr, sizeof(struct nlattr *) * (GSCAN_ATTRIBUTE_NUM_SCANS_TO_CACHE + 1));
 
-	if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_NUM_SCANS_TO_CACHE,
+	if (NLA_PARSE_NESTED(attr, GSCAN_ATTRIBUTE_NUM_SCANS_TO_CACHE,
 		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_gscan_policy) < 0)
 		goto nla_put_failure;
 	for (k = GSCAN_ATTRIBUTE_NUM_AP_PER_SCAN; k <= GSCAN_ATTRIBUTE_NUM_SCANS_TO_CACHE; k++) {
@@ -693,7 +735,7 @@ int mtk_cfg80211_vendor_set_significant_change(struct wiphy *wiphy, struct wirel
 		goto nla_put_failure;
 	kalMemZero(attr, sizeof(struct nlattr *) * (GSCAN_ATTRIBUTE_SIGNIFICANT_CHANGE_FLUSH + 1));
 
-	if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_SIGNIFICANT_CHANGE_FLUSH,
+	if (NLA_PARSE_NESTED(attr, GSCAN_ATTRIBUTE_SIGNIFICANT_CHANGE_FLUSH,
 		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_gscan_policy) < 0)
 		goto nla_put_failure;
 	len_basic = 0;
@@ -732,7 +774,7 @@ int mtk_cfg80211_vendor_set_significant_change(struct wiphy *wiphy, struct wirel
 		paplist = (struct nlattr *)((UINT_8 *) paplist + NLA_HDRLEN);
 
 	for (i = 0; i < prWifiChangeCmd->num_ap; i++) {
-		if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_RSSI_HIGH, (struct nlattr *)paplist,
+		if (NLA_PARSE_NESTED(attr, GSCAN_ATTRIBUTE_RSSI_HIGH, (struct nlattr *)paplist,
 				nla_parse_gscan_policy) < 0)
 			goto nla_put_failure;
 		paplist = (struct nlattr *)((UINT_8 *) paplist + NLA_HDRLEN);
@@ -816,7 +858,7 @@ int mtk_cfg80211_vendor_set_hotlist(struct wiphy *wiphy, struct wireless_dev *wd
 		goto nla_put_failure;
 	kalMemZero(attr, sizeof(struct nlattr *) * (GSCAN_ATTRIBUTE_SIGNIFICANT_CHANGE_FLUSH + 1));
 
-	if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_NUM_AP, (struct nlattr *)(data - NLA_HDRLEN),
+	if (NLA_PARSE_NESTED(attr, GSCAN_ATTRIBUTE_NUM_AP, (struct nlattr *)(data - NLA_HDRLEN),
 				nla_parse_gscan_policy) < 0)
 		goto nla_put_failure;
 	len_basic = 0;
@@ -847,7 +889,7 @@ int mtk_cfg80211_vendor_set_hotlist(struct wiphy *wiphy, struct wireless_dev *wd
 		paplist = (struct nlattr *)((UINT_8 *) paplist + NLA_HDRLEN);
 
 	for (i = 0; i < prWifiHotlistCmd->num_ap; i++) {
-		if (nla_parse_nested(attr, GSCAN_ATTRIBUTE_RSSI_HIGH, (struct nlattr *)paplist,
+		if (NLA_PARSE_NESTED(attr, GSCAN_ATTRIBUTE_RSSI_HIGH, (struct nlattr *)paplist,
 				nla_parse_gscan_policy) < 0)
 			goto nla_put_failure;
 		paplist = (struct nlattr *)((UINT_8 *) paplist + NLA_HDRLEN);
@@ -1263,7 +1305,7 @@ int mtk_cfg80211_vendor_set_rssi_monitoring(struct wiphy *wiphy, struct wireless
 		goto nla_put_failure;
 	kalMemZero(attr, sizeof(struct nlattr *) * (WIFI_ATTRIBUTE_RSSI_MONITOR_START + 1));
 
-	if (nla_parse_nested(attr, WIFI_ATTRIBUTE_RSSI_MONITOR_START,
+	if (NLA_PARSE_NESTED(attr, WIFI_ATTRIBUTE_RSSI_MONITOR_START,
 		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_wifi_policy) < 0) {
 		DBGLOG(REQ, ERROR, "%s nla_parse_nested failed\n", __func__);
 		goto nla_put_failure;
@@ -1327,7 +1369,7 @@ int mtk_cfg80211_vendor_packet_keep_alive_start(struct wiphy *wiphy, struct wire
 	kalMemZero(attr, sizeof(struct nlattr *) * (MKEEP_ALIVE_ATTRIBUTE_PERIOD_MSEC + 1));
 
 	prPkt->enable = TRUE; /*start packet keep alive*/
-	if (nla_parse_nested(attr, MKEEP_ALIVE_ATTRIBUTE_PERIOD_MSEC,
+	if (NLA_PARSE_NESTED(attr, MKEEP_ALIVE_ATTRIBUTE_PERIOD_MSEC,
 		(struct nlattr *)(data - NLA_HDRLEN), nla_parse_offloading_policy) < 0) {
 		DBGLOG(REQ, ERROR, "%s nla_parse_nested failed\n", __func__);
 		goto nla_put_failure;
@@ -1773,4 +1815,47 @@ int mtk_cfg80211_vendor_set_roaming_policy(struct wiphy *wiphy, struct wireless_
 nla_put_failure:
 	return i4Status;
 
+}
+
+int mtk_cfg80211_vendor_get_supported_feature_set(struct wiphy *wiphy,
+		struct wireless_dev *wdev, const void *data, int data_len)
+{
+	uint32_t u4FeatureSet = WIFI_HAL_FEATURE_SET;
+	P_GLUE_INFO_T prGlueInfo;
+	P_REG_INFO_T prRegInfo;
+	struct sk_buff *skb;
+
+	ASSERT(wiphy);
+	ASSERT(wdev);
+
+	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
+
+	if (!prGlueInfo)
+		return -EFAULT;
+	prRegInfo = &(prGlueInfo->rRegInfo);
+	if (!prRegInfo)
+		return -EFAULT;
+
+	if (prRegInfo->ucSupport5GBand)
+		u4FeatureSet |= WIFI_FEATURE_INFRA_5G;
+
+	skb = cfg80211_vendor_cmd_alloc_reply_skb(wiphy, sizeof(u4FeatureSet));
+	if (!skb) {
+		DBGLOG(REQ, ERROR, "Allocate skb failed\n");
+		return -ENOMEM;
+	}
+
+	if (unlikely(
+	    nla_put_nohdr(skb, sizeof(u4FeatureSet), &u4FeatureSet) < 0)) {
+		DBGLOG(REQ, ERROR, "nla_put_nohdr failed\n");
+		goto nla_put_failure;
+	}
+
+	DBGLOG(REQ, INFO, "supported feature set=0x%x\n", u4FeatureSet);
+
+	return cfg80211_vendor_cmd_reply(skb);
+
+nla_put_failure:
+	kfree_skb(skb);
+	return -EFAULT;
 }

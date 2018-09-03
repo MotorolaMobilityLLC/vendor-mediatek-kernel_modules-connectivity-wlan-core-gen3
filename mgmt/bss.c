@@ -2167,7 +2167,11 @@ VOID bssInitForAP(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN BOOLEA
 	}
 
 	/* 4 <3.2> Setup Capability - Short Slot Time */
-	prBssInfo->fgUseShortSlotTime = TRUE;
+	if (rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].fgIsShortSlotTimeOptionImplemented &&
+	    prAdapter->rWifiVar.fgIsShortSlotTimeOptionEnable)
+		prBssInfo->fgUseShortSlotTime = TRUE;
+	else
+		prBssInfo->fgUseShortSlotTime = FALSE;
 
 	prBssInfo->u2CapInfo = CAP_INFO_ESS;
 

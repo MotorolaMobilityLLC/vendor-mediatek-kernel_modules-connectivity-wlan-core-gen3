@@ -180,9 +180,15 @@ typedef enum _ENUM_TESTMODE_STA_STATISTICS_ATTR {
 ********************************************************************************
 */
 /* cfg80211 hooks */
+#if (KERNEL_VERSION(4, 12, 0) <= LINUX_VERSION_CODE)
+int
+mtk_cfg80211_change_iface(struct wiphy *wiphy,
+			  struct net_device *ndev, enum nl80211_iftype type, struct vif_params *params);
+#else
 int
 mtk_cfg80211_change_iface(struct wiphy *wiphy,
 			  struct net_device *ndev, enum nl80211_iftype type, u32 *flags, struct vif_params *params);
+#endif
 
 int
 mtk_cfg80211_add_key(struct wiphy *wiphy,
@@ -283,16 +289,21 @@ int
 mtk_cfg80211_sched_scan_start(IN struct wiphy *wiphy,
 			      IN struct net_device *ndev, IN struct cfg80211_sched_scan_request *request);
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0))
 int mtk_cfg80211_sched_scan_stop(IN struct wiphy *wiphy, IN struct net_device *ndev);
+#else
+int mtk_cfg80211_sched_scan_stop(IN struct wiphy *wiphy,
+		IN struct net_device *ndev, IN UINT_64 reqid);
+#endif
 
 int mtk_cfg80211_assoc(struct wiphy *wiphy, struct net_device *ndev, struct cfg80211_assoc_request *req);
 
 int
 mtk_cfg80211_change_station(struct wiphy *wiphy, struct net_device *ndev, const u8 *mac,
-				struct station_parameters *params);
+		struct station_parameters *params);
 
 int mtk_cfg80211_add_station(struct wiphy *wiphy, struct net_device *ndev, const u8 *mac,
-				struct station_parameters *params);
+		struct station_parameters *params);
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0))
 int mtk_cfg80211_del_station(struct wiphy *wiphy, struct net_device *ndev, struct station_del_parameters *params);
@@ -302,10 +313,10 @@ int mtk_cfg80211_del_station(struct wiphy *wiphy, struct net_device *ndev, const
 
 int
 mtk_cfg80211_tdls_mgmt(struct wiphy *wiphy, struct net_device *dev, const u8 *peer, u8 action_code, u8 dialog_token,
-		       u16 status_code, u32 peer_capability, bool initiator, const u8 *buf, size_t len);
+		u16 status_code, u32 peer_capability, bool initiator, const u8 *buf, size_t len);
 
 int mtk_cfg80211_tdls_oper(struct wiphy *wiphy, struct net_device *dev, const u8 *peer,
-			enum nl80211_tdls_operation oper);
+		enum nl80211_tdls_operation oper);
 
 int mtk_cfg80211_suspend(struct wiphy *wiphy, struct cfg80211_wowlan *wow);
 
@@ -314,7 +325,7 @@ int mtk_cfg80211_resume(struct wiphy *wiphy);
 INT_32 mtk_cfg80211_process_str_cmd(P_GLUE_INFO_T prGlueInfo, PUINT_8 cmd, INT_32 len);
 
 int mtk_cfg80211_update_ft_ies(struct wiphy *wiphy, struct net_device *dev,
-			       struct cfg80211_update_ft_ies_params *ftie);
+		struct cfg80211_update_ft_ies_params *ftie);
 
 /*******************************************************************************
 *                              F U N C T I O N S

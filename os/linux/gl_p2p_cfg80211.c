@@ -102,10 +102,10 @@ static BOOLEAN __channel_format_switch(IN struct ieee80211_channel *channel,
 			prRfChnlInfo->ucChannelNum = nicFreq2ChannelNum(channel->center_freq * 1000);
 
 			switch (channel->band) {
-			case NL80211_BAND_2GHZ:
+			case KAL_BAND_2GHZ:
 				prRfChnlInfo->eBand = BAND_2G4;
 				break;
-			case NL80211_BAND_5GHZ:
+			case KAL_BAND_5GHZ:
 				prRfChnlInfo->eBand = BAND_5G;
 				break;
 			default:
@@ -547,10 +547,10 @@ int mtk_p2p_cfg80211_scan(struct wiphy *wiphy, struct cfg80211_scan_request *req
 			DBGLOG(P2P, TRACE, "Scanning Channel: %d, freq: %d\n",
 			       prRfChannelInfo->ucChannelNum, prChannel->center_freq);
 			switch (prChannel->band) {
-			case NL80211_BAND_2GHZ:
+			case KAL_BAND_2GHZ:
 				prRfChannelInfo->eBand = BAND_2G4;
 				break;
-			case NL80211_BAND_5GHZ:
+			case KAL_BAND_5GHZ:
 				prRfChannelInfo->eBand = BAND_5G;
 				break;
 			default:
@@ -1064,7 +1064,7 @@ int mtk_p2p_cfg80211_cancel_remain_on_channel(struct wiphy *wiphy,
 	P_MSG_P2P_CHNL_ABORT_T prMsgChnlAbort = (P_MSG_P2P_CHNL_ABORT_T) NULL;
 
 	do {
-		if ((wiphy == NULL)/* || (dev == NULL) */)
+		if (wiphy == NULL)
 			break;
 
 		prGlueInfo = *((P_GLUE_INFO_T *) wiphy_priv(wiphy));
@@ -1316,8 +1316,16 @@ int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev, co
 		prDisconnectMsg->rMsgHdr.eMsgId = MID_MNY_P2P_CONNECTION_ABORT;
 		prDisconnectMsg->ucRoleIdx = ucRoleIdx;
 		COPY_MAC_ADDR(prDisconnectMsg->aucTargetID, mac);
-		prDisconnectMsg->u2ReasonCode = REASON_CODE_UNSPECIFIED;
 		prDisconnectMsg->fgSendDeauth = TRUE;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0))
+		if (params->reason_code == 0)
+			prDisconnectMsg->u2ReasonCode = REASON_CODE_UNSPECIFIED;
+		else
+			prDisconnectMsg->u2ReasonCode = params->reason_code;
+		DBGLOG(P2P, INFO, "mtk_p2p_cfg80211_del_station ReasonCode = %u\n", prDisconnectMsg->u2ReasonCode);
+#else
+		prDisconnectMsg->u2ReasonCode = REASON_CODE_UNSPECIFIED;
+#endif
 
 		mboxSendMsg(prGlueInfo->prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prDisconnectMsg, MSG_SEND_METHOD_BUF);
 
@@ -1464,10 +1472,17 @@ int mtk_p2p_cfg80211_disconnect(struct wiphy *wiphy, struct net_device *dev, u16
 	return i4Rslt;
 }				/* mtk_p2p_cfg80211_disconnect */
 
+#if (KERNEL_VERSION(4, 12, 0) <= LINUX_VERSION_CODE)
+int
+mtk_p2p_cfg80211_change_iface(IN struct wiphy *wiphy,
+			      IN struct net_device *ndev,
+			      IN enum nl80211_iftype type, IN struct vif_params *params)
+#else
 int
 mtk_p2p_cfg80211_change_iface(IN struct wiphy *wiphy,
 			      IN struct net_device *ndev,
 			      IN enum nl80211_iftype type, IN u32 *flags, IN struct vif_params *params)
+#endif
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
 	INT_32 i4Rslt = -EINVAL;
@@ -1555,7 +1570,7 @@ int mtk_p2p_cfg80211_set_channel(IN struct wiphy *wiphy,
 
 		prGlueInfo = *((P_GLUE_INFO_T *) wiphy_priv(wiphy));
 
-		__channel_format_switch(chandef->chan, chandef->width, &rRfChnlInfo, NULL);
+		__channel_format_switch(chandef->chan, 0, &rRfChnlInfo, NULL);
 
 		if (mtk_Netdev_To_RoleIdx(prGlueInfo->prP2PInfo, dev, &ucRoleIdx) < 0)
 			break;
@@ -1599,11 +1614,8 @@ void mtk_p2p_cfg80211_mgmt_frame_register(IN struct wiphy *wiphy,
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
 
 	do {
-		if ((wiphy == NULL)
-		    /* || (dev == NULL) */
-		    ) {
+		if (wiphy == NULL)
 			break;
-		}
 
 		DBGLOG(P2P, TRACE, "mtk_p2p_cfg80211_mgmt_frame_register\n");
 

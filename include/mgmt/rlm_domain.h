@@ -288,8 +288,6 @@
 #define COUNTRY_CODE_ZM (((UINT_16) 'Z' << 8) | (UINT_16) 'M')	/* Zambia                              */
 #define COUNTRY_CODE_ZW (((UINT_16) 'Z' << 8) | (UINT_16) 'W')	/* Zimbabwe                            */
 
-#define COUNTRY_CODE_DF (((UINT_16) 'D' << 8) | (UINT_16) 'F')	/* Default country domain              */
-
 /* dot11RegDomainsSupportValue */
 #define MIB_REG_DOMAIN_FCC              0x10	/* FCC (US) */
 #define MIB_REG_DOMAIN_IC               0x20	/* IC or DOC (Canada) */

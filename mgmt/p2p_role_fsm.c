@@ -1130,7 +1130,7 @@ VOID p2pRoleFsmRunEventJoinComplete(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prM
 					 */
 					if (prJoinInfo->prTargetBssDesc)
 						scanReportBss2Cfg80211(prAdapter,
-								       OP_MODE_P2P_DEVICE, prJoinInfo->prTargetBssDesc);
+							BSS_TYPE_P2P_DEVICE, prJoinInfo->prTargetBssDesc);
 					kalP2PGCIndicateConnectionStatus(prAdapter->prGlueInfo,
 									 prP2pRoleFsmInfo->ucRoleIndex,
 									 &prP2pRoleFsmInfo->rConnReqInfo,
@@ -1459,7 +1459,8 @@ p2pRoleFsmRunEventAAAComplete(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prStaR
 		bssAddClient(prAdapter, prP2pBssInfo, prStaRec);
 
 		prStaRec->u2AssocId = bssAssignAssocID(prStaRec);
-
+		prStaRec->u2MaxIdlePeriod = prAdapter->rWifiVar.u2ApMaxIdlePeriod;
+		prStaRec->ucIdleOption = prAdapter->rWifiVar.ucApIdleOption;
 		cnmStaRecChangeState(prAdapter, prStaRec, STA_STATE_3);
 
 		p2pChangeMediaState(prAdapter, prP2pBssInfo, PARAM_MEDIA_STATE_CONNECTED);

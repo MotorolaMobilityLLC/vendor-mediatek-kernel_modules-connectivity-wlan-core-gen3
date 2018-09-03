@@ -116,7 +116,6 @@ enum {
 };
 
 /* JB mDNS Filter*/
-#define RX_FILTER_START (1<<31)
 #define RX_FILTER_IPV4  (1<<2)
 #define RX_FILTER_IPV6  (1<<3)
 typedef enum _ENUM_SWCR_RX_FILTER_CMD_T {
@@ -376,47 +375,47 @@ VOID swCtrlCmdCategory0(P_ADAPTER_T prAdapter, UINT_8 ucCate, UINT_8 ucAction, U
 #endif
 		case SWCTRL_RX_FILTER:
 			{
-				UINT_32 u4rxfilter;
-				BOOLEAN fgUpdate = FALSE;
+				UINT_32 u4rxfilter = prAdapter->u4OsPacketFilter;
 				WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 
-				if (ucOpt0 == SWCR_RX_FILTER_CMD_STOP) {
-					g_u4RXFilter &= ~(RX_FILTER_START);
-/* changed by jeffrey to align Android behavior */
-#if 0
-					if (prAdapter->fgAllMulicastFilter == FALSE)
-						prAdapter->u4OsPacketFilter &= ~PARAM_PACKET_FILTER_ALL_MULTICAST;
-#endif
-					prAdapter->u4OsPacketFilter &= ~PARAM_PACKET_FILTER_MULTICAST;
-					u4rxfilter = prAdapter->u4OsPacketFilter;
-					fgUpdate = TRUE;
-				} else if (ucOpt0 == SWCR_RX_FILTER_CMD_START) {
-					g_u4RXFilter |= (RX_FILTER_START);
-
-					if ((g_u4RXFilter & RX_FILTER_IPV4) || (g_u4RXFilter & RX_FILTER_IPV6)) {
-#if 0
-						prAdapter->u4OsPacketFilter |= PARAM_PACKET_FILTER_ALL_MULTICAST;
-#endif
+				if (ucOpt0 == SWCR_RX_FILTER_CMD_START) {
+					/* Start framework filtering out rule, if IPv4 or IPv6 multicast packets
+					** are needed and DA is in whitelist, they can be received.
+					** Otherwise, drop all multicast packets
+					*/
+					if (g_u4RXFilter & (RX_FILTER_IPV4 | RX_FILTER_IPV6))
 						prAdapter->u4OsPacketFilter |= PARAM_PACKET_FILTER_MULTICAST;
-					}
+					else
+						prAdapter->u4OsPacketFilter &= ~PARAM_PACKET_FILTER_MULTICAST;
+
+					if (u4rxfilter == prAdapter->u4OsPacketFilter)
+						break;
+
 					u4rxfilter = prAdapter->u4OsPacketFilter;
-					fgUpdate = TRUE;
+				} else if (ucOpt0 == SWCR_RX_FILTER_CMD_STOP) {
+					/* Stop framework filtering out rule, allow all multicast packets whose
+					** destinate MAC address is in whitelist
+					*/
+					prAdapter->u4OsPacketFilter |= PARAM_PACKET_FILTER_MULTICAST;
+					if (u4rxfilter == prAdapter->u4OsPacketFilter)
+						break;
+
+					u4rxfilter = prAdapter->u4OsPacketFilter;
 				} else if (ucOpt0 == SWCR_RX_FILTER_CMD_ADD) {
+					/* Meaning framework wants to receive multicast which match this rule
+					*/
 					if (ucOpt1 < 31)
 						g_u4RXFilter |= (1 << ucOpt1);
+					break;
 				} else if (ucOpt0 == SWCR_RX_FILTER_CMD_REMOVE) {
+					/* Meaning framework wants drop multicast which match this rule
+					*/
 					if (ucOpt1 < 31)
 						g_u4RXFilter &= ~(1 << ucOpt1);
+					break;
 				}
 
-				if (fgUpdate == TRUE)
-					rStatus = wlanoidSetPacketFilter(prAdapter, u4rxfilter, FALSE, NULL, 0);
-
-				/*
-				 * DBGLOG(SW4, INFO,("SWCTRL_RX_FILTER:
-				 * g_u4RXFilter %x ucOpt0 %x ucOpt1 %x fgUpdate %x u4rxfilter %x, rStatus %x\n",
-				 */
-				/* g_u4RXFilter, ucOpt0, ucOpt1, fgUpdate, u4rxfilter, rStatus)); */
+				rStatus = wlanoidSetPacketFilter(prAdapter, u4rxfilter, FALSE, NULL, 0);
 			}
 			break;
 

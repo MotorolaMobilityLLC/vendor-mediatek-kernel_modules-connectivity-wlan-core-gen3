@@ -38,8 +38,7 @@
 #include "gl_os.h"
 #include "mt6630_reg.h"
 #include "sdio.h"
-
-#include "wmt_exp.h"
+#include "gl_rst.h"
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -113,6 +112,7 @@ static irqreturn_t HifDmaISR(IN int irq, IN void *arg);
 ********************************************************************************
 */
 DEFINE_SPINLOCK(HifLock);
+DEFINE_SPINLOCK(HifSdioLock);
 
 /*******************************************************************************
 *                           P R I V A T E   D A T A
@@ -126,6 +126,8 @@ static probe_card pfWlanProbe;
 static remove_card pfWlanRemove;
 
 static BOOLEAN WlanDmaFatalErr;
+
+int sdioDisableRefCnt;
 
 #if (CONF_HIF_DEV_MISC == 1)
 static const struct file_operations MtkAhbOps = {
@@ -318,7 +320,7 @@ VOID glSetHifInfo(GLUE_INFO_T *GlueInfo, ULONG ulCookie)
 
 	/* Init DMA */
 	WlanDmaFatalErr = 0;	/* reset error flag */
-
+	sdioDisableRefCnt = 0;
 #if (CONF_MTK_AHB_DMA == 1)
 	HifDmaInit(HifInfo);
 #endif /* CONF_MTK_AHB_DMA */
@@ -364,13 +366,11 @@ VOID glClearHifInfo(GLUE_INFO_T *GlueInfo)
 #if (CONF_MTK_AHB_DMA == 1)
 	HifDmaUnInit(&GlueInfo->rHifInfo);
 #endif
-#ifndef CONFIG_OF
 	iounmap(GlueInfo->rHifInfo.HifRegBaseAddr);
 	if (GlueInfo->rHifInfo.InfraRegBaseAddr)
 		iounmap(GlueInfo->rHifInfo.InfraRegBaseAddr);
 	if (GlueInfo->rHifInfo.ConnCfgRegBaseAddr)
 		iounmap(GlueInfo->rHifInfo.ConnCfgRegBaseAddr);
-#endif
 #if defined(MT6797)
 	iounmap(GlueInfo->rHifInfo.confRegBaseAddr);
 #endif
@@ -1250,7 +1250,7 @@ static int HifAhbMiscClose(IN struct inode *Inodep, IN struct file *Filp)
 /*----------------------------------------------------------------------------*/
 static int HifAhbPltmProbe(IN struct platform_device *pDev)
 {
-	MTK_WCN_WMT_WLAN_CB_INFO rWmtCb;
+	struct MTK_WCN_WMT_WLAN_CB_INFO rWmtCb;
 
 	DBGLOG(INIT, INFO, "HifAhbPltmProbe\n");
 
@@ -1260,7 +1260,7 @@ static int HifAhbPltmProbe(IN struct platform_device *pDev)
 	wmt_set_jtag_for_mcu();
 	wmt_set_jtag_for_gps();
 #endif /* CONF_HIF_PMIC_TEST */
-	kalMemZero(&rWmtCb, sizeof(MTK_WCN_WMT_WLAN_CB_INFO));
+	kalMemZero(&rWmtCb, sizeof(struct MTK_WCN_WMT_WLAN_CB_INFO));
 	/* Register WIFI probe/remove functions to WMT */
 	rWmtCb.wlan_probe_cb = HifAhbProbe;
 	rWmtCb.wlan_remove_cb = HifAhbRemove;

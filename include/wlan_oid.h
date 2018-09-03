@@ -61,6 +61,7 @@
 #define PARAM_EEPROM_READ_METHOD_GETSIZE        0
 
 #define PARAM_WHQL_RSSI_MAX_DBM                 (-10)
+#define PARAM_WHQL_RSSI_INITIAL_DBM		(-50)
 #define PARAM_WHQL_RSSI_MIN_DBM                 (-200)
 
 #define PARAM_DEVICE_WAKE_UP_ENABLE                     0x00000001
@@ -1654,6 +1655,11 @@ struct PARAM_WIFI_LOG_LEVEL {
 	UINT_32 u4Level;
 };
 
+struct PARAM_GET_WIFI_TYPE {
+	struct net_device *prNetDev;
+	uint8_t arWifiTypeName[8];
+};
+
 enum ENUM_WIFI_LOG_LEVEL_VERSION_T {
 	ENUM_WIFI_LOG_LEVEL_VERSION_V1 = 1,
 	ENUM_WIFI_LOG_LEVEL_VERSION_NUM
@@ -2411,6 +2417,18 @@ WLAN_STATUS
 wlanoidSetWifiLogLevel(IN P_ADAPTER_T prAdapter,
 			IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 
+WLAN_STATUS
+wlanoidEnableRoaming(IN P_ADAPTER_T prAdapter,
+		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
+
+WLAN_STATUS
+wlanoidConfigRoaming(IN P_ADAPTER_T prAdapter,
+		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
+
+uint32_t wlanoidGetWifiType(IN P_ADAPTER_T prAdapter,
+			    IN void *pvSetBuffer,
+			    IN uint32_t u4SetBufferLen,
+			    OUT uint32_t *pu4SetInfoLen);
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************

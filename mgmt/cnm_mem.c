@@ -232,6 +232,12 @@ VOID cnmPktFree(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo)
 		prMsduInfo->prPacket = NULL;
 	}
 
+	if (prMsduInfo->pucCookie) {
+		kalMemFree(prMsduInfo->pucCookie, VIR_MEM_TYPE, prMsduInfo->u2CookieLen);
+		prMsduInfo->u2CookieLen = 0;
+		prMsduInfo->pucCookie = NULL;
+	}
+
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_TX_MSDU_INFO_LIST);
 	QUEUE_INSERT_TAIL(prQueList, &prMsduInfo->rQueEntry);
 	KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_TX_MSDU_INFO_LIST);
@@ -323,7 +329,7 @@ PVOID cnmMemAlloc(IN P_ADAPTER_T prAdapter, IN ENUM_RAM_TYPE_T eRamType, IN UINT
 	}
 
 #if CFG_DBG_MGT_BUF
-	prBufInfo->u4AllocCount++;
+	GLUE_INC_REF_CNT(prBufInfo->u4AllocCount);
 #endif
 
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, eRamType == RAM_TYPE_MSG ? SPIN_LOCK_MSG_BUF : SPIN_LOCK_MGT_BUF);
@@ -366,7 +372,9 @@ PVOID cnmMemAlloc(IN P_ADAPTER_T prAdapter, IN ENUM_RAM_TYPE_T eRamType, IN UINT
 	if (pvMemory) {
 		struct MEM_TRACK *prMemTrack = (struct MEM_TRACK *)pvMemory;
 
+		KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MGT_BUF);
 		LINK_INSERT_TAIL(&prAdapter->rMemTrackLink, &prMemTrack->rLinkEntry);
+		KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MGT_BUF);
 		prMemTrack->pucFileAndLine = fileAndLine;
 		prMemTrack->u2CmdIdAndWhere = 0x0000;
 		pvMemory = (PVOID)(prMemTrack + 1);
@@ -382,10 +390,10 @@ PVOID cnmMemAlloc(IN P_ADAPTER_T prAdapter, IN ENUM_RAM_TYPE_T eRamType, IN UINT
 #endif
 
 #if CFG_DBG_MGT_BUF
-	prBufInfo->u4AllocNullCount++;
+	GLUE_INC_REF_CNT(prBufInfo->u4AllocNullCount);
 
 	if (pvMemory)
-		prAdapter->u4MemAllocDynamicCount++;
+		GLUE_INC_REF_CNT(prAdapter->u4MemAllocDynamicCount);
 #endif
 
 	return pvMemory;
@@ -436,7 +444,9 @@ VOID cnmMemFree(IN P_ADAPTER_T prAdapter, IN PVOID pvMemory)
 #if CFG_DBG_MGT_BUF
 		struct MEM_TRACK *prTrack = (struct MEM_TRACK *)((PUINT_8)pvMemory - sizeof(struct MEM_TRACK));
 
+		KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MGT_BUF);
 		LINK_REMOVE_KNOWN_ENTRY(&prAdapter->rMemTrackLink, &prTrack->rLinkEntry);
+		KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MGT_BUF);
 		kalMemFree(prTrack, PHY_MEM_TYPE, 0);
 #else
 		/* For Linux, it is supported because size is not needed */
@@ -448,17 +458,15 @@ VOID cnmMemFree(IN P_ADAPTER_T prAdapter, IN PVOID pvMemory)
 #endif
 
 #if CFG_DBG_MGT_BUF
-		prAdapter->u4MemFreeDynamicCount++;
+		GLUE_INC_REF_CNT(prAdapter->u4MemFreeDynamicCount);
 #endif
 		return;
 	}
 
-	KAL_ACQUIRE_SPIN_LOCK(prAdapter, eRamType == RAM_TYPE_MSG ? SPIN_LOCK_MSG_BUF : SPIN_LOCK_MGT_BUF);
-
 #if CFG_DBG_MGT_BUF
-	prBufInfo->u4FreeCount++;
+	GLUE_INC_REF_CNT(prBufInfo->u4FreeCount);
 #endif
-
+	KAL_ACQUIRE_SPIN_LOCK(prAdapter, eRamType == RAM_TYPE_MSG ? SPIN_LOCK_MSG_BUF : SPIN_LOCK_MGT_BUF);
 	/* Convert number of block into bit cluster */
 	ASSERT(prBufInfo->aucAllocatedBlockNum[u4BlockIndex] > 0);
 
@@ -947,11 +955,11 @@ static VOID cnmStaSendUpdateCmd(P_ADAPTER_T prAdapter, P_STA_RECORD_T prStaRec, 
 	prCmdContent->ucTxBaSize = prAdapter->rWifiVar.ucTxBaSize;
 
 	/* if AP's max idle time is greater than 30s, then we send keep alive packets every 30 sec */
-	prCmdContent->ucKeepAliveDuration = (UINT_8)prStaRec->u2MaxIdlePeriod;
+	prCmdContent->u2KeepAliveDuration = (UINT_16)prStaRec->u2MaxIdlePeriod;
 	prCmdContent->ucKeepAliveOption = prStaRec->ucIdleOption;
 
-	if (prCmdContent->ucKeepAliveDuration > 0)
-		DBGLOG(CNM, INFO, "keep-alive duration is %d\n", prCmdContent->ucKeepAliveDuration);
+	if (prCmdContent->u2KeepAliveDuration > 0)
+		DBGLOG(CNM, INFO, "keep-alive duration is %d\n", prCmdContent->u2KeepAliveDuration);
 	if (prStaRec->ucDesiredPhyTypeSet & PHY_TYPE_SET_802_11AC)
 		prCmdContent->ucRxBaSize = prAdapter->rWifiVar.ucRxVhtBaSize;
 	else
@@ -966,15 +974,16 @@ static VOID cnmStaSendUpdateCmd(P_ADAPTER_T prAdapter, P_STA_RECORD_T prStaRec, 
 	} else
 		prCmdContent->ucRtsPolicy = RTS_POLICY_LEGACY;
 
-	DBGLOG(REQ, TRACE, "Update StaRec[%u] WIDX[%u] State[%u] Type[%u] BssIdx[%u] AID[%u]\n",
+	DBGLOG(CNM, TRACE, "Update StaRec[%u] WIDX[%u] State[%u] Type[%u] BssIdx[%u] AID[%u]\n",
 			   prCmdContent->ucStaIndex,
 			   prCmdContent->ucWlanIndex,
 			   prCmdContent->ucStaState,
 			   prCmdContent->ucStaType, prCmdContent->ucBssIndex, prCmdContent->u2AssocId);
 
-	DBGLOG(REQ, TRACE, "Update StaRec[%u] QoS[%u] UAPSD[%u] BMCWIDX[%u]\n",
+	DBGLOG(CNM, TRACE, "Update StaRec[%u] QoS[%u] UAPSD[%u] BMCWIDX[%u] MaxIdle[%u]\n",
 			   prCmdContent->ucStaIndex,
-			   prCmdContent->ucIsQoS, prCmdContent->ucIsUapsdSupported, prCmdContent->ucBMCWlanIndex);
+			   prCmdContent->ucIsQoS, prCmdContent->ucIsUapsdSupported,
+			   prCmdContent->ucBMCWlanIndex, prCmdContent->u2KeepAliveDuration);
 
 	rStatus = wlanSendSetQueryCmd(prAdapter,	/* prAdapter */
 				      CMD_ID_UPDATE_STA_RECORD,	/* ucCID */

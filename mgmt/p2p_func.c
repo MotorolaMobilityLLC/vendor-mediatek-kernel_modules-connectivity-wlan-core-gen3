@@ -1044,9 +1044,9 @@ VOID p2pFuncStopGO(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prP2pBssInfo)
 
 			/* Reset RLM related field of BSSINFO. */
 			rlmBssAborted(prAdapter, prP2pBssInfo);
-
-			prP2pBssInfo->eIntendOPMode = OP_MODE_P2P_DEVICE;
 		}
+
+		prP2pBssInfo->eIntendOPMode = OP_MODE_P2P_DEVICE;
 
 		DBGLOG(P2P, INFO, "Re activate P2P Network.\n");
 		nicDeactivateNetwork(prAdapter, prP2pBssInfo->ucBssIndex);
@@ -1174,8 +1174,8 @@ VOID p2pFuncReleaseCh(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIdx, IN P_P2P_CHN
 		if (!prChnlReqInfo->fgIsChannelRequested)
 			break;
 
-			DBGLOG(P2P, TRACE, "P2P Release Channel\n");
-			prChnlReqInfo->fgIsChannelRequested = FALSE;
+		DBGLOG(P2P, TRACE, "P2P Release Channel\n");
+		prChnlReqInfo->fgIsChannelRequested = FALSE;
 
 		/* 1. return channel privilege to CNM immediately */
 		prMsgChRelease = (P_MSG_CH_ABORT_T) cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_CH_ABORT_T));
@@ -1310,8 +1310,17 @@ p2pFuncProcessBeacon(IN P_ADAPTER_T prAdapter,
 		/* Parse Beacon header */
 		COPY_MAC_ADDR(prP2pBssInfo->aucOwnMacAddr, prBcnFrame->aucSrcAddr);
 		COPY_MAC_ADDR(prP2pBssInfo->aucBSSID, prBcnFrame->aucBSSID);
-		prP2pBssInfo->u2BeaconInterval = prBcnFrame->u2BeaconInterval;
-		prP2pBssInfo->u2CapInfo = prBcnFrame->u2CapInfo;
+		if ((prP2pBssInfo->eCurrentOPMode != OP_MODE_ACCESS_POINT) ||
+		    (prP2pBssInfo->eIntendOPMode != OP_MODE_NUM)) {
+			/*
+			 * AP is not started yet.
+			 * Skip to update the Beacon interval and Capability info after AP started,
+			 * in case that they have different value from supplicant setting, just
+			 * keep the value decided by driver when start GO.
+			 */
+			prP2pBssInfo->u2BeaconInterval = prBcnFrame->u2BeaconInterval;
+			prP2pBssInfo->u2CapInfo = prBcnFrame->u2CapInfo;
+		}
 
 		/* Parse Beacon IEs */
 		p2pFuncParseBeaconIEs(prAdapter,
@@ -1339,7 +1348,7 @@ VOID
 p2pFuncDissolve(IN P_ADAPTER_T prAdapter,
 		IN P_BSS_INFO_T prP2pBssInfo, IN BOOLEAN fgSendDeauth, IN UINT_16 u2ReasonCode)
 {
-	DEBUGFUNC("p2pFuncDissolve()");
+	BOOLEAN fgWaitDeauthSendout = FALSE;
 
 	do {
 
@@ -1357,6 +1366,8 @@ p2pFuncDissolve(IN P_ADAPTER_T prAdapter,
 				/* 2012/02/14 frog: After formation before join group, prStaRecOfAP is NULL. */
 				p2pFuncDisconnect(prAdapter,
 						  prP2pBssInfo, prP2pBssInfo->prStaRecOfAP, fgSendDeauth, u2ReasonCode);
+
+				fgWaitDeauthSendout = fgSendDeauth;
 			}
 
 			/*
@@ -1389,6 +1400,8 @@ p2pFuncDissolve(IN P_ADAPTER_T prAdapter,
 
 					prCurrStaRec = bssRemoveHeadClient(prAdapter, prP2pBssInfo);
 				}
+
+				fgWaitDeauthSendout = TRUE;
 			}
 
 			break;
@@ -1396,12 +1409,14 @@ p2pFuncDissolve(IN P_ADAPTER_T prAdapter,
 			return;	/* 20110420 -- alreay in Device Mode. */
 		}
 
-		/* Make the deauth frame send to FW ASAP. */
-		wlanAcquirePowerControl(prAdapter);
-		wlanProcessCommandQueue(prAdapter, &prAdapter->prGlueInfo->rCmdQueue);
-		wlanReleasePowerControl(prAdapter);
+		if (fgWaitDeauthSendout) {
+			/* Make the deauth frame send to FW ASAP. */
+			wlanAcquirePowerControl(prAdapter);
+			wlanProcessCommandQueue(prAdapter, &prAdapter->prGlueInfo->rCmdQueue);
+			wlanReleasePowerControl(prAdapter);
 
-		kalMdelay(100);
+			kalMdelay(100);
+		}
 
 		/* Change Connection Status. */
 		p2pChangeMediaState(prAdapter, prP2pBssInfo, PARAM_MEDIA_STATE_DISCONNECTED);
@@ -2823,8 +2838,12 @@ P_MSDU_INFO_T p2pFuncProcessP2pProbeRsp(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBs
 							  prProbeRspFrame->aucDestAddr,
 							  prProbeRspFrame->aucSrcAddr,
 							  prProbeRspFrame->aucBSSID,
-							  prProbeRspFrame->u2BeaconInterval,
-							  prProbeRspFrame->u2CapInfo);
+							  (ucBssIdx == P2P_DEV_BSS_INDEX) ?
+							  prProbeRspFrame->u2BeaconInterval :
+							  prP2pBssInfo->u2BeaconInterval,
+							  (ucBssIdx == P2P_DEV_BSS_INDEX) ?
+							  prProbeRspFrame->u2CapInfo :
+							  prP2pBssInfo->u2CapInfo);
 
 		prRetMsduInfo->u2FrameLength =
 		    (WLAN_MAC_MGMT_HEADER_LEN + TIMESTAMP_FIELD_LEN + BEACON_INTERVAL_FIELD_LEN + CAP_INFO_FIELD_LEN);

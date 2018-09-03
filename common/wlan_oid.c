@@ -10270,18 +10270,18 @@ wlanoidSetP2pMode(IN P_ADAPTER_T prAdapter, IN PVOID pvSetBuffer, IN UINT_32 u4S
 		p2pSetMode((prSetP2P->u4Mode == 1) ? TRUE : FALSE);
 		if (p2pLaunch(prAdapter->prGlueInfo))
 			ASSERT(prAdapter->fgIsP2PRegistered);
-			if (prAdapter->rWifiVar.ucApUapsd && prSetP2P->u4Mode == 1) {
-				PARAM_CUSTOM_UAPSD_PARAM_STRUCT_T rUapsdParams;
+		if (prAdapter->rWifiVar.ucApUapsd && prSetP2P->u4Mode == 1) {
+			PARAM_CUSTOM_UAPSD_PARAM_STRUCT_T rUapsdParams;
 
-				DBGLOG(OID, INFO, "wlanoidSetP2pMode Default enable ApUapsd\n");
-				rUapsdParams.fgEnAPSD = 1;
-				rUapsdParams.fgEnAPSD_AcBe = 1;
-				rUapsdParams.fgEnAPSD_AcBk = 1;
-				rUapsdParams.fgEnAPSD_AcVi = 1;
-				rUapsdParams.fgEnAPSD_AcVo = 1;
-				rUapsdParams.ucMaxSpLen = 0; /* default:0, Do not limit delivery pkt num */
-				nicSetUapsdParam(prAdapter, &rUapsdParams, NETWORK_TYPE_P2P);
-			}
+			DBGLOG(OID, INFO, "wlanoidSetP2pMode Default enable ApUapsd\n");
+			rUapsdParams.fgEnAPSD = 1;
+			rUapsdParams.fgEnAPSD_AcBe = 1;
+			rUapsdParams.fgEnAPSD_AcBk = 1;
+			rUapsdParams.fgEnAPSD_AcVi = 1;
+			rUapsdParams.fgEnAPSD_AcVo = 1;
+			rUapsdParams.ucMaxSpLen = 0; /* default:0, Do not limit delivery pkt num */
+			nicSetUapsdParam(prAdapter, &rUapsdParams, NETWORK_TYPE_P2P);
+		}
 	} else {
 		if (prAdapter->fgIsP2PRegistered)
 			p2pRemove(prAdapter->prGlueInfo);
@@ -12427,6 +12427,124 @@ wlanoidSetWifiLogLevel(IN P_ADAPTER_T prAdapter,
 
 	wlanDbgSetLogLevelImpl(prAdapter, pparam->u4Version, pparam->u4Module,
 			pparam->u4Level);
+
+	return WLAN_STATUS_SUCCESS;
+}
+
+WLAN_STATUS
+wlanoidEnableRoaming(IN P_ADAPTER_T prAdapter,
+		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)
+{
+	DBGLOG(OID, INFO, "enable roaming\n");
+
+	aisRemoveBlacklistBySource(prAdapter, AIS_BLACK_LIST_FROM_FWK);
+
+	return WLAN_STATUS_SUCCESS;
+}
+
+WLAN_STATUS
+wlanoidConfigRoaming(IN P_ADAPTER_T prAdapter,
+		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)
+{
+	struct nlattr *attrlist;
+	struct AIS_BLACKLIST_ITEM *prBlackList;
+	UINT_32 len_shift = 0;
+	UINT_32 numOfList[2] = { 0 };
+	int i;
+
+	attrlist = (struct nlattr *)pvSetBuffer;
+
+	/* get the number of blacklist and copy those mac addresses from HAL */
+	if (attrlist->nla_type == WIFI_ATTRIBUTE_ROAMING_BLACKLIST_NUM) {
+		numOfList[0] = nla_get_u32(attrlist);
+		len_shift += NLA_ALIGN(attrlist->nla_len);
+	}
+	DBGLOG(REQ, INFO, "Get the number of blacklist=%d\n", numOfList[0]);
+
+	if (numOfList[0] >= 0 && numOfList[0] <= MAX_FW_ROAMING_BLACKLIST_SIZE) {
+		/*Refresh all the FWKBlacklist */
+		aisRemoveBlacklistBySource(prAdapter, AIS_BLACK_LIST_FROM_FWK);
+
+		/* Start to receive blacklist mac addresses and set to FWK blacklist */
+		attrlist = (struct nlattr *)((UINT_8 *) pvSetBuffer + len_shift);
+		for (i = 0; i < numOfList[0]; i++) {
+			if (attrlist->nla_type == WIFI_ATTRIBUTE_ROAMING_BLACKLIST_BSSID)
+				prBlackList = aisAddBlacklistByBssid(prAdapter, nla_data(attrlist),
+									AIS_BLACK_LIST_FROM_FWK);
+			len_shift += NLA_ALIGN(attrlist->nla_len);
+			attrlist = (struct nlattr *)((UINT_8 *) pvSetBuffer + len_shift);
+		}
+	}
+
+	return WLAN_STATUS_SUCCESS;
+}
+
+uint32_t wlanoidGetWifiType(IN P_ADAPTER_T prAdapter,
+			    IN void *pvSetBuffer,
+			    IN uint32_t u4SetBufferLen,
+			    OUT uint32_t *pu4SetInfoLen)
+{
+	struct PARAM_GET_WIFI_TYPE *prParamGetWifiType;
+	P_NETDEV_PRIVATE_GLUE_INFO prNetDevPrivate;
+	P_BSS_INFO_T prBssInfo = NULL;
+	uint8_t ucBssIdx;
+	uint8_t ucPhyType;
+	uint8_t ucMaxCopySize;
+	uint8_t *pNameBuf;
+
+	*pu4SetInfoLen = 0;
+
+	if (prAdapter->rAcpiState == ACPI_STATE_D3) {
+		DBGLOG(OID, ERROR,
+		       "Fail in query receive error! (Adapter not ready). ACPI=D%d, Radio=%d\n",
+		       prAdapter->rAcpiState, prAdapter->fgIsRadioOff);
+		return WLAN_STATUS_ADAPTER_NOT_READY;
+	}
+
+	prParamGetWifiType = (struct PARAM_GET_WIFI_TYPE *)pvSetBuffer;
+	prNetDevPrivate = (P_NETDEV_PRIVATE_GLUE_INFO)
+				netdev_priv(prParamGetWifiType->prNetDev);
+	ucBssIdx = prNetDevPrivate->ucBssIdx;
+
+	DBGLOG(OID, INFO, "bss index=%d\n", ucBssIdx);
+
+	kalMemZero(prParamGetWifiType->arWifiTypeName,
+		   sizeof(prParamGetWifiType->arWifiTypeName));
+	pNameBuf = &prParamGetWifiType->arWifiTypeName[0];
+	ucMaxCopySize = sizeof(prParamGetWifiType->arWifiTypeName) - 1;
+
+	if (ucBssIdx > HW_BSSID_NUM) {
+		DBGLOG(OID, ERROR, "invalid bss index: %u\n", ucBssIdx);
+		return WLAN_STATUS_INVALID_DATA;
+	}
+
+	prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIdx);
+	if ((!prBssInfo) || (!IS_BSS_ACTIVE(prBssInfo))) {
+		DBGLOG(OID, ERROR, "invalid BssInfo: %p, %u\n",
+		       prBssInfo, ucBssIdx);
+		return WLAN_STATUS_INVALID_DATA;
+	}
+
+	ucPhyType = prBssInfo->ucPhyTypeSet;
+	if (ucPhyType & PHY_TYPE_SET_802_11AC)
+		kalStrnCpy(pNameBuf, "11AC", ucMaxCopySize);
+	else if (ucPhyType & PHY_TYPE_SET_802_11N)
+		kalStrnCpy(pNameBuf, "11N", ucMaxCopySize);
+	else if (ucPhyType & PHY_TYPE_SET_802_11B)
+		kalStrnCpy(pNameBuf, "11B", ucMaxCopySize);
+	else if (ucPhyType & PHY_TYPE_SET_802_11G)
+		kalStrnCpy(pNameBuf, "11G", ucMaxCopySize);
+	else if (ucPhyType & PHY_TYPE_SET_802_11A)
+		kalStrnCpy(pNameBuf, "11A", ucMaxCopySize);
+	else
+		DBGLOG(OID, INFO,
+		       "unknown wifi type, prBssInfo->ucPhyTypeSet: %u\n",
+		       ucPhyType);
+
+	*pu4SetInfoLen = kalStrLen(pNameBuf);
+
+	DBGLOG(OID, INFO, "wifi type=[%s](%d), phyType=%u\n",
+	       pNameBuf, *pu4SetInfoLen, ucPhyType);
 
 	return WLAN_STATUS_SUCCESS;
 }

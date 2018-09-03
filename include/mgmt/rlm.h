@@ -219,6 +219,19 @@ struct RADIO_MEASUREMENT_REPORT_PARAMS {
 	LINK_T rFreeReportLink;
 };
 
+#if CFG_SUPPORT_DFS
+struct CHANNEL_SWITCH_ANNOUNCE_PARAMS {
+	BOOLEAN fgReadyToSwitch;
+	BOOLEAN fgHasSCOIE;
+	BOOLEAN fgHasWideBandIE;
+	UINT_8 ucNewChannel;
+	ENUM_CHNL_EXT_T eNewSCO;
+	UINT_8 ucNewVhtBw;
+	UINT_8 ucNewVhtS1;
+	UINT_8 ucNewVhtS2;
+};
+#endif
+
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -286,6 +299,8 @@ VOID rlmRspGenerateExtCapIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
 VOID rlmRspGenerateHtOpIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
 
 VOID rlmRspGenerateErpIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
+
+VOID rlmRspGenerateBssMaxIdlePeriodIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
 
 VOID rlmGenerateMTKOuiIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo);
 

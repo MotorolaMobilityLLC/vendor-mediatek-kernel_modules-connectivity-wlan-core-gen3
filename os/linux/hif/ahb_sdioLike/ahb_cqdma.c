@@ -31,7 +31,11 @@
 #include <linux/delay.h>	/* udelay and mdelay macro */
 
 #if CONFIG_ANDROID
+#ifdef CONFIG_WAKELOCK
 #include <linux/wakelock.h>
+#else
+#include <linux/device.h>
+#endif
 #endif
 
 #include <linux/irq.h>		/* IRQT_FALLING */
@@ -193,9 +197,7 @@ VOID HifDmaInit(GL_HIF_INFO_T *HifInfo)
 
 VOID HifDmaUnInit(GL_HIF_INFO_T *HifInfo)
 {
-#ifndef CONFIG_OF
 	iounmap(HifInfo->DmaRegBaseAddr);
-#endif
 }
 
 /*******************************************************************************

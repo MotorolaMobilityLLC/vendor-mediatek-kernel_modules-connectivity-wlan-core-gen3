@@ -218,9 +218,17 @@ typedef enum _ENUM_KAL_MEM_ALLOCATION_TYPE_E {
 } ENUM_KAL_MEM_ALLOCATION_TYPE;
 
 #if CONFIG_ANDROID		/* Defined in Android kernel source */
+
+#ifdef CONFIG_WAKELOCK
 typedef struct wake_lock KAL_WAKE_LOCK_T, *P_KAL_WAKE_LOCK_T;
 #define KAL_WAKELOCK_DECLARE(_lock) \
 	struct wake_lock _lock
+#else
+#define KAL_WAKE_LOCK_T struct wakeup_source
+#define KAL_WAKELOCK_DECLARE(_lock) \
+	struct wakeup_source _lock
+#endif /*CONFIG_WAKELOCK*/
+
 #else
 typedef UINT_32 KAL_WAKE_LOCK_T, *P_KAL_WAKE_LOCK_T;
 #define KAL_WAKELOCK_DECLARE(_lock)
@@ -404,9 +412,31 @@ struct KAL_HALT_CTRL_T {
 #define KAL_GET_PKT_ARRIVAL_TIME(_p)            GLUE_GET_PKT_ARRIVAL_TIME(_p)
 
 /*----------------------------------------------------------------------------*/
+/* Macros for kernel related defines                      */
+/*----------------------------------------------------------------------------*/
+#if KERNEL_VERSION(4, 7, 0) <= CFG80211_VERSION_CODE
+/**
+ * enum nl80211_band - Frequency band
+ * @NL80211_BAND_2GHZ: 2.4 GHz ISM band
+ * @NL80211_BAND_5GHZ: around 5 GHz band (4.9 - 5.7 GHz)
+ * @NL80211_BAND_60GHZ: around 60 GHz band (58.32 - 64.80 GHz)
+ * @NUM_NL80211_BANDS: number of bands, avoid using this in userspace
+ *	 since newer kernel versions may support more bands
+ */
+#define KAL_BAND_2GHZ NL80211_BAND_2GHZ
+#define KAL_BAND_5GHZ NL80211_BAND_5GHZ
+#define KAL_NUM_BANDS NUM_NL80211_BANDS
+#else
+#define KAL_BAND_2GHZ IEEE80211_BAND_2GHZ
+#define KAL_BAND_5GHZ IEEE80211_BAND_5GHZ
+#define KAL_NUM_BANDS IEEE80211_NUM_BANDS
+#endif
+
+/*----------------------------------------------------------------------------*/
 /* Macros of wake_lock operations for using in Driver Layer                   */
 /*----------------------------------------------------------------------------*/
 #if CONFIG_ANDROID		/* Defined in Android kernel source */
+#ifdef CONFIG_WAKELOCK
 #define KAL_WAKE_LOCK_INIT(_prAdapter, _prWakeLock, _pcName) \
 	wake_lock_init(_prWakeLock, WAKE_LOCK_SUSPEND, _pcName)
 
@@ -424,6 +454,25 @@ struct KAL_HALT_CTRL_T {
 
 #define KAL_WAKE_LOCK_ACTIVE(_prAdapter, _prWakeLock) \
 	wake_lock_active(_prWakeLock)
+#else
+#define KAL_WAKE_LOCK_INIT(_prAdapter, _prWakeLock, _pcName) \
+	wakeup_source_init(_prWakeLock, _pcName)
+
+#define KAL_WAKE_LOCK_DESTROY(_prAdapter, _prWakeLock) \
+	wakeup_source_trash(_prWakeLock)
+
+#define KAL_WAKE_LOCK(_prAdapter, _prWakeLock) \
+		__pm_stay_awake(_prWakeLock)
+
+#define KAL_WAKE_LOCK_TIMEOUT(_prAdapter, _prWakeLock, _u4Timeout) \
+	__pm_wakeup_event(_prWakeLock, _u4Timeout)
+
+#define KAL_WAKE_UNLOCK(_prAdapter, _prWakeLock) \
+	__pm_relax(_prWakeLock)
+
+#define KAL_WAKE_LOCK_ACTIVE(_prAdapter, _prWakeLock) \
+	((_prWakeLock)->active)
+#endif /*CONFIG_WAKELOCK*/
 
 #else
 #define KAL_WAKE_LOCK_INIT(_prAdapter, _prWakeLock, _pcName)
@@ -539,6 +588,10 @@ struct KAL_HALT_CTRL_T {
 
 /* Zero specific memory block */
 #define kalMemZero(pvAddr, u4Size)                  memset(pvAddr, 0, u4Size)
+
+#if KERNEL_VERSION(4, 0, 0) <= LINUX_VERSION_CODE
+#define strnicmp(s1, s2, n)                         strncasecmp(s1, s2, n)
+#endif
 
 /* string operation */
 #define kalStrCpy(dest, src)                         strcpy(dest, src)

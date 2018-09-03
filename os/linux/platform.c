@@ -245,6 +245,7 @@ int glUnregisterEarlySuspend(struct early_suspend *prDesc)
 }
 #endif
 
+#if 0
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief Utility function for reading data from files on NVRAM-FS
@@ -404,7 +405,7 @@ static int nvram_write(char *filename, char *buf, ssize_t len, int offset)
 
 #endif
 }
-
+#endif
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief API for reading data on NVRAM
@@ -424,12 +425,21 @@ BOOLEAN kalCfgDataRead16(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Offset, OUT P
 	if (pu2Data == NULL)
 		return FALSE;
 
+	if (u4Offset + sizeof(unsigned short) >= CFG_FILE_WIFI_REC_SIZE)
+		return FALSE;
+
+	kalMemCopy(pu2Data, &g_aucNvram[u4Offset], sizeof(unsigned short));
+	return TRUE;
+
+
+#if 0
 	if (nvram_read(WIFI_NVRAM_FILE_NAME,
 		       (char *)pu2Data, sizeof(unsigned short), u4Offset) != sizeof(unsigned short)) {
 		return FALSE;
 	} else {
 		return TRUE;
 	}
+#endif
 }
 
 /*----------------------------------------------------------------------------*/
@@ -447,10 +457,17 @@ BOOLEAN kalCfgDataRead16(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Offset, OUT P
 /*----------------------------------------------------------------------------*/
 BOOLEAN kalCfgDataWrite16(IN P_GLUE_INFO_T prGlueInfo, UINT_32 u4Offset, UINT_16 u2Data)
 {
+	if (u4Offset + sizeof(unsigned short) >= CFG_FILE_WIFI_REC_SIZE)
+		return FALSE;
+
+	kalMemCopy(&g_aucNvram[u4Offset], &u2Data, sizeof(unsigned short));
+	return TRUE;
+#if 0
 	if (nvram_write(WIFI_NVRAM_FILE_NAME,
 			(char *)&u2Data, sizeof(unsigned short), u4Offset) != sizeof(unsigned short)) {
 		return FALSE;
 	} else {
 		return TRUE;
 	}
+#endif
 }

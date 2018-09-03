@@ -53,7 +53,7 @@
 #define NUM_SUPPORTED_OIDS	(sizeof(arWlanOidReqTable) / sizeof(WLAN_REQ_ENTRY))
 #define	CMD_OID_BUF_LENGTH	4096
 
-
+#define CMD_GET_WIFI_TYPE	"GET_WIFI_TYPE"
 /*******************************************************************************
 *                  F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
@@ -1421,6 +1421,45 @@ priv_set_struct(IN struct net_device *prNetDev,
 		status = priv_set_ndis(prNetDev, prNdisReq, &u4BufLen);
 		break;
 
+
+	case PRIV_CMD_GET_WIFI_TYPE:
+		{
+			int32_t i4ResultLen;
+
+			u4CmdLen = prIwReqData->data.length;
+			if (u4CmdLen >= CMD_OID_BUF_LENGTH) {
+				DBGLOG(REQ, ERROR,
+				       "u4CmdLen:%u >= CMD_OID_BUF_LENGTH:%d\n",
+				       u4CmdLen, CMD_OID_BUF_LENGTH);
+				return -EINVAL;
+			}
+
+			if (copy_from_user(&aucOidBuf[0],
+					   prIwReqData->data.pointer,
+					   u4CmdLen)) {
+				DBGLOG(REQ, ERROR, "copy_from_user fail\n");
+				return -EFAULT;
+			}
+
+			aucOidBuf[u4CmdLen] = 0;
+			i4ResultLen = priv_driver_cmds(prNetDev, aucOidBuf,
+						       u4CmdLen);
+			if (i4ResultLen > 1) {
+				if (copy_to_user(prIwReqData->data.pointer,
+						 &aucOidBuf[0], i4ResultLen)) {
+					DBGLOG(REQ, ERROR,
+					       "copy_to_user fail\n");
+					return -EFAULT;
+				}
+				prIwReqData->data.length = i4ResultLen;
+			} else {
+				DBGLOG(REQ, ERROR,
+				       "i4ResultLen:%d <= 1\n", i4ResultLen);
+				return -EFAULT;
+			}
+
+		}
+		break;
 	default:
 		return -EOPNOTSUPP;
 	}
@@ -3084,6 +3123,48 @@ int priv_driver_set_suspend_mode(IN struct net_device *prNetDev, IN char *pcComm
 	return 0;
 }
 
+static int priv_driver_get_wifi_type(IN struct net_device *prNetDev,
+				     IN char *pcCommand, IN int i4TotalLen)
+{
+	struct PARAM_GET_WIFI_TYPE rParamGetWifiType;
+	P_GLUE_INFO_T prGlueInfo = NULL;
+	uint32_t rStatus;
+	uint32_t u4BytesWritten = 0;
+
+	ASSERT(prNetDev);
+	if (GLUE_CHK_PR2(prNetDev, pcCommand) == FALSE) {
+		DBGLOG(REQ, ERROR, "GLUE_CHK_PR2 fail\n");
+		return -1;
+	}
+
+	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prNetDev));
+
+	rParamGetWifiType.prNetDev = prNetDev;
+
+	rStatus = kalIoctl(prGlueInfo,
+			   wlanoidGetWifiType,
+			   (void *)&rParamGetWifiType,
+			   sizeof(void *),
+			   FALSE,
+			   FALSE,
+			   FALSE,
+			   &u4BytesWritten);
+
+	if (rStatus == WLAN_STATUS_SUCCESS) {
+		if (u4BytesWritten > 0) {
+			if (u4BytesWritten > i4TotalLen)
+				u4BytesWritten = i4TotalLen;
+			kalMemCopy(pcCommand, rParamGetWifiType.arWifiTypeName,
+				   u4BytesWritten);
+		}
+	} else {
+		DBGLOG(REQ, ERROR, "rStatus=%x\n", rStatus);
+		u4BytesWritten = 0;
+	}
+
+	return (int)u4BytesWritten;
+}
+
 #if CFG_SUPPORT_SNIFFER
 int priv_driver_set_monitor(IN struct net_device *prNetDev, IN char *pcCommand, IN int i4TotalLen)
 {
@@ -3243,15 +3324,47 @@ int priv_driver_set_monitor(IN struct net_device *prNetDev, IN char *pcCommand, 
 #define CMD_BATCH_STOP          "WLS_BATCHING STOP"
 #endif
 
+typedef int(*PRIV_CMD_FUNCTION) (
+		IN struct net_device *prNetDev,
+		IN char *pcCommand,
+		IN int i4TotalLen);
+
+struct PRIV_CMD_HANDLER {
+	uint8_t *pcCmdStr;
+	PRIV_CMD_FUNCTION pfHandler;
+};
+
+struct PRIV_CMD_HANDLER priv_cmd_handlers[] = {
+	{CMD_GET_WIFI_TYPE, priv_driver_get_wifi_type},
+};
+
 INT_32 priv_driver_cmds(IN struct net_device *prNetDev, IN PCHAR pcCommand, IN INT_32 i4TotalLen)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	INT_32 i4BytesWritten = 0;
 	INT_32 i4CmdFound = 0;
+	int i;
 
 	if (GLUE_CHK_PR2(prNetDev, pcCommand) == FALSE)
 		return -1;
 	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prNetDev));
+
+	for (i = 0; i < sizeof(priv_cmd_handlers) / sizeof(struct
+			PRIV_CMD_HANDLER); i++) {
+		if (strnicmp(pcCommand,
+				priv_cmd_handlers[i].pcCmdStr,
+				strlen(priv_cmd_handlers[i].pcCmdStr)) == 0) {
+
+			if (priv_cmd_handlers[i].pfHandler != NULL) {
+				i4BytesWritten =
+					priv_cmd_handlers[i].pfHandler(
+					prNetDev,
+					pcCommand,
+					i4TotalLen);
+			}
+			i4CmdFound = 1;
+		}
+	}
 
 	if (i4CmdFound == 0) {
 		i4CmdFound = 1;
@@ -3467,3 +3580,4 @@ exit:
 
 	return ret;
 }				/* priv_support_driver_cmd */
+

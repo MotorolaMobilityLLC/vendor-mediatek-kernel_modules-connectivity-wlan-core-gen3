@@ -39,7 +39,7 @@
 #include "precomp.h"
 #include "gl_rst.h"
 
-#if CFG_CHIP_RESET_SUPPORT
+
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -52,6 +52,9 @@
 */
 static BOOLEAN fgResetTriggered = FALSE;
 static BOOLEAN fgIsResetting = FALSE;
+
+#if CFG_CHIP_RESET_SUPPORT
+
 /*******************************************************************************
 *                           P R I V A T E   D A T A
 ********************************************************************************
@@ -65,9 +68,9 @@ static void mtk_wifi_trigger_reset(struct work_struct *work);
 *                   F U N C T I O N   D E C L A R A T I O N S
 ********************************************************************************
 */
-static void *glResetCallback(ENUM_WMTDRV_TYPE_T eSrcType,
-			     ENUM_WMTDRV_TYPE_T eDstType,
-			     ENUM_WMTMSG_TYPE_T eMsgType, void *prMsgBody, unsigned int u4MsgLength);
+static void *glResetCallback(enum ENUM_WMTDRV_TYPE eSrcType,
+			     enum ENUM_WMTDRV_TYPE eDstType,
+			     enum ENUM_WMTMSG_TYPE eMsgType, void *prMsgBody, unsigned int u4MsgLength);
 
 /*******************************************************************************
 *                              F U N C T I O N S
@@ -123,14 +126,14 @@ VOID glResetUninit(VOID)
  * @retval
  */
 /*----------------------------------------------------------------------------*/
-static void *glResetCallback(ENUM_WMTDRV_TYPE_T eSrcType,
-			     ENUM_WMTDRV_TYPE_T eDstType,
-			     ENUM_WMTMSG_TYPE_T eMsgType, void *prMsgBody, unsigned int u4MsgLength)
+static void *glResetCallback(enum ENUM_WMTDRV_TYPE eSrcType,
+			     enum ENUM_WMTDRV_TYPE eDstType,
+			     enum ENUM_WMTMSG_TYPE eMsgType, void *prMsgBody, unsigned int u4MsgLength)
 {
 	switch (eMsgType) {
 	case WMTMSG_TYPE_RESET:
-		if (u4MsgLength == sizeof(ENUM_WMTRSTMSG_TYPE_T)) {
-			P_ENUM_WMTRSTMSG_TYPE_T prRstMsg = (P_ENUM_WMTRSTMSG_TYPE_T) prMsgBody;
+		if (u4MsgLength == sizeof(enum ENUM_WMTRSTMSG_TYPE)) {
+			enum ENUM_WMTRSTMSG_TYPE *prRstMsg = (enum ENUM_WMTRSTMSG_TYPE *) prMsgBody;
 
 			switch (*prRstMsg) {
 			case WMTRSTMSG_RESET_START:
@@ -199,25 +202,7 @@ VOID glSendResetRequest(VOID)
 	/* WMT thread would trigger whole chip reset itself */
 }
 
-/*----------------------------------------------------------------------------*/
-/*!
- * @brief This routine is called for checking if connectivity chip is resetting
- *
- * @param   None
- *
- * @retval  TRUE
- *          FALSE
- */
-/*----------------------------------------------------------------------------*/
-inline BOOLEAN kalIsResetting(VOID)
-{
-	return fgIsResetting;
-}
 
-inline BOOLEAN kalIsResetTriggered(VOID)
-{
-	return fgResetTriggered;
-}
 
 static void mtk_wifi_trigger_reset(struct work_struct *work)
 {
@@ -278,6 +263,25 @@ BOOLEAN glResetTrigger(P_ADAPTER_T prAdapter, UINT_32 u4RstFlag, const PUINT_8 p
 }
 
 #endif /* CFG_CHIP_RESET_SUPPORT */
+/*----------------------------------------------------------------------------*/
+/*!
+ * @brief This routine is called for checking if connectivity chip is resetting
+ *
+ * @param   None
+ *
+ * @retval  TRUE
+ *          FALSE
+ */
+/*----------------------------------------------------------------------------*/
+inline BOOLEAN kalIsResetting(VOID)
+{
+	return fgIsResetting;
+}
+
+inline BOOLEAN kalIsResetTriggered(VOID)
+{
+	return fgResetTriggered;
+}
 
 UINT32 wlanPollingCpupcr(UINT32 u4Times, UINT32 u4Sleep)
 {

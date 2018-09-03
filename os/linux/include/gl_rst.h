@@ -35,7 +35,6 @@
 ********************************************************************************
 */
 #include "gl_typedef.h"
-#include "wmt_exp.h"
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -61,15 +60,80 @@ typedef struct _RESET_STRUCT_T {
 	UINT_32 rst_trigger_flag;
 } RESET_STRUCT_T;
 
+#if CFG_CHIP_RESET_SUPPORT
+
+/* duplicated from wmt_exp.h for better driver isolation */
+enum ENUM_WMTDRV_TYPE {
+	WMTDRV_TYPE_BT = 0,
+	WMTDRV_TYPE_FM = 1,
+	WMTDRV_TYPE_GPS = 2,
+	WMTDRV_TYPE_WIFI = 3,
+	WMTDRV_TYPE_WMT = 4,
+	WMTDRV_TYPE_ANT = 5,
+	WMTDRV_TYPE_STP = 6,
+	WMTDRV_TYPE_SDIO1 = 7,
+	WMTDRV_TYPE_SDIO2 = 8,
+	WMTDRV_TYPE_LPBK = 9,
+	WMTDRV_TYPE_COREDUMP = 10,
+	WMTDRV_TYPE_MAX
+};
+
+enum ENUM_WMTMSG_TYPE {
+	WMTMSG_TYPE_POWER_ON = 0,
+	WMTMSG_TYPE_POWER_OFF = 1,
+	WMTMSG_TYPE_RESET = 2,
+	WMTMSG_TYPE_STP_RDY = 3,
+	WMTMSG_TYPE_HW_FUNC_ON = 4,
+	WMTMSG_TYPE_MAX
+};
+
+typedef VOID(*PF_WMT_CB) (enum ENUM_WMTDRV_TYPE,	/* Source driver type */
+			  enum ENUM_WMTDRV_TYPE,	/* Destination driver type */
+			  enum ENUM_WMTMSG_TYPE,	/* Message type */
+				/* READ-ONLY buffer. Buffer is allocated and freed by WMT_drv.
+				 * Client can't touch this buffer after this function return.
+				 */
+			  PVOID,
+			  UINT32	/* Buffer size in unit of byte */
+			  );
+
+enum ENUM_WMTRSTMSG_TYPE {
+	WMTRSTMSG_RESET_START = 0x0,
+	WMTRSTMSG_RESET_END = 0x1,
+	WMTRSTMSG_RESET_END_FAIL = 0x2,
+	WMTRSTMSG_RESET_MAX,
+	WMTRSTMSG_RESET_INVALID = 0xff
+};
+#endif
+
+struct MTK_WCN_WMT_WLAN_CB_INFO {
+		INT_32(*wlan_probe_cb) (VOID);
+		INT_32(*wlan_remove_cb) (VOID);
+		INT_32(*wlan_bus_cnt_get_cb) (VOID);
+		INT_32(*wlan_bus_cnt_clr_cb) (VOID);
+		INT_32(*wlan_emi_mpu_set_protection_cb) (BOOLEAN);
+};
+
 /*******************************************************************************
 *                    E X T E R N A L   F U N C T I O N S
 ********************************************************************************
 */
 
 #if CFG_CHIP_RESET_SUPPORT
-extern int wifi_reset_start(void);
+extern int wifi_reset_start(VOID);
 extern int wifi_reset_end(ENUM_RESET_STATUS_T);
+extern INT_32 mtk_wcn_wmt_msgcb_unreg(enum ENUM_WMTDRV_TYPE eType);
+extern INT_32 mtk_wcn_wmt_msgcb_reg(enum ENUM_WMTDRV_TYPE eType, PF_WMT_CB pCb);
+extern INT_32 mtk_wcn_set_connsys_power_off_flag(INT_32 value);
+extern INT_32 mtk_wcn_wmt_assert_timeout(enum ENUM_WMTDRV_TYPE type, UINT32 reason, INT_32 timeout);
+extern INT_32 mtk_wcn_wmt_do_reset(enum ENUM_WMTDRV_TYPE type);
 #endif
+
+extern UINT32 wmt_plat_read_cpupcr(VOID);
+extern INT_32 mtk_wcn_wmt_wlan_reg(struct MTK_WCN_WMT_WLAN_CB_INFO *pWmtWlanCbInfo);
+extern INT_32 mtk_wcn_wmt_wlan_unreg(VOID);
+
+
 
 /*******************************************************************************
 *                            P U B L I C   D A T A

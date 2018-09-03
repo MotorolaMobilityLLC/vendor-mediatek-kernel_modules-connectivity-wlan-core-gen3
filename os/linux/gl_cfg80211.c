@@ -90,9 +90,15 @@
  *         others:  failure
  */
 /*----------------------------------------------------------------------------*/
+#if (KERNEL_VERSION(4, 12, 0) <= LINUX_VERSION_CODE)
+int
+mtk_cfg80211_change_iface(struct wiphy *wiphy,
+			  struct net_device *ndev, enum nl80211_iftype type, struct vif_params *params)
+#else
 int
 mtk_cfg80211_change_iface(struct wiphy *wiphy,
 			  struct net_device *ndev, enum nl80211_iftype type, u32 *flags, struct vif_params *params)
+#endif
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
@@ -374,12 +380,15 @@ int mtk_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev, const
 	kalMemZero(arBssid, MAC_ADDR_LEN);
 	wlanQueryInformation(prGlueInfo->prAdapter, wlanoidQueryBssid, &arBssid[0], sizeof(arBssid), &u4BufLen);
 
-	/* 1. check BSSID */
-	if (UNEQUAL_MAC_ADDR(arBssid, mac)) {
+	/* 1. check MAC address */
+	/* Should be currently connected BSSID or device itself
+	 * wificond will bring the MAC address of device itself to retrieve TX/RX statistics
+	 */
+	if (UNEQUAL_MAC_ADDR(arBssid, mac) && UNEQUAL_MAC_ADDR(ndev->dev_addr, mac)) {
 		/* wrong MAC address */
 		DBGLOG(REQ, WARN,
-		       "incorrect BSSID: [" MACSTR "] currently connected BSSID[" MACSTR "]\n",
-			MAC2STR(mac), MAC2STR(arBssid));
+		       "Incorrect MAC addr[" MACSTR "], device[" MACSTR "], currently connected BSSID[" MACSTR "]\n",
+		       MAC2STR(mac), MAC2STR(ndev->dev_addr), MAC2STR(arBssid));
 		return -ENOENT;
 	}
 
@@ -423,10 +432,12 @@ int mtk_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev, const
 	sinfo->filled |= STATION_INFO_SIGNAL;
 #endif
 
-	if ((rStatus != WLAN_STATUS_SUCCESS) || (i4Rssi == PARAM_WHQL_RSSI_MIN_DBM)
-	    || (i4Rssi == PARAM_WHQL_RSSI_MAX_DBM)) {
-		DBGLOG(REQ, WARN, "last rssi\n");
-		sinfo->signal = prGlueInfo->i4RssiCache;
+	if (rStatus != WLAN_STATUS_SUCCESS) {
+		DBGLOG(REQ, WARN, "Query RSSI failed, use last RSSI %d\n", prGlueInfo->i4RssiCache);
+		sinfo->signal = prGlueInfo->i4RssiCache ? prGlueInfo->i4RssiCache : PARAM_WHQL_RSSI_INITIAL_DBM;
+	} else if (i4Rssi == PARAM_WHQL_RSSI_MIN_DBM || i4Rssi == PARAM_WHQL_RSSI_MAX_DBM) {
+		DBGLOG(REQ, WARN, "RSSI abnormal, use last RSSI %d\n", prGlueInfo->i4RssiCache);
+		sinfo->signal = prGlueInfo->i4RssiCache ? prGlueInfo->i4RssiCache : i4Rssi;
 	} else {
 		sinfo->signal = i4Rssi;	/* dBm */
 		prGlueInfo->i4RssiCache = i4Rssi;
@@ -639,11 +650,11 @@ int mtk_cfg80211_get_channel_info(P_GLUE_INFO_T prGlueInfo, struct cfg80211_scan
 		DBGLOG(REQ, TRACE, "partial scan set channel band=%d\n", prchannelinfo->band);
 
 		switch (prchannelinfo->band) {
-		case NL80211_BAND_2GHZ:
+		case KAL_BAND_2GHZ:
 			prPartialScanChannel->arChnlInfoList[i].eBand = BAND_2G4;
 			break;
 
-		case NL80211_BAND_5GHZ:
+		case KAL_BAND_5GHZ:
 			prPartialScanChannel->arChnlInfoList[i].eBand = BAND_5G;
 			break;
 
@@ -1690,10 +1701,10 @@ int mtk_cfg80211_remain_on_channel(struct wiphy *wiphy,
 		prMsgChnlReq->ucChannelNum = nicFreq2ChannelNum(chan->center_freq * 1000);
 
 		switch (chan->band) {
-		case NL80211_BAND_2GHZ:
+		case KAL_BAND_2GHZ:
 			prMsgChnlReq->eBand = BAND_2G4;
 			break;
-		case NL80211_BAND_5GHZ:
+		case KAL_BAND_5GHZ:
 			prMsgChnlReq->eBand = BAND_5G;
 			break;
 		default:
@@ -2493,7 +2504,11 @@ mtk_cfg80211_sched_scan_start(IN struct wiphy *wiphy,
 	return 0;
 }
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0))
 int mtk_cfg80211_sched_scan_stop(IN struct wiphy *wiphy, IN struct net_device *ndev)
+#else
+int mtk_cfg80211_sched_scan_stop(IN struct wiphy *wiphy, IN struct net_device *ndev, IN UINT_64 reqid)
+#endif
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	WLAN_STATUS rStatus;

@@ -513,6 +513,9 @@ struct _AIS_SPECIFIC_BSS_INFO_T {
 	struct LINK_MGMT  rNeighborApList;
 	OS_SYSTIME rNeiApRcvTime;
 	UINT_32 u4NeiApValidInterval;
+#if CFG_SUPPORT_DFS
+	struct CHANNEL_SWITCH_ANNOUNCE_PARAMS rCsaParam;
+#endif
 };
 
 struct _BOW_SPECIFIC_BSS_INFO_T {
@@ -658,6 +661,8 @@ typedef struct _WIFI_VAR_T {
 	UINT_8 ucStaVht;
 	UINT_8 ucApHt;
 	UINT_8 ucApVht;
+	UINT_16 u2ApMaxIdlePeriod;
+	UINT_8 ucApIdleOption;
 	UINT_8 ucP2pGoHt;
 	UINT_8 ucP2pGoVht;
 	UINT_8 ucP2pGcHt;
@@ -933,7 +938,11 @@ struct _ADAPTER_T {
 
 	UINT_8 ucCmdSeqNum;
 	UINT_8 ucTxSeqNum;
+#if CONFIG_ARM64
+	ULONG au8PidPool[WTBL_SIZE][2];
+#else
 	UINT_64 au8PidPool[WTBL_SIZE][2]; /* PID bit map for each wlan-index. PID range: 1 ~ 127 */
+#endif
 
 #if 1				/* CFG_SUPPORT_WAPI */
 	BOOLEAN fgUseWapi;

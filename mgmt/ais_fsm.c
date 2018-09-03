@@ -1141,6 +1141,7 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 								  prAisFsmInfo->rJoinReqTime,
 								  SEC_TO_SYSTIME(AIS_JOIN_TIMEOUT))) {
 						eNextState = AIS_STATE_JOIN_FAILURE;
+						prAisFsmInfo->prTargetBssDesc = NULL;
 						fgIsTransition = TRUE;
 						break;
 					}
@@ -2015,7 +2016,8 @@ VOID AisFsmHandlePendingScan(IN P_ADAPTER_T prAdapter,
 	    (aisFsmIsRequestPending(prAdapter, AIS_REQUEST_SCAN, FALSE) == FALSE))
 		return;
 
-	aisFsmIsRequestPending(prAdapter, AIS_REQUEST_SCAN, TRUE);
+	if (aisFsmIsRequestPending(prAdapter, AIS_REQUEST_SCAN, TRUE) == FALSE)
+		DBGLOG(AIS, WARN, "Not find AIS_REQUEST_SCAN from pending req list\n");
 	if (prAdapter->fgAbortScan) {
 		DBGLOG(AIS, INFO,
 		       "Remove pending scan, no need insert new scan req\n");
@@ -2798,6 +2800,7 @@ enum _ENUM_AIS_STATE_T aisFsmJoinCompleteAction(IN struct _ADAPTER_T *prAdapter,
 							  SEC_TO_SYSTIME(AIS_JOIN_TIMEOUT))) {
 					/* 4.a temrminate join operation */
 					eNextState = AIS_STATE_JOIN_FAILURE;
+					prBssDesc->u2JoinStatus = STATUS_CODE_AUTH_TIMEOUT;
 				} else if (prAisFsmInfo->rJoinReqTime != 0
 					&& prBssDesc->ucJoinFailureCount >= SCN_BSS_JOIN_FAIL_THRESHOLD
 					&& prBssDesc->u2JoinStatus) {
@@ -3969,6 +3972,7 @@ VOID aisFsmRunEventJoinTimeout(IN P_ADAPTER_T prAdapter, ULONG ulParamPtr)
 		} else {
 			/* 3.4 Retreat to AIS_STATE_JOIN_FAILURE to terminate join operation */
 			eNextState = AIS_STATE_JOIN_FAILURE;
+			prAisFsmInfo->prTargetBssDesc->u2JoinStatus = STATUS_CODE_AUTH_TIMEOUT;
 		}
 
 		break;

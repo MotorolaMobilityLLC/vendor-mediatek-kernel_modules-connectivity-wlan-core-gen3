@@ -1639,6 +1639,7 @@ WLAN_STATUS nicTxMsduQueue(IN P_ADAPTER_T prAdapter, UINT_8 ucPortIdx, P_QUE_T p
 	P_TX_CTRL_T prTxCtrl;
 	QUE_T rFreeQueue;
 	P_QUE_T prFreeQueue;
+	PUINT_8 pucAheadBuf = NULL;
 #if ((CFG_SDIO_TX_AGG == 1) && (CFG_SDIO_TX_AGG_LIMIT != 0))
 	BOOLEAN fgWriteNow;
 #endif
@@ -1700,6 +1701,18 @@ WLAN_STATUS nicTxMsduQueue(IN P_ADAPTER_T prAdapter, UINT_8 ucPortIdx, P_QUE_T p
 			GLUE_DEC_REF_CNT(prTxCtrl->i4TxMgmtPendingNum);
 		} else if (prMsduInfo->eSrc == TX_PACKET_OS) {
 			wlanTxProfilingTagMsdu(prAdapter, prMsduInfo, TX_PROF_TAG_DRV_DEQUE);
+			if (prMsduInfo->pfTxDoneHandler) {
+				/* Record history */
+				pucAheadBuf = ((struct sk_buff *)prMsduInfo->prPacket)->data;
+				prMsduInfo->u2CookieLen = ((struct sk_buff *)prMsduInfo->prPacket)->len;
+				DBGLOG(TX, INFO, "u2CookieLen is %u\n", prMsduInfo->u2CookieLen);
+				prMsduInfo->pucCookie = kalMemAlloc(prMsduInfo->u2CookieLen, VIR_MEM_TYPE);
+				if (prMsduInfo->pucCookie != NULL)
+					kalMemCopy(prMsduInfo->pucCookie, pucAheadBuf, prMsduInfo->u2CookieLen);
+				else
+					DBGLOG(TX, INFO, "prMsduInfo->pucCookie Alloc failed\n");
+				/* Record history */
+			}
 			kalSendComplete(prAdapter->prGlueInfo, prNativePacket, WLAN_STATUS_SUCCESS);
 			prMsduInfo->prPacket = NULL;
 		} else if (prMsduInfo->eSrc == TX_PACKET_FORWARDING) {
@@ -2191,6 +2204,8 @@ VOID nicTxReturnMsduInfo(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfoLi
 		}
 
 		/* Reset MSDU_INFO fields */
+		if (prMsduInfo->pucCookie)
+			kalMemFree(prMsduInfo->pucCookie, VIR_MEM_TYPE, prMsduInfo->u2CookieLen);
 		kalMemZero(prMsduInfo, sizeof(MSDU_INFO_T));
 
 		KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_TX_MSDU_INFO_LIST);
@@ -2252,9 +2267,8 @@ BOOLEAN nicTxFillMsduInfo(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo,
 			prMsduInfo->ucTxSeqNum = GLUE_GET_PKT_SEQ_NO(prPacket);
 		} else if (GLUE_TEST_PKT_FLAG(prPacket, ENUM_PKT_DNS)) {
 			prMsduInfo->pfTxDoneHandler = wlanDnsTxDone;
-
 			prMsduInfo->ucTxSeqNum = GLUE_GET_PKT_SEQ_NO(prPacket);
-			}
+		}
 		if (GLUE_TEST_PKT_FLAG(prPacket, ENUM_PKT_DHCP) || GLUE_TEST_PKT_FLAG(prPacket, ENUM_PKT_ARP)) {
 			prMsduInfo->ucUserPriority = 6; /* use VO priority */
 			prMsduInfo->ucDhcpArpFlag = 1;
@@ -2543,7 +2557,7 @@ VOID nicTxProcessTxDoneEvent(IN P_ADAPTER_T prAdapter, IN P_WIFI_EVENT_T prEvent
 		return;
 	}
 
-	clear_bit(prTxDone->ucPacketSeq, &prAdapter->au8PidPool[prTxDone->ucWlanIndex]);
+	clear_bit(prTxDone->ucPacketSeq, &prAdapter->au8PidPool[prTxDone->ucWlanIndex][0]);
 
 	if (prTxDone->ucFlag & BIT(0)) {
 		/* Tx Done with advanced info */
@@ -3232,7 +3246,11 @@ UINT_8 nicTxAssignPID(IN P_ADAPTER_T prAdapter, IN UINT_8 ucWlanIndex)
 {
 	UINT_8 ucRetval = 0;
 	UINT_8 ucZeroBits = 0;
+#if CONFIG_ARM64
+	PULONG pu8PidPool;
+#else
 	PUINT_64 pu8PidPool;
+#endif
 	/* Bit 7 represents data frame, don't assign PID directly */
 	BOOLEAN fgCanAssign = !(ucWlanIndex & BIT(7));
 
@@ -3245,7 +3263,7 @@ UINT_8 nicTxAssignPID(IN P_ADAPTER_T prAdapter, IN UINT_8 ucWlanIndex)
 		return 0;
 	}
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_TXING_MGMT_LIST);
-	pu8PidPool = prAdapter->au8PidPool[ucWlanIndex];
+	pu8PidPool = &prAdapter->au8PidPool[ucWlanIndex][0];
 	if (!fgCanAssign) {
 		/* Because we always assign PID from the lowest one, if the highest reserved bits are not set,
 		** means left PIDs are enough for data frame; otherwise, need to count left PID number in slow path.
@@ -3261,7 +3279,7 @@ UINT_8 nicTxAssignPID(IN P_ADAPTER_T prAdapter, IN UINT_8 ucWlanIndex)
 			}
 			ucRetval = 0;
 			fgCanAssign = (ucZeroBits > NIC_TX_DESC_PID_RESERVED_FOR_MGMT);
-			DBGLOG(TX, INFO, "Slow path to check can assign %d\n", fgCanAssign);
+			DBGLOG(TX, TRACE, "Slow path to check can assign %d\n", fgCanAssign);
 		} else /* left PIDs are enough, assign directly */
 			fgCanAssign = TRUE;
 	}

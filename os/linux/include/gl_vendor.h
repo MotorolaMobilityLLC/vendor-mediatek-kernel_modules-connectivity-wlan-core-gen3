@@ -364,6 +364,13 @@ extern UINT_8 keyStructBuf[100];	/* add/remove key shared buffer */
 #define NLA_PUT_U64(skb, attrtype, value) \
 	NLA_PUT_TYPE(skb, NLA_PUT_DATE_U64, attrtype, value)
 
+#if (KERNEL_VERSION(4, 12, 0) <= LINUX_VERSION_CODE)
+#define NLA_PARSE_NESTED(nlattr, maxtype, nla, policy)	\
+	nla_parse_nested(nlattr, maxtype, nla, policy, NULL)
+#else
+#define NLA_PARSE_NESTED(nlattr, maxtype, nla, policy)	\
+	nla_parse_nested(nlattr, maxtype, nla, policy)
+#endif
 #endif
 
 /*******************************************************************************
@@ -821,4 +828,7 @@ int mtk_cfg80211_vendor_config_roaming(struct wiphy *wiphy,
 
 int mtk_cfg80211_vendor_enable_roaming(struct wiphy *wiphy,
 				       struct wireless_dev *wdev, const void *data, int data_len);
+int mtk_cfg80211_vendor_get_supported_feature_set(
+	struct wiphy *wiphy, struct wireless_dev *wdev,
+	const void *data, int data_len);
 #endif /* _GL_VENDOR_H */

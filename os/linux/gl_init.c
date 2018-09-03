@@ -49,12 +49,18 @@
 #ifndef MTK_WCN_BUILT_IN_DRIVER
 #include "connectivity_build_in_adapter.h"
 #endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 11, 0))
+#include "linux/sched/types.h"
+#endif
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
 */
 /* #define MAX_IOREQ_NUM   10 */
 static struct wireless_dev *gprWdev;
+BOOLEAN fgNvramAvailable;
+UINT_8 g_aucNvram[CFG_FILE_WIFI_REC_SIZE];
+
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -75,7 +81,7 @@ typedef struct _WLANDEV_INFO_T {
 
 #define CHAN2G(_channel, _freq, _flags)         \
 {                                           \
-	.band               = NL80211_BAND_2GHZ,  \
+	.band               = KAL_BAND_2GHZ,  \
 	.center_freq        = (_freq),              \
 	.hw_value           = (_channel),           \
 	.flags              = (_flags),             \
@@ -102,7 +108,7 @@ static struct ieee80211_channel mtk_2ghz_channels[] = {
 
 #define CHAN5G(_channel, _flags)                    \
 {                                               \
-	.band               = NL80211_BAND_5GHZ,      \
+	.band               = KAL_BAND_5GHZ,      \
 	.center_freq        = (((_channel >= 182) && (_channel <= 196)) ? \
 				 (4000 + (5 * (_channel))) : (5000 + (5 * (_channel)))),  \
 	.hw_value           = (_channel),               \
@@ -112,26 +118,39 @@ static struct ieee80211_channel mtk_2ghz_channels[] = {
 }
 
 static struct ieee80211_channel mtk_5ghz_channels[] = {
+	/* UNII-1 */
 	CHAN5G(34, 0), CHAN5G(36, 0),
 	CHAN5G(38, 0), CHAN5G(40, 0),
 	CHAN5G(42, 0), CHAN5G(44, 0),
 	CHAN5G(46, 0), CHAN5G(48, 0),
-	CHAN5G(52, 0), CHAN5G(56, 0),
-	CHAN5G(60, 0), CHAN5G(64, 0),
-	CHAN5G(100, 0), CHAN5G(104, 0),
-	CHAN5G(108, 0), CHAN5G(112, 0),
-	CHAN5G(116, 0), CHAN5G(120, 0),
-	CHAN5G(124, 0), CHAN5G(128, 0),
-	CHAN5G(132, 0), CHAN5G(136, 0),
-	CHAN5G(140, 0), CHAN5G(144, 0),
-	CHAN5G(149, 0), CHAN5G(153, 0),
-	CHAN5G(157, 0), CHAN5G(161, 0),
-	CHAN5G(165, 0), CHAN5G(169, 0),
-	CHAN5G(173, 0), CHAN5G(184, 0),
-	CHAN5G(188, 0), CHAN5G(192, 0),
-	CHAN5G(196, 0), CHAN5G(200, 0),
-	CHAN5G(204, 0), CHAN5G(208, 0),
-	CHAN5G(212, 0), CHAN5G(216, 0),
+	/* UNII-2 */
+	CHAN5G(52, IEEE80211_CHAN_RADAR),
+	CHAN5G(56, IEEE80211_CHAN_RADAR),
+	CHAN5G(60, IEEE80211_CHAN_RADAR),
+	CHAN5G(64, IEEE80211_CHAN_RADAR),
+	/* UNII-2e */
+	CHAN5G(100, IEEE80211_CHAN_RADAR),
+	CHAN5G(104, IEEE80211_CHAN_RADAR),
+	CHAN5G(108, IEEE80211_CHAN_RADAR),
+	CHAN5G(112, IEEE80211_CHAN_RADAR),
+	CHAN5G(116, IEEE80211_CHAN_RADAR),
+	CHAN5G(120, IEEE80211_CHAN_RADAR),
+	CHAN5G(124, IEEE80211_CHAN_RADAR),
+	CHAN5G(128, IEEE80211_CHAN_RADAR),
+	CHAN5G(132, IEEE80211_CHAN_RADAR),
+	CHAN5G(136, IEEE80211_CHAN_RADAR),
+	CHAN5G(140, IEEE80211_CHAN_RADAR),
+	CHAN5G(144, IEEE80211_CHAN_RADAR),
+	/* UNII-3 */
+	CHAN5G(149, 0),
+	CHAN5G(153, 0), CHAN5G(157, 0),
+	CHAN5G(161, 0), CHAN5G(165, 0),
+	CHAN5G(169, 0), CHAN5G(173, 0),
+	CHAN5G(184, 0), CHAN5G(188, 0),
+	CHAN5G(192, 0), CHAN5G(196, 0),
+	CHAN5G(200, 0), CHAN5G(204, 0),
+	CHAN5G(208, 0), CHAN5G(212, 0),
+	CHAN5G(216, 0),
 };
 
 #define RATETAB_ENT(_rate, _rateid, _flags) \
@@ -186,7 +205,7 @@ static struct ieee80211_rate mtk_rates[] = {
 * Public for both legacy Wi-Fi and P2P to access
 **********************************************************/
 struct ieee80211_supported_band mtk_band_2ghz = {
-	.band = NL80211_BAND_2GHZ,
+	.band = KAL_BAND_2GHZ,
 	.channels = mtk_2ghz_channels,
 	.n_channels = ARRAY_SIZE(mtk_2ghz_channels),
 	.bitrates = mtk_g_rates,
@@ -196,7 +215,7 @@ struct ieee80211_supported_band mtk_band_2ghz = {
 
 /* public for both Legacy Wi-Fi / P2P access */
 struct ieee80211_supported_band mtk_band_5ghz = {
-	.band = NL80211_BAND_5GHZ,
+	.band = KAL_BAND_5GHZ,
 	.channels = mtk_5ghz_channels,
 	.n_channels = ARRAY_SIZE(mtk_5ghz_channels),
 	.bitrates = mtk_a_rates,
@@ -379,7 +398,6 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = mtk_cfg80211_vendor_get_gscan_result
 	},
-#endif
 	{
 		{
 			.vendor_id = GOOGLE_OUI,
@@ -396,6 +414,7 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = mtk_cfg80211_vendor_set_hotlist
 	},
+#endif
 	/* RTT */
 	{
 		{
@@ -447,6 +466,16 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 		},
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = mtk_cfg80211_vendor_set_roaming_policy
+	},
+	/* Get Supported Feature Set */
+	{
+		{
+			.vendor_id = GOOGLE_OUI,
+			.subcmd = WIFI_SUBCMD_GET_FEATURE_SET
+		},
+		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
+				WIPHY_VENDOR_CMD_NEED_NETDEV,
+		.doit = mtk_cfg80211_vendor_get_supported_feature_set
 	},
 };
 
@@ -606,9 +635,14 @@ static void glLoadNvram(IN P_GLUE_INFO_T prGlueInfo, OUT P_REG_INFO_T prRegInfo)
 	if ((!prGlueInfo) || (!prRegInfo))
 		return;
 
-	if (kalCfgDataRead16(prGlueInfo, sizeof(WIFI_CFG_PARAM_STRUCT) - sizeof(UINT_16), (PUINT_16) aucTmp) == TRUE) {
-		prGlueInfo->fgNvramAvailable = TRUE;
+	DBGLOG(INIT, INFO, "fgNvramAvailable = %u\n", fgNvramAvailable);
+	prGlueInfo->fgNvramAvailable = fgNvramAvailable;
+	if (!prGlueInfo->fgNvramAvailable) {
+		DBGLOG(INIT, WARN, "Nvram not available\n");
+		return;
+	}
 
+	do {
 		/* load MAC Address */
 		for (i = 0; i < PARAM_MAC_ADDR_LEN; i += sizeof(UINT_16)) {
 			kalCfgDataRead16(prGlueInfo,
@@ -714,10 +748,7 @@ static void glLoadNvram(IN P_GLUE_INFO_T prGlueInfo, OUT P_REG_INFO_T prRegInfo)
 		}
 		prRegInfo->prNvramSettings = (P_WIFI_CFG_PARAM_STRUCT)&prRegInfo->aucNvram;
 #endif
-	} else {
-		DBGLOG(INIT, INFO, "glLoadNvram fail\n");
-		prGlueInfo->fgNvramAvailable = FALSE;
-	}
+	} while (FALSE);
 
 }
 
@@ -984,7 +1015,11 @@ VOID wlanSchedScanStoppedWorkQueue(struct work_struct *work)
 
 	/* 2. indication to cfg80211 */
 	/* 20150205 change cfg80211_sched_scan_stopped to work queue due to sched_scan_mtx dead lock issue */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0))
 	cfg80211_sched_scan_stopped(priv_to_wiphy(prGlueInfo));
+#else
+	cfg80211_sched_scan_stopped(priv_to_wiphy(prGlueInfo), 0);
+#endif
 	DBGLOG(SCN, INFO,
 	       "cfg80211_sched_scan_stopped event send done WorkQueue thread return from wlanSchedScanStoppedWorkQueue\n");
 	return;
@@ -1333,6 +1368,10 @@ VOID wlanUpdateChannelTable(P_GLUE_INFO_T prGlueInfo)
 				if (mtk_5ghz_channels[j].hw_value == aucChannelList[i].ucChannelNum) {
 					mtk_5ghz_channels[j].flags &= ~IEEE80211_CHAN_DISABLED;
 					mtk_5ghz_channels[j].orig_flags &= ~IEEE80211_CHAN_DISABLED;
+					mtk_5ghz_channels[j].dfs_state =
+					    (aucChannelList[i].eDFS) ?
+					     NL80211_DFS_USABLE :
+					     NL80211_DFS_UNAVAILABLE;
 					break;
 				}
 			}
@@ -1445,6 +1484,23 @@ static const struct net_device_ops wlan_netdev_ops = {
 	.ndo_select_queue = wlanSelectQueue,
 };
 
+static UINT_8 wlanNvramBufHandler(PVOID ctx, const CHAR *buf, UINT_16 length)
+{
+	DBGLOG(INIT, INFO, "buf = %p, length = %u\n", buf, length);
+	if (buf == NULL || length <= 0 || length != sizeof(g_aucNvram))
+		return -EINVAL;
+
+	if (copy_from_user(g_aucNvram, buf, length)) {
+		DBGLOG(INIT, ERROR, "copy nvram fail\n");
+		fgNvramAvailable = FALSE;
+		return -EINVAL;
+	}
+
+	fgNvramAvailable = TRUE;
+	return 0;
+}
+
+
 static void createWirelessDevice(void)
 {
 	struct wiphy *prWiphy = NULL;
@@ -1474,17 +1530,22 @@ static void createWirelessDevice(void)
 	prWiphy->max_match_sets           = CFG_SCAN_SSID_MATCH_MAX_NUM;
 	prWiphy->max_sched_scan_ie_len    = CFG_CFG80211_IE_BUF_LEN;
 	prWiphy->interface_modes = BIT(NL80211_IFTYPE_STATION) | BIT(NL80211_IFTYPE_ADHOC);
-	prWiphy->bands[NL80211_BAND_2GHZ] = &mtk_band_2ghz;
+	prWiphy->bands[KAL_BAND_2GHZ] = &mtk_band_2ghz;
 	/*
 	 * always assign 5Ghz bands here, if the chip is not support 5Ghz,
 	 * bands[NL80211_BAND_5GHZ] will be assign to NULL
 	 */
-	prWiphy->bands[NL80211_BAND_5GHZ] = &mtk_band_5ghz;
+	prWiphy->bands[KAL_BAND_5GHZ] = &mtk_band_5ghz;
 	prWiphy->signal_type = CFG80211_SIGNAL_TYPE_MBM;
 	prWiphy->cipher_suites = mtk_cipher_suites;
 	prWiphy->n_cipher_suites = ARRAY_SIZE(mtk_cipher_suites);
-	prWiphy->flags = WIPHY_FLAG_SUPPORTS_FW_ROAM | WIPHY_FLAG_HAS_REMAIN_ON_CHANNEL |
-		WIPHY_FLAG_SUPPORTS_SCHED_SCAN;
+	prWiphy->flags = WIPHY_FLAG_SUPPORTS_FW_ROAM | WIPHY_FLAG_HAS_REMAIN_ON_CHANNEL;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0))
+	prWiphy->flags |= WIPHY_FLAG_SUPPORTS_SCHED_SCAN;
+#else
+	/*In kernel 4.12 or newer, this obsoletes WIPHY_FLAG_SUPPORTS_SCHED_SCAN*/
+	prWiphy->max_sched_scan_reqs = 1;
+#endif
 	prWiphy->regulatory_flags = REGULATORY_CUSTOM_REG;
 #if CFG_SUPPORT_TDLS
 	TDLSEX_WIPHY_FLAGS_INIT(prWiphy->flags);
@@ -1511,6 +1572,7 @@ static void createWirelessDevice(void)
 		DBGLOG(INIT, ERROR, "wiphy_register error\n");
 		goto free_wiphy;
 	}
+	register_file_buf_handler(wlanNvramBufHandler, (PVOID)NULL, ENUM_BUF_TYPE_NVRAM);
 	prWdev->wiphy = prWiphy;
 	gprWdev = prWdev;
 	DBGLOG(INIT, INFO, "Create wireless device success\n");
@@ -1637,7 +1699,7 @@ static struct wireless_dev *wlanNetCreate(PVOID pvData)
 
 	/* 4 <3.2> Initialize Glue variables */
 	prGlueInfo->eParamMediaStateIndicated = PARAM_MEDIA_STATE_DISCONNECTED;
-	prGlueInfo->ePowerState = ParamDeviceStateD0;
+	prGlueInfo->ePowerState = (ENUM_ACPI_STATE_T)ParamDeviceStateD0;
 	prGlueInfo->fgIsMacAddrOverride = FALSE;
 	prGlueInfo->fgIsRegistered = FALSE;
 	prGlueInfo->prScanRequest = NULL;
@@ -2161,9 +2223,9 @@ static INT_32 wlanProbe(PVOID pvData)
 		}
 
 		if (prAdapter->fgEnable5GBand == FALSE)
-			prWdev->wiphy->bands[NL80211_BAND_5GHZ] = NULL;
+			prWdev->wiphy->bands[KAL_BAND_5GHZ] = NULL;
 		else
-			prWdev->wiphy->bands[NL80211_BAND_5GHZ] = &mtk_band_5ghz;
+			prWdev->wiphy->bands[KAL_BAND_5GHZ] = &mtk_band_5ghz;
 
 		kalSetHalted(FALSE);
 		/* set MAC address */
@@ -2554,7 +2616,7 @@ static int initWlan(void)
 	DBGLOG(INIT, INFO, "initWlan\n");
 
 	wlanDebugInit();
-
+	fgNvramAvailable = FALSE;
 	/* memory pre-allocation */
 	kalInitIOBuffer();
 	procInitFs();
