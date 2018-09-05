@@ -36,6 +36,7 @@
 #include "precomp.h"
 
 #define CURRENT_PSCN_VERSION 1
+#define SUPPORT_RANDOM_PSCN_VERSION  2
 #define RSSI_MARGIN_DEFAULT  5
 #define MAX_PERIOD 200000
 
@@ -140,6 +141,10 @@ VOID scnFsmSteps(IN P_ADAPTER_T prAdapter, IN ENUM_SCAN_STATE_T eNextState)
 
 					eNextState = SCAN_STATE_SCANNING;
 					fgIsTransition = TRUE;
+				} else if (prMsgHdr->eMsgId == MID_AIS_SCN_SCAN_REQ_V3) {
+					scnFsmHandleScanMsgV3(prAdapter, (struct _MSG_SCN_SCAN_REQ_V3_T *) prMsgHdr);
+					eNextState = SCAN_STATE_SCANNING;
+					fgIsTransition = TRUE;
 				} else {
 					/* should not happen */
 					ASSERT(0);
@@ -151,10 +156,12 @@ VOID scnFsmSteps(IN P_ADAPTER_T prAdapter, IN ENUM_SCAN_STATE_T eNextState)
 			break;
 
 		case SCAN_STATE_SCANNING:
-			if (prScanParam->fgIsScanV2 == FALSE)
+			if (prScanParam->ucScanVersion == SCAN_REQ_MSG_VER_1)
 				scnSendScanReq(prAdapter);
-			else
+			else if (prScanParam->ucScanVersion == SCAN_REQ_MSG_VER_2)
 				scnSendScanReqV2(prAdapter);
+			else
+				scnSendScanReqV3(prAdapter);
 			cnmTimerStartTimer(prAdapter, &prScanInfo->rScanDoneTimer,
 					   SEC_TO_MSEC(AIS_SCN_DONE_TIMEOUT_SEC));
 			/* prScanInfo->ucScanDoneTimeoutCnt = 0; */
@@ -310,7 +317,6 @@ VOID scnSendScanReqV2(IN P_ADAPTER_T prAdapter)
 	prCmdScanReq->ucBssIndex = prScanParam->ucBssIndex;
 	prCmdScanReq->ucScanType = (UINT_8) prScanParam->eScanType;
 	prCmdScanReq->ucSSIDType = prScanParam->ucSSIDType;
-
 	for (i = 0; i < prScanParam->ucSSIDNum; i++) {
 		COPY_SSID(prCmdScanReq->arSSID[i].aucSsid,
 			  prCmdScanReq->arSSID[i].u4SsidLen,
@@ -361,7 +367,6 @@ VOID scnSendScanReqV2(IN P_ADAPTER_T prAdapter)
 
 	if (prScanParam->u2IELen)
 		kalMemCopy(prCmdScanReq->aucIE, prScanParam->aucIE, sizeof(UINT_8) * prCmdScanReq->u2IELen);
-
 	DBGLOG(SCN, INFO, "ScanReqV3: ScanType=%d, SSIDType=%d, Num=%d, ChannelType=%d, Num=%d, Dwell=%d, Ver=%d\n",
 		prCmdScanReq->ucScanType, prCmdScanReq->ucSSIDType, prScanParam->ucSSIDNum,
 		prCmdScanReq->ucChannelType, prCmdScanReq->ucChannelListNum, prCmdScanReq->u2ChannelDwellTime,
@@ -387,6 +392,130 @@ VOID scnSendScanReqV2(IN P_ADAPTER_T prAdapter)
 		kalSendAeeWarning("wlan", "wrong ssid type %d", prCmdScanReq->ucSSIDType);
 
 	kalMemFree(prCmdScanReq, VIR_MEM_TYPE, sizeof(CMD_SCAN_REQ_V2));
+
+}
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief        Generate CMD_ID_SCAN_REQ_V3 command
+*
+* \param[in]
+*
+* \return none
+*/
+/*----------------------------------------------------------------------------*/
+VOID scnSendScanReqV3(IN P_ADAPTER_T prAdapter)
+{
+	P_SCAN_INFO_T prScanInfo;
+	P_SCAN_PARAM_T prScanParam;
+	/* CMD_SCAN_REQ_V2 rCmdScanReq; */
+	struct _CMD_SCAN_REQ_V3_T *prCmdScanReq;
+	UINT_32 i;
+
+	ASSERT(prAdapter);
+
+	prScanInfo = &(prAdapter->rWifiVar.rScanInfo);
+	prScanParam = &prScanInfo->rScanParam;
+
+	prCmdScanReq = kalMemAlloc(sizeof(struct _CMD_SCAN_REQ_V3_T), VIR_MEM_TYPE);
+	if (!prCmdScanReq) {
+		DBGLOG(SCN, ERROR, "alloc CmdScanReq V3 fail\n");
+		return;
+	}
+	/* send command packet for scan */
+	kalMemZero(prCmdScanReq, sizeof(struct _CMD_SCAN_REQ_V3_T));
+	/* Modify channelList number from 32 to 54 */
+	prCmdScanReq->ucStructVersion = CMD_SCAN_REQ_VER_4;
+	COPY_MAC_ADDR(prCmdScanReq->aucBSSID, prScanParam->aucBSSID);
+	if (!EQUAL_MAC_ADDR(prCmdScanReq->aucBSSID, "\xff\xff\xff\xff\xff\xff"))
+		DBGLOG(SCN, INFO, "Include BSSID %pM in probe request\n", prCmdScanReq->aucBSSID);
+
+	prCmdScanReq->ucSeqNum = prScanParam->ucSeqNum;
+	prCmdScanReq->ucBssIndex = prScanParam->ucBssIndex;
+	prCmdScanReq->ucScanType = (UINT_8) prScanParam->eScanType;
+	prCmdScanReq->ucSSIDType = prScanParam->ucSSIDType;
+	for (i = 0; i < prScanParam->ucSSIDNum; i++) {
+		COPY_SSID(prCmdScanReq->arSSID[i].aucSsid,
+			  prCmdScanReq->arSSID[i].u4SsidLen,
+			  prScanParam->aucSpecifiedSSID[i], prScanParam->ucSpecifiedSSIDLen[i]);
+	}
+
+	prCmdScanReq->u2ProbeDelayTime = (UINT_8) prScanParam->u2ProbeDelayTime;
+	prCmdScanReq->ucChannelType = (UINT_8) prScanParam->eScanChannel;
+
+	switch (prScanParam->eScanChannel) {
+	case SCAN_CHANNEL_SPECIFIED:
+	/* If scan channel is 2G4/5G/full, and channel list number is not 0,
+	** means need to exclude these channels that're in channel list.
+	** This case need to fall through
+	*/
+	case SCAN_CHANNEL_2G4:
+		/* This case need to fall through */
+	case SCAN_CHANNEL_5G:
+		/* This case need to fall through */
+	case SCAN_CHANNEL_FULL:
+		/* P2P would use:
+		 * 1. Specified Listen Channel of passive scan for LISTEN state.
+		 * 2. Specified Listen Channel of Target Device of active scan for SEARCH state. (Target != NULL)
+		 */
+		prCmdScanReq->ucChannelListNum = prScanParam->ucChannelListNum;
+
+		for (i = 0; i < prCmdScanReq->ucChannelListNum; i++) {
+			prCmdScanReq->arChannelList[i].ucBand = (UINT_8) prScanParam->arChnlInfoList[i].eBand;
+
+			prCmdScanReq->arChannelList[i].ucChannelNum =
+			    (UINT_8) prScanParam->arChnlInfoList[i].ucChannelNum;
+		}
+		break;
+	default:
+		break;
+	}
+
+	prCmdScanReq->u2ChannelDwellTime = prScanParam->u2ChannelDwellTime;
+	prCmdScanReq->u2TimeoutValue = prScanParam->u2TimeoutValue;
+	if (prAdapter->prAisBssInfo &&
+		prScanParam->ucBssIndex == prAdapter->prAisBssInfo->ucBssIndex)
+		prCmdScanReq->u2ChannelMinDwellTime = prScanParam->u2MinChannelDwellTime;
+
+	if (prScanParam->u2IELen <= MAX_IE_LENGTH)
+		prCmdScanReq->u2IELen = prScanParam->u2IELen;
+	else
+		prCmdScanReq->u2IELen = MAX_IE_LENGTH;
+
+	if (prScanParam->u2IELen)
+		kalMemCopy(prCmdScanReq->aucIE, prScanParam->aucIE, sizeof(UINT_8) * prCmdScanReq->u2IELen);
+	prCmdScanReq->ucScnFuncMask = prScanParam->ucScnFuncMask;
+	if (kalIsValidMacAddr(prScanParam->aucRandomMac)) {
+		prCmdScanReq->ucScnFuncMask = ENUM_SCN_RANDOM_MAC_EN;
+		kalMemCopy(prCmdScanReq->aucRandomMac,
+			prScanParam->aucRandomMac, MAC_ADDR_LEN);
+	}
+	DBGLOG(SCN, INFO,
+		"ScnReqV4: ScnType=%d, SSIDType=%d, Num=%d, ChType=%d, Num=%d, Dwell=%d, RMac=%pM, FuncM=%d, Ver=%d\n",
+		prCmdScanReq->ucScanType, prCmdScanReq->ucSSIDType, prScanParam->ucSSIDNum,
+		prCmdScanReq->ucChannelType, prCmdScanReq->ucChannelListNum, prCmdScanReq->u2ChannelDwellTime,
+		prCmdScanReq->aucRandomMac, prCmdScanReq->ucScnFuncMask,
+		prCmdScanReq->ucStructVersion);
+
+	wlanSendSetQueryCmd(prAdapter,
+			    CMD_ID_SCAN_REQ_V2,
+			    TRUE,
+			    FALSE,
+			    FALSE,
+			    NULL,
+			    NULL,
+			    OFFSET_OF(struct _CMD_SCAN_REQ_V3_T, aucIE) + prCmdScanReq->u2IELen,
+			    (PUINT_8)prCmdScanReq, NULL, 0);
+	/* sanity check for some scan parameters */
+	if (prCmdScanReq->ucScanType >= SCAN_TYPE_NUM)
+		kalSendAeeWarning("wlan", "wrong scan type %d", prCmdScanReq->ucScanType);
+	else if (prCmdScanReq->ucChannelType >= SCAN_CHANNEL_NUM)
+		kalSendAeeWarning("wlan", "wrong channel type %d", prCmdScanReq->ucChannelType);
+	else if (prCmdScanReq->ucBssIndex > MAX_BSS_INDEX)
+		kalSendAeeWarning("wlan", "wrong bss index %d", prCmdScanReq->ucBssIndex);
+	else if (prCmdScanReq->ucSSIDType >= BIT(4)) /* ssid type is wrong */
+		kalSendAeeWarning("wlan", "wrong ssid type %d", prCmdScanReq->ucSSIDType);
+
+	kalMemFree(prCmdScanReq, VIR_MEM_TYPE, sizeof(struct _CMD_SCAN_REQ_V3_T));
 
 }
 
@@ -423,10 +552,13 @@ VOID scnFsmMsgStart(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr)
 			   || prMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ_V2
 			   || prMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ) {
 			scnFsmHandleScanMsgV2(prAdapter, (P_MSG_SCN_SCAN_REQ_V2) prMsgHdr);
+		} else if (prMsgHdr->eMsgId == MID_AIS_SCN_SCAN_REQ_V3) {
+			scnFsmHandleScanMsgV3(prAdapter, (struct _MSG_SCN_SCAN_REQ_V3_T *) prMsgHdr);
 		} else {
 			/* should not deliver to this function */
 			ASSERT(0);
 		}
+
 
 		cnmMemFree(prAdapter, prMsgHdr);
 		scnFsmSteps(prAdapter, SCAN_STATE_SCANNING);
@@ -573,7 +705,7 @@ VOID scnFsmHandleScanMsg(IN P_ADAPTER_T prAdapter, IN P_MSG_SCN_SCAN_REQ prScanR
 	else
 		prScanParam->fgIsObssScan = FALSE;
 
-	prScanParam->fgIsScanV2 = FALSE;
+	prScanParam->ucScanVersion = SCAN_REQ_MSG_VER_1;
 
 }
 
@@ -606,6 +738,107 @@ VOID scnFsmHandleScanMsgV2(IN P_ADAPTER_T prAdapter, IN P_MSG_SCN_SCAN_REQ_V2 pr
 	prScanParam->ucSSIDType = prScanReqMsg->ucSSIDType;
 	prScanParam->ucSSIDNum = prScanReqMsg->ucSSIDNum;
 	kalMemCopy(prScanParam->aucBSSID, prScanReqMsg->aucBSSID, MAC_ADDR_LEN);
+	if (prScanParam->ucSSIDType & SCAN_REQ_SSID_SPECIFIED_ONLY) {
+		prScanParam->ucSSIDNum = 1;
+		kalMemZero(prScanParam->ucSpecifiedSSIDLen, sizeof(prScanParam->ucSpecifiedSSIDLen));
+		COPY_SSID(prScanParam->aucSpecifiedSSID[0], prScanParam->ucSpecifiedSSIDLen[0],
+				  &prScanReqMsg->prSsid[0].aucSsid[0], prScanReqMsg->prSsid[0].u4SsidLen);
+	} else
+		for (i = 0; i < prScanReqMsg->ucSSIDNum; i++) {
+			COPY_SSID(prScanParam->aucSpecifiedSSID[i],
+				  prScanParam->ucSpecifiedSSIDLen[i],
+				  prScanReqMsg->prSsid[i].aucSsid, (UINT_8) prScanReqMsg->prSsid[i].u4SsidLen);
+		}
+
+	prScanParam->u2ProbeDelayTime = prScanReqMsg->u2ProbeDelay;
+	prScanParam->eScanChannel = prScanReqMsg->eScanChannel;
+	if (prScanParam->eScanChannel == SCAN_CHANNEL_SPECIFIED) {
+		if (prScanReqMsg->ucChannelListNum <= MAXIMUM_OPERATION_CHANNEL_LIST)
+			prScanParam->ucChannelListNum = prScanReqMsg->ucChannelListNum;
+		else
+			prScanParam->ucChannelListNum = MAXIMUM_OPERATION_CHANNEL_LIST;
+
+		kalMemCopy(prScanParam->arChnlInfoList,
+			   prScanReqMsg->arChnlInfoList, sizeof(RF_CHANNEL_INFO_T) * prScanParam->ucChannelListNum);
+	}
+
+	if (prScanReqMsg->u2IELen <= MAX_IE_LENGTH)
+		prScanParam->u2IELen = prScanReqMsg->u2IELen;
+	else
+		prScanParam->u2IELen = MAX_IE_LENGTH;
+
+	if (prScanParam->u2IELen)
+		kalMemCopy(prScanParam->aucIE, prScanReqMsg->aucIE, prScanParam->u2IELen);
+
+	if (prScanReqMsg->u2ChannelDwellTime > 0)
+		prScanParam->u2ChannelDwellTime = prScanReqMsg->u2ChannelDwellTime;
+	else
+		prScanParam->u2ChannelDwellTime = prScanParam->u2DefaultDwellTime;
+
+	if (prAdapter->prAisBssInfo &&
+		prScanParam->ucBssIndex == prAdapter->prAisBssInfo->ucBssIndex)
+		prScanParam->u2MinChannelDwellTime = prScanReqMsg->u2MinChannelDwellTime;
+	prScanParam->u2TimeoutValue = prScanReqMsg->u2TimeoutValue;
+	prScanParam->ucSeqNum = prScanReqMsg->ucSeqNum;
+
+	if (prScanReqMsg->rMsgHdr.eMsgId == MID_RLM_SCN_SCAN_REQ)
+		prScanParam->fgIsObssScan = TRUE;
+	else
+		prScanParam->fgIsObssScan = FALSE;
+
+	prScanParam->ucScanVersion = SCAN_REQ_MSG_VER_2;
+
+	/*set scan ucScanFlag*/
+	prChannelScanInfo = prAdapter->prGlueInfo->arChannelScanInfo;
+
+	switch (prScanParam->eScanChannel) {
+
+	case SCAN_CHANNEL_FULL:
+		DBGLOG(SCN, TRACE, "Full2Partial eScanChannel full\n");
+		prChannelScanInfo = prChannelScanInfo + 1;
+		for (i = 1; i < FULL_SCAN_MAX_CHANNEL_NUM; i++) {
+			prChannelScanInfo->ucScanFlag = 1;
+			prChannelScanInfo++;
+		}
+		break;
+
+	default:
+			DBGLOG(SCN, TRACE, "Full2Partial eScanChannel not match\n");
+		break;
+	}
+
+}
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief            Scan Message Parsing - V3 Support Scan random mac
+*
+* \param[in]
+*
+* \return none
+*/
+/*----------------------------------------------------------------------------*/
+VOID scnFsmHandleScanMsgV3(IN P_ADAPTER_T prAdapter, IN struct _MSG_SCN_SCAN_REQ_V3_T *prScanReqMsg)
+{
+	P_SCAN_INFO_T prScanInfo;
+	P_SCAN_PARAM_T prScanParam;
+	UINT_32 i;
+	struct GL_Channel_scan_info	*prChannelScanInfo;
+
+	ASSERT(prAdapter);
+	ASSERT(prScanReqMsg);
+	ASSERT(prScanReqMsg->ucSSIDNum <= SCN_SSID_MAX_NUM);
+
+	prScanInfo = &(prAdapter->rWifiVar.rScanInfo);
+	prScanParam = &prScanInfo->rScanParam;
+
+	kalMemZero(prScanParam, sizeof(*prScanParam));
+	prScanParam->eScanType = prScanReqMsg->eScanType;
+	prScanParam->ucBssIndex = prScanReqMsg->ucBssIndex;
+	prScanParam->ucSSIDType = prScanReqMsg->ucSSIDType;
+	prScanParam->ucSSIDNum = prScanReqMsg->ucSSIDNum;
+	kalMemCopy(prScanParam->aucBSSID, prScanReqMsg->aucBSSID, MAC_ADDR_LEN);
+	kalMemCopy(prScanParam->aucRandomMac, prScanReqMsg->aucRandomMac, MAC_ADDR_LEN);
+	prScanParam->ucScnFuncMask = prScanReqMsg->ucScnFuncMask;
 
 	if (prScanParam->ucSSIDType & SCAN_REQ_SSID_SPECIFIED_ONLY) {
 		prScanParam->ucSSIDNum = 1;
@@ -655,7 +888,7 @@ VOID scnFsmHandleScanMsgV2(IN P_ADAPTER_T prAdapter, IN P_MSG_SCN_SCAN_REQ_V2 pr
 	else
 		prScanParam->fgIsObssScan = FALSE;
 
-	prScanParam->fgIsScanV2 = TRUE;
+	prScanParam->ucScanVersion = SCAN_REQ_MSG_VER_3;
 
 	/*set scan ucScanFlag*/
 	prChannelScanInfo = prAdapter->prGlueInfo->arChannelScanInfo;
@@ -971,11 +1204,13 @@ scnFsmSchedScanRequest(IN P_ADAPTER_T prAdapter,
 	UINT_8 ucNetworkIndex = 0;
 	BOOLEAN fgIsHiddenSSID = FALSE;
 #endif
+	P_CMD_SET_PSCAN_PARAM prCmdPscnParam = NULL;
 
 	ASSERT(prAdapter);
 
 	prScanInfo = &(prAdapter->rWifiVar.rScanInfo);
 	prNloParam = &prScanInfo->rNloParam;
+	prCmdPscnParam = (P_CMD_SET_PSCAN_PARAM) prScanInfo->prPscnParam;
 
 	/* ASSERT(prScanInfo->fgNloScanning == FALSE); */
 	if (prScanInfo->fgNloScanning) {
@@ -1116,7 +1351,8 @@ scnFsmSchedScanRequest(IN P_ADAPTER_T prAdapter,
 #endif
 	/* we set this bit to notify firmware that they should using the new NLO network design */
 	prCmdNloReq->ucEntryNum |= BIT(7);
-
+	prCmdPscnParam->ucScnFuncMask = prSchedScanRequest->ucScnFuncMask;
+	DBGLOG(SCN, INFO, "Pscanparam: FuncMask %x\n", prCmdPscnParam->ucScnFuncMask);
 #if CFG_SUPPORT_SCHED_SCN_SSID_SETS
 	/* ucFlag[7] enable FW's support, similar to gen2 ucReserved */
 	prCmdNloReq->ucFlag |= 0x80;
@@ -1282,8 +1518,8 @@ BOOLEAN scnFsmPSCNSetParam(IN P_ADAPTER_T prAdapter, IN P_CMD_SET_PSCAN_PARAM pr
 	ASSERT(prAdapter);
 	prScanInfo = &(prAdapter->rWifiVar.rScanInfo);
 
-	DBGLOG(SCN, INFO, "fgNLOScnEnable=%d %d %d, basePeriod=%d\n",
-		prCmdPscnParam->fgNLOScnEnable, prCmdPscnParam->fgBatchScnEnable,
+	DBGLOG(SCN, INFO, "Ver:%d, fgNLOScnEnable=%d %d %d, basePeriod=%d\n",
+		prCmdPscnParam->ucVersion, prCmdPscnParam->fgNLOScnEnable, prCmdPscnParam->fgBatchScnEnable,
 		prCmdPscnParam->fgGScnEnable, prCmdPscnParam->u4BasePeriod);
 
 	if (1 /*prScanInfo->fgPscnOnnning == FALSE */) {
@@ -1580,7 +1816,7 @@ scnCombineParamsIntoPSCN(IN P_ADAPTER_T prAdapter,
 	prScanInfo = &(prAdapter->rWifiVar.rScanInfo);
 	prCmdPscnParam = (P_CMD_SET_PSCAN_PARAM) prScanInfo->prPscnParam;
 
-	prCmdPscnParam->ucVersion = CURRENT_PSCN_VERSION;
+	prCmdPscnParam->ucVersion = SUPPORT_RANDOM_PSCN_VERSION;
 
 	if (fgRemoveNLOfromPSCN || fgRemoveBatchSCNfromPSCN || fgRemoveGSCNfromPSCN) {
 		scnRemoveFromPSCN(prAdapter,

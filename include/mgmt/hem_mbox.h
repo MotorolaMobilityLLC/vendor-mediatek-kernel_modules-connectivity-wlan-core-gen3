@@ -57,6 +57,7 @@ typedef enum _ENUM_MSG_ID_T {
     /*--------------------------------------------------*/
 	MID_AIS_SCN_SCAN_REQ,	/* AIS notify SCN for starting scan */
 	MID_AIS_SCN_SCAN_REQ_V2,	/* AIS notify SCN for starting scan with multiple SSID support */
+	MID_AIS_SCN_SCAN_REQ_V3,	/* AIS notify SCN for starting scan with random MAC address */
 	MID_AIS_SCN_SCAN_CANCEL,	/* AIS notify SCN for cancelling scan */
 	MID_P2P_SCN_SCAN_REQ,	/* P2P notify SCN for starting scan */
 	MID_P2P_SCN_SCAN_REQ_V2,	/* P2P notify SCN for starting scan with multiple SSID support */

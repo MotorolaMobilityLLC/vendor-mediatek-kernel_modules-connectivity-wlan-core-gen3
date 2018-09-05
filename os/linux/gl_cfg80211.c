@@ -709,6 +709,7 @@ int mtk_cfg80211_scan(struct wiphy *wiphy,
 	P_ADAPTER_T prAdapter = NULL;
 
 	PARAM_SCAN_REQUEST_ADV_T rScanRequest;
+	struct _PARAM_SCAN_RANDOM_MAC_ADDR_T *prScanRandMacAddr = NULL;
 	UINT_32 num_ssid = 0, u4ValidIdx;
 
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
@@ -729,6 +730,7 @@ int mtk_cfg80211_scan(struct wiphy *wiphy,
 	}
 
 	kalMemZero(&rScanRequest, sizeof(PARAM_SCAN_REQUEST_ADV_T));
+	prScanRandMacAddr = &(rScanRequest.rScanRandomMacAddr);
 
 	num_ssid = (UINT_32)request->n_ssids;
 	DBGLOG(REQ, INFO, "request->n_ssids=%d", request->n_ssids);
@@ -763,7 +765,12 @@ int mtk_cfg80211_scan(struct wiphy *wiphy,
 		return -EINVAL;
 	}
 	DBGLOG(REQ, INFO, "mtk_cfg80211_scan(), n_ssids=%d, num_ssid=%d\n", request->n_ssids, num_ssid);
-
+	/*
+	 *  Only request MAC address randomization when station is not associated.
+	 *  FW SCAN Module will check whether station is not associated.
+	 */
+	if (kalScanParseRandomMac(prGlueInfo, request, prScanRandMacAddr->aucRandomMac))
+		prScanRandMacAddr->ucScnFuncMask |= ENUM_SCN_RANDOM_MAC_EN;
 	if (request->ie_len > 0) {
 		rScanRequest.u4IELength = request->ie_len;
 		rScanRequest.pucIE = (PUINT_8) (request->ie);
@@ -2483,6 +2490,9 @@ mtk_cfg80211_sched_scan_start(IN struct wiphy *wiphy,
 		for (i = 0; i < request->n_channels; i++)
 			prSchedScanRequest->pucChannels[i] =
 				nicFreq2ChannelNum(request->channels[i]->center_freq * 1000);
+	if (kalSchedScanParseRandomMac(ndev, request)) {
+		prSchedScanRequest->ucScnFuncMask |= ENUM_SCN_RANDOM_MAC_EN;
+	}
 
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidSetStartSchedScan,

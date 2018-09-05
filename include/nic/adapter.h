@@ -383,6 +383,10 @@ struct _BSS_INFO_T {
 	UINT_8 auc5G_PriChnlList[CHNL_LIST_SZ_5G + 1];
 	UINT_8 auc5G_SecChnlList[CHNL_LIST_SZ_5G + 1];
 
+	/* Set scanning MAC OUI */
+	BOOLEAN fgIsScanOuiSet;
+	UINT_8 ucScanOui[MAC_OUI_LEN];
+
 	TIMER_T rObssScanTimer;
 	UINT_16 u2ObssScanInterval;	/* in unit of sec */
 
