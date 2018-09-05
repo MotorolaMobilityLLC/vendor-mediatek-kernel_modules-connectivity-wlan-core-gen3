@@ -1859,3 +1859,59 @@ nla_put_failure:
 	kfree_skb(skb);
 	return -EFAULT;
 }
+
+
+int mtk_cfg80211_vendor_get_version(struct wiphy *wiphy, struct wireless_dev *wdev,
+				const void *data, int data_len)
+{
+	struct sk_buff *skb;
+	struct nlattr *attrlist;
+	char verInfoBuf[64];
+	UINT_32 u4CopySize = 0;
+	P_GLUE_INFO_T prGlueInfo = NULL;
+
+	ASSERT(wiphy);
+	ASSERT(wdev);
+
+	if ((data == NULL) || !data_len)
+		return -ENOMEM;
+
+	kalMemZero(verInfoBuf, 64);
+	attrlist = (struct nlattr *)((UINT_8 *) data);
+	if (attrlist->nla_type == LOGGER_ATTRIBUTE_DRIVER_VER) {
+		char wifiDriverVersionStr[] = NIC_DRIVER_VERSION_STRING"-"DRIVER_BUILD_DATE;
+		UINT_32 u4StrSize = strlen(wifiDriverVersionStr);
+
+		u4CopySize = (u4StrSize >= 64) ? 63 : u4StrSize;
+		strncpy(verInfoBuf, wifiDriverVersionStr, u4CopySize);
+	} else if (attrlist->nla_type == LOGGER_ATTRIBUTE_FW_VER) {
+		WIFI_VER_INFO_T *prVerInfo;
+
+		prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
+		ASSERT(prGlueInfo);
+		prVerInfo = &(prGlueInfo->prAdapter->rVerInfo);
+		sprintf(verInfoBuf, "%x.%x.%x",
+			(prVerInfo->u2FwOwnVersion >> 8),
+			(prVerInfo->u2FwOwnVersion & 0xff),
+			prVerInfo->u4FwOwnVersionExtend);
+		u4CopySize = strlen(verInfoBuf);
+	}
+
+	if (u4CopySize <= 0)
+		return -EFAULT;
+
+	skb = cfg80211_vendor_cmd_alloc_reply_skb(wiphy, u4CopySize);
+	if (!skb) {
+		DBGLOG(REQ, ERROR, "Allocate skb failed\n");
+		return -ENOMEM;
+	}
+
+	if (unlikely(nla_put_nohdr(skb, u4CopySize, &verInfoBuf[0]) < 0))
+		goto nla_put_failure;
+
+	return cfg80211_vendor_cmd_reply(skb);
+
+nla_put_failure:
+	kfree_skb(skb);
+	return -EFAULT;
+}
