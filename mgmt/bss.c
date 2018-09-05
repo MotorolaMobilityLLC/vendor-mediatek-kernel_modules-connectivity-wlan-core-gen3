@@ -1723,7 +1723,7 @@ VOID bssCheckClientList(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo)
 
 	/* Traverse list */
 	LINK_FOR_EACH_ENTRY(prCurrStaRec, prClientList, rLinkEntry, STA_RECORD_T) {
-		if (!prCurrStaRec) {
+		if (!prCurrStaRec->rLinkEntry.prNext) {
 			fgError = TRUE;
 			DBGLOG(SW4, INFO, "BSS[%u] Client List NULL PTR ERR\n", prBssInfo->ucBssIndex);
 
