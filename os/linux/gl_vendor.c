@@ -108,9 +108,7 @@
 			      (WIFI_FEATURE_PNO) |\
 			      (WIFI_FEATURE_TDLS) |\
 			      (WIFI_FEATURE_RSSI_MONITOR) |\
-			      (WIFI_FEATURE_CONTROL_ROAMING) |\
-			      (WIFI_FEATURE_SET_TX_POWER_LIMIT)\
-			      )
+			      (WIFI_FEATURE_CONTROL_ROAMING))
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -1915,3 +1913,11 @@ nla_put_failure:
 	kfree_skb(skb);
 	return -EFAULT;
 }
+
+int mtk_cfg80211_vendor_set_tx_power_scenario(struct wiphy *wiphy,
+		struct wireless_dev *wdev, const void *data, int data_len)
+{
+	/*Gen3 firmware do not support, just return*/
+	return -EOPNOTSUPP;
+}
+
