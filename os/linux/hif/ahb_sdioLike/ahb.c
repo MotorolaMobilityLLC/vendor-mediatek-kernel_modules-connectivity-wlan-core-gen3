@@ -445,7 +445,7 @@ INT_32 glBusSetIrq(PVOID pvData, PVOID pfnIsr, PVOID pvCookie)
 #ifdef CONFIG_OF
 	node = prGlueInfo->rHifInfo.Dev->of_node;
 	irq_id = irq_of_parse_and_map(node, 0);
-	DBGLOG(INIT, INFO, "WIFI-HIF irq %d\n", irq_id);
+	DBGLOG(INIT, TRACE, "WIFI-HIF irq %d\n", irq_id);
 
 	/* Get the interrupt flags and then used it for request_irq, but this can be skiped
 	 * and just set IRQF_TRIGGER_NONE in request_irq since device tree has already set it.
@@ -453,7 +453,7 @@ INT_32 glBusSetIrq(PVOID pvData, PVOID pfnIsr, PVOID pvCookie)
 	if (of_property_read_u32_index(node, "interrupts", 2, &irq_flags))
 		DBGLOG(INIT, ERROR, "Failed to get WIFI-HIF irq flags from DT!\n");
 	else
-		DBGLOG(INIT, INFO, "WIFI-HIF irq flags 0x%x\n", irq_flags);
+		DBGLOG(INIT, TRACE, "WIFI-HIF irq flags 0x%x\n", irq_flags);
 
 #else
 	irq_id = MT_WF_HIF_IRQ_ID;
