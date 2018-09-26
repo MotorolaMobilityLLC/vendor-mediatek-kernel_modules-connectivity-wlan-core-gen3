@@ -31,7 +31,7 @@ p2pDevStateInit_IDLE(IN P_ADAPTER_T prAdapter,
 		}
 
 		/* Stay in IDLE state. */
-		DBGLOG(P2P, INFO, "prepare to enter sleep in idle\n");
+		DBGLOG(P2P, TRACE, "prepare to enter sleep in idle\n");
 		UNSET_NET_ACTIVE(prAdapter, P2P_DEV_BSS_INDEX);
 		nicDeactivateNetwork(prAdapter, P2P_DEV_BSS_INDEX);
 	} while (FALSE);

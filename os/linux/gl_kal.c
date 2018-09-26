@@ -1839,7 +1839,7 @@ kalArpFrameClassifier(IN P_GLUE_INFO_T prGlueInfo,
 	ucSeqNo = nicIncreaseTxSeqNum(prGlueInfo->prAdapter);
 	WLAN_GET_FIELD_BE16(&pucIpHdr[ARP_OPERATION_OFFSET], &u2ArpOp);
 
-	DBGLOG(TX, INFO, "ARP %s PKT[0x%p] TAR MAC/IP[" MACSTR "]/[" IPV4STR "], SeqNo: %d\n",
+	DBGLOG_LIMITED(TX, INFO, "ARP %s PKT[0x%p] TAR MAC/IP[" MACSTR "]/[" IPV4STR "], SeqNo: %d\n",
 			   u2ArpOp == ARP_OPERATION_REQUEST ? "REQ" : "RSP",
 			   prPacket, MAC2STR(&pucIpHdr[ARP_TARGET_MAC_OFFSET]),
 			   IPV4TOSTR(&pucIpHdr[ARP_TARGET_IP_OFFSET]), ucSeqNo);
@@ -5510,4 +5510,85 @@ VOID __weak kalSetEmiMpuProtection(phys_addr_t emiPhyBase, UINT_32 size, BOOLEAN
 {
 	DBGLOG(SW4, WARN, "EMI MPU function is not defined\n");
 }
+BOOLEAN kalIsOuiMask(IN uint8_t pucMacAddrMask[MAC_ADDR_LEN])
+{
+	return (pucMacAddrMask[0] == 0xFF &&
+		pucMacAddrMask[1] == 0xFF &&
+		pucMacAddrMask[2] == 0xFF);
+}
 
+BOOLEAN kalIsValidMacAddr(IN const uint8_t *addr)
+{
+	return is_valid_ether_addr(addr);
+}
+#if (KERNEL_VERSION(3, 19, 0) <= CFG80211_VERSION_CODE)
+static BOOLEAN kalParseRandomMac(
+	IN P_GLUE_INFO_T prGlueInfo,
+	IN UINT_8 *pucMacAddr, IN UINT_8 *pucMacAddrMask,
+	OUT UINT_8 *pucRandomMac)
+{
+	ASSERT(pucMacAddr);
+	ASSERT(pucMacAddrMask);
+	ASSERT(pucRandomMac);
+
+#if 0
+	if (!kalIsOuiMask(ucMacAddrMask) && prGlueInfo->fgIsScanOuiSet) {
+		kalMemCopy(ucMacAddr, prGlueInfo->ucScanOui, MAC_OUI_LEN);
+		kalMemSet(ucMacAddrMask, 0xFF, MAC_OUI_LEN);
+	}
+#endif
+
+	get_random_mask_addr(pucRandomMac, pucMacAddr, pucMacAddrMask);
+
+	DBGLOG(SCN, INFO, "random mac=" MACSTR " mac_addr=" MACSTR
+		", mac_addr_mask=%pM\n", MAC2STR(pucRandomMac),
+		MAC2STR(pucMacAddr), pucMacAddrMask);
+	return TRUE;
+}
+
+BOOLEAN kalScanParseRandomMac(
+	IN P_GLUE_INFO_T prGlueInfo,
+	IN struct cfg80211_scan_request *request,
+	OUT UINT_8 *pucRandomMac)
+{
+	if (!(request->flags & NL80211_SCAN_FLAG_RANDOM_ADDR)) {
+		DBGLOG(SCN, TRACE, "Scan random mac is not set\n");
+		return FALSE;
+	}
+	return kalParseRandomMac(prGlueInfo, request->mac_addr,
+		request->mac_addr_mask, pucRandomMac);
+}
+BOOLEAN kalSchedScanParseRandomMac(
+	const struct net_device *ndev,
+	IN struct cfg80211_sched_scan_request *request)
+{
+	P_NETDEV_PRIVATE_GLUE_INFO prNetDevPrivate = NULL;
+
+	ASSERT(request);
+	ASSERT(ndev);
+	prNetDevPrivate = (P_NETDEV_PRIVATE_GLUE_INFO) netdev_priv(ndev);
+	if (!prNetDevPrivate || !prNetDevPrivate->prGlueInfo) {
+		DBGLOG(SCN, WARN, "prNetdevPrivate or prGlueInfo is NULL\n");
+		return FALSE;
+	}
+	if (!(request->flags & NL80211_SCAN_FLAG_RANDOM_ADDR)) {
+		DBGLOG(SCN, TRACE, "Scan random mac is not set or not support\n");
+		return FALSE;
+	}
+	return TRUE;
+}
+#else /* if (KERNEL_VERSION(3, 19, 0) <= CFG80211_VERSION_CODE) */
+BOOLEAN kalScanParseRandomMac(
+	IN P_GLUE_INFO_T prGlueInfo,
+	IN struct cfg80211_scan_request *request,
+	OUT PUINT_8 pucRandomMac)
+{
+	return FALSE;
+}
+BOOLEAN kalSchedScanParseRandomMac(
+	const struct net_device *ndev,
+	IN struct cfg80211_sched_scan_request *request)
+{
+	return FALSE;
+}
+#endif

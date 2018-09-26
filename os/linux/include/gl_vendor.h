@@ -83,11 +83,12 @@ typedef enum {
 	WIFI_SUBCMD_SET_PNO_RANDOM_MAC_OUI,              /* 0x0004 */
 	WIFI_SUBCMD_NODFS_SET,                           /* 0x0005 */
 	WIFI_SUBCMD_SET_COUNTRY_CODE,                    /* 0x0006 */
-	WIFI_SUBCMD_SET_RSSI_MONITOR,			 /* 0x0007 */
+	WIFI_SUBCMD_SET_RSSI_MONITOR,                    /* 0x0007 */
 
 	WIFI_SUBCMD_GET_ROAMING_CAPABILITIES,            /* 0x0008 */
-	WIFI_SUBCMD_CONFIG_ROAMING = 0x000a,		 /* 0x000a */
-	WIFI_SUBCMD_ENABLE_ROAMING = 0x000b,		 /* 0x000b */
+	WIFI_SUBCMD_CONFIG_ROAMING = 0x000a,             /* 0x000a */
+	WIFI_SUBCMD_ENABLE_ROAMING = 0x000b,             /* 0x000b */
+	WIFI_SUBCMD_SELECT_TX_POWER_SCENARIO,            /* 0x000c */
 	/* Add more sub commands here */
 
 } WIFI_SUB_COMMAND;
@@ -123,6 +124,12 @@ typedef enum {
 typedef enum {
 	LSTATS_SUBCMD_GET_INFO = ANDROID_NL80211_SUBCMD_LSTATS_RANGE_START,
 } LSTATS_SUB_COMMAND;
+
+/* moved from wifi_logger.cpp */
+enum DEBUG_SUB_COMMAND {
+	LOGGER_START_LOGGING = ANDROID_NL80211_SUBCMD_DEBUG_RANGE_START,
+	LOGGER_GET_VER
+};
 
 typedef enum {
 	WIFI_OFFLOAD_START_MKEEP_ALIVE = ANDROID_NL80211_SUBCMD_WIFI_OFFLOAD_RANGE_START,
@@ -164,6 +171,12 @@ typedef enum {
 
 
 } WIFI_ATTRIBUTE;
+
+/* moved from wifi_logger.cpp */
+enum LOGGER_ATTRIBUTE {
+	LOGGER_ATTRIBUTE_DRIVER_VER,
+	LOGGER_ATTRIBUTE_FW_VER
+};
 
 typedef enum {
 	GSCAN_ATTRIBUTE_CAPABILITIES = 1,
@@ -737,6 +750,10 @@ typedef struct _PARAM_PACKET_KEEPALIVE_T {
 	UINT_32 u4PeriodMsec;
 } PARAM_PACKET_KEEPALIVE_T, *P_PARAM_PACKET_KEEPALIVE_T;
 
+struct PARAM_BSS_MAC_OUI {
+	uint8_t ucBssIndex;
+	uint8_t ucMacOui[MAC_OUI_LEN];
+};
 
 /*******************************************************************************
 *                                 M A C R O S
@@ -776,31 +793,34 @@ int mtk_cfg80211_vendor_enable_scan(struct wiphy *wiphy, struct wireless_dev *wd
 				    const void *data, int data_len);
 
 int mtk_cfg80211_vendor_enable_full_scan_results(struct wiphy *wiphy, struct wireless_dev *wdev,
-						 const void *data, int data_len);
+					const void *data, int data_len);
 
 int mtk_cfg80211_vendor_get_gscan_result(struct wiphy *wiphy, struct wireless_dev *wdev,
-					 const void *data, int data_len);
+					const void *data, int data_len);
 
 int mtk_cfg80211_vendor_gscan_results(struct wiphy *wiphy, struct wireless_dev *wdev,
-				      const void *data, int data_len, BOOLEAN complete, BOOLEAN compValue);
+					const void *data, int data_len, BOOLEAN complete, BOOLEAN compValue);
 
 int mtk_cfg80211_vendor_get_rtt_capabilities(struct wiphy *wiphy, struct wireless_dev *wdev,
-					     const void *data, int data_len);
+					const void *data, int data_len);
 
 int mtk_cfg80211_vendor_llstats_get_info(struct wiphy *wiphy, struct wireless_dev *wdev,
-					 const void *data, int data_len);
+					const void *data, int data_len);
 
 int mtk_cfg80211_vendor_set_rssi_monitoring(struct wiphy *wiphy, struct wireless_dev *wdev,
-					    const void *data, int data_len);
+					const void *data, int data_len);
 
 int mtk_cfg80211_vendor_packet_keep_alive_start(struct wiphy *wiphy, struct wireless_dev *wdev,
-						const void *data, int data_len);
+					const void *data, int data_len);
 
 int mtk_cfg80211_vendor_packet_keep_alive_stop(struct wiphy *wiphy, struct wireless_dev *wdev,
-					       const void *data, int data_len);
-
-int mtk_cfg80211_vendor_event_complete_scan(struct wiphy *wiphy, struct wireless_dev *wdev, WIFI_SCAN_EVENT complete);
-
+					const void *data, int data_len);
+int mtk_cfg80211_vendor_get_version(struct wiphy *wiphy, struct wireless_dev *wdev,
+					const void *data, int data_len);
+int mtk_cfg80211_vendor_set_tx_power_scenario(struct wiphy *wiphy, struct wireless_dev *wdev,
+					const void *data, int data_len);
+int mtk_cfg80211_vendor_event_complete_scan(struct wiphy *wiphy, struct wireless_dev *wdev,
+					WIFI_SCAN_EVENT complete);
 int mtk_cfg80211_vendor_event_scan_results_available(struct wiphy *wiphy, struct wireless_dev *wdev, UINT_32 num);
 
 int mtk_cfg80211_vendor_event_full_scan_results(struct wiphy *wiphy, struct wireless_dev *wdev,
@@ -831,4 +851,7 @@ int mtk_cfg80211_vendor_enable_roaming(struct wiphy *wiphy,
 int mtk_cfg80211_vendor_get_supported_feature_set(
 	struct wiphy *wiphy, struct wireless_dev *wdev,
 	const void *data, int data_len);
+int mtk_cfg80211_vendor_set_scan_mac_oui(struct wiphy *wiphy,
+				struct wireless_dev *wdev, const void *data, int data_len);
+
 #endif /* _GL_VENDOR_H */

@@ -461,6 +461,15 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 	},
 	{
 		{
+			.vendor_id = GOOGLE_OUI,
+			.subcmd = WIFI_SUBCMD_SET_PNO_RANDOM_MAC_OUI
+		},
+		.flags = WIPHY_VENDOR_CMD_NEED_WDEV
+			| WIPHY_VENDOR_CMD_NEED_NETDEV,
+		.doit = mtk_cfg80211_vendor_set_scan_mac_oui
+	},
+	{
+		{
 			.vendor_id = OUI_QCA,
 			.subcmd = QCA_NL80211_VENDOR_SUBCMD_ROAMING
 		},
@@ -476,6 +485,26 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
 				WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = mtk_cfg80211_vendor_get_supported_feature_set
+	},
+	/* Get Driver Version or Firmware Version */
+	{
+		{
+			.vendor_id = GOOGLE_OUI,
+			.subcmd = LOGGER_GET_VER
+		},
+		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
+				WIPHY_VENDOR_CMD_NEED_NETDEV,
+		.doit = mtk_cfg80211_vendor_get_version
+	},
+	/* Set Tx Power Scenario */
+	{
+		{
+			.vendor_id = GOOGLE_OUI,
+			.subcmd = WIFI_SUBCMD_SELECT_TX_POWER_SCENARIO
+		},
+		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
+				WIPHY_VENDOR_CMD_NEED_NETDEV,
+		.doit = mtk_cfg80211_vendor_set_tx_power_scenario
 	},
 };
 
@@ -612,6 +641,66 @@ UINT_16 wlanSelectQueue(struct net_device *dev, struct sk_buff *skb,
 
 	return au16Wlan1dToQueueIdx[skb->priority];
 }
+/*----------------------------------------------------------------------------*/
+/*!
+ * \brief A method of struct net_device, to set the randomized mac address
+ *
+ * This method is called before Wifi Framework requests a new conenction with
+ * enabled feature "Connected Random Mac".
+ *
+ * \param[in] ndev	Pointer to struct net_device.
+ * \param[in] addr	Randomized Mac address passed from WIFI framework.
+ *
+ * \return int.
+ */
+/*----------------------------------------------------------------------------*/
+static int wlanSetMacAddress(struct net_device *ndev, void *addr)
+{
+	P_ADAPTER_T prAdapter = NULL;
+	P_GLUE_INFO_T prGlueInfo = NULL;
+	struct sockaddr *sa = NULL;
+	struct wireless_dev *wdev = NULL;
+
+	/**********************************************************************
+	 * Check if kernel passes valid data to us                            *
+	 **********************************************************************
+	 */
+	if (!ndev || !addr) {
+		DBGLOG(INIT, ERROR, "Set macaddr with ndev(%d) and addr(%d)\n",
+		       (ndev == NULL) ? 0 : 1, (addr == NULL) ? 0 : 1);
+		return WLAN_STATUS_INVALID_DATA;
+	}
+
+	/**********************************************************************
+	 * Block mac address changing if this setting is not for connection   *
+	 **********************************************************************
+	 */
+	wdev = ndev->ieee80211_ptr;
+	if (wdev->ssid_len > 0 || (wdev->current_bss)) {
+		DBGLOG(INIT, ERROR,
+		       "Reject mac addr change due to ssid_len(%d) & bss(%d)\n",
+		       wdev->ssid_len, wdev->current_bss);
+		return WLAN_STATUS_NOT_ACCEPTED;
+	}
+
+	/**********************************************************************
+	 * 1. Change OwnMacAddr which will be updated to FW through           *
+	 *    rlmActivateNetwork later.                                       *
+	 * 2. Change dev_addr stored in kernel to notify framework that the   *
+	 *    mac addr has been changed and what the new value is.            *
+	 **********************************************************************
+	 */
+	sa = (struct sockaddr *)addr;
+	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(ndev));
+	prAdapter = prGlueInfo->prAdapter;
+
+	COPY_MAC_ADDR(prAdapter->prAisBssInfo->aucOwnMacAddr, sa->sa_data);
+	COPY_MAC_ADDR(prGlueInfo->prDevHandler->dev_addr, sa->sa_data);
+	DBGLOG(INIT, INFO, "Set connect random mac addr to " MACSTR ".\n",
+	       MAC2STR(prAdapter->prAisBssInfo->aucOwnMacAddr));
+
+	return WLAN_STATUS_SUCCESS;
+}				/* end of wlanSetMacAddr() */
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -1482,6 +1571,7 @@ static const struct net_device_ops wlan_netdev_ops = {
 	.ndo_init = wlanInit,
 	.ndo_uninit = wlanUninit,
 	.ndo_select_queue = wlanSelectQueue,
+	.ndo_set_mac_address = wlanSetMacAddress,
 };
 
 static UINT_8 wlanNvramBufHandler(PVOID ctx, const CHAR *buf, UINT_16 length)
@@ -1552,6 +1642,11 @@ static void createWirelessDevice(void)
 	prWiphy->flags |= WIPHY_FLAG_SUPPORTS_FW_ROAM |
 			WIPHY_FLAG_TDLS_EXTERNAL_SETUP | WIPHY_FLAG_SUPPORTS_TDLS;
 #endif /* CFG_SUPPORT_TDLS */
+#if (CFG_SUPPORT_SCAN_RANDOM_MAC && \
+	(KERNEL_VERSION(3, 19, 0) <= CFG80211_VERSION_CODE))
+	prWiphy->features |= NL80211_FEATURE_SCAN_RANDOM_MAC_ADDR;
+	prWiphy->features |= NL80211_FEATURE_SCHED_SCAN_RANDOM_MAC_ADDR;
+#endif
 	prWiphy->max_remain_on_channel_duration = 5000;
 	prWiphy->mgmt_stypes = mtk_cfg80211_ais_default_mgmt_stypes;
 	prWiphy->vendor_commands = mtk_wlan_vendor_ops;

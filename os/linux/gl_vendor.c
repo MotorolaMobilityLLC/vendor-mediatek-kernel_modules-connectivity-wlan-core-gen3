@@ -108,9 +108,7 @@
 			      (WIFI_FEATURE_PNO) |\
 			      (WIFI_FEATURE_TDLS) |\
 			      (WIFI_FEATURE_RSSI_MONITOR) |\
-			      (WIFI_FEATURE_CONTROL_ROAMING) |\
-			      (WIFI_FEATURE_SET_TX_POWER_LIMIT)\
-			      )
+			      (WIFI_FEATURE_CONTROL_ROAMING))
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -1859,3 +1857,116 @@ nla_put_failure:
 	kfree_skb(skb);
 	return -EFAULT;
 }
+int mtk_cfg80211_vendor_get_version(struct wiphy *wiphy, struct wireless_dev *wdev,
+				const void *data, int data_len)
+{
+	struct sk_buff *skb;
+	struct nlattr *attrlist;
+	char verInfoBuf[64];
+	UINT_32 u4CopySize = 0;
+	P_GLUE_INFO_T prGlueInfo = NULL;
+	ASSERT(wiphy);
+	ASSERT(wdev);
+	if ((data == NULL) || !data_len)
+		return -ENOMEM;
+	kalMemZero(verInfoBuf, 64);
+	attrlist = (struct nlattr *)((UINT_8 *) data);
+	if (attrlist->nla_type == LOGGER_ATTRIBUTE_DRIVER_VER) {
+		char wifiDriverVersionStr[] = NIC_DRIVER_VERSION_STRING"-"DRIVER_BUILD_DATE;
+		UINT_32 u4StrSize = strlen(wifiDriverVersionStr);
+		u4CopySize = (u4StrSize >= 64) ? 63 : u4StrSize;
+		strncpy(verInfoBuf, wifiDriverVersionStr, u4CopySize);
+	} else if (attrlist->nla_type == LOGGER_ATTRIBUTE_FW_VER) {
+		WIFI_VER_INFO_T *prVerInfo;
+		prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
+		ASSERT(prGlueInfo);
+		prVerInfo = &(prGlueInfo->prAdapter->rVerInfo);
+		sprintf(verInfoBuf, "%x.%x.%x",
+			(prVerInfo->u2FwOwnVersion >> 8),
+			(prVerInfo->u2FwOwnVersion & 0xff),
+			prVerInfo->u4FwOwnVersionExtend);
+		u4CopySize = strlen(verInfoBuf);
+	}
+	if (u4CopySize <= 0)
+		return -EFAULT;
+	skb = cfg80211_vendor_cmd_alloc_reply_skb(wiphy, u4CopySize);
+	if (!skb) {
+		DBGLOG(REQ, ERROR, "Allocate skb failed\n");
+		return -ENOMEM;
+	}
+	if (unlikely(nla_put_nohdr(skb, u4CopySize, &verInfoBuf[0]) < 0))
+		goto nla_put_failure;
+	return cfg80211_vendor_cmd_reply(skb);
+nla_put_failure:
+	kfree_skb(skb);
+	return -EFAULT;
+}
+int mtk_cfg80211_vendor_set_tx_power_scenario(struct wiphy *wiphy,
+		struct wireless_dev *wdev, const void *data, int data_len)
+{
+	/*Gen3 firmware do not support, just return*/
+	return -EOPNOTSUPP;
+}
+int mtk_cfg80211_vendor_set_scan_mac_oui(struct wiphy *wiphy,
+	struct wireless_dev *wdev, const void *data, int data_len)
+{
+	P_GLUE_INFO_T prGlueInfo = NULL;
+	UINT_32 rStatus = WLAN_STATUS_SUCCESS;
+	struct nlattr *attr;
+	UINT_32 i = 0;
+	struct PARAM_BSS_MAC_OUI rParamMacOui;
+	UINT_32 u4BufLen = 0;
+	P_NETDEV_PRIVATE_GLUE_INFO prNetDevPrivate = NULL;
+
+	ASSERT(wiphy);
+	ASSERT(wdev);
+
+	if (data == NULL || data_len <= 0) {
+		DBGLOG(REQ, ERROR, "data error(len=%d)\n", data_len);
+		return -EINVAL;
+	}
+	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
+	if (!prGlueInfo) {
+		DBGLOG(REQ, ERROR, "Invalid glue info\n");
+		return -EFAULT;
+	}
+	prNetDevPrivate =
+		(P_NETDEV_PRIVATE_GLUE_INFO) netdev_priv(wdev->netdev);
+	if (!prNetDevPrivate) {
+		DBGLOG(REQ, ERROR, "Invalid net device private\n");
+		return -EFAULT;
+	}
+	rParamMacOui.ucBssIndex = prNetDevPrivate->ucBssIdx;
+
+	attr = (struct nlattr *)data;
+	kalMemZero(rParamMacOui.ucMacOui, MAC_OUI_LEN);
+	if (nla_type(attr) != WIFI_ATTRIBUTE_PNO_RANDOM_MAC_OUI) {
+		DBGLOG(REQ, ERROR, "Set MAC oui type error(%u)\n",
+			nla_type(attr));
+		return -EINVAL;
+	}
+
+	if (nla_len(attr) != MAC_OUI_LEN) {
+		DBGLOG(REQ, ERROR, "Set MAC oui length error(%u), %u needed\n",
+			nla_len(attr), MAC_OUI_LEN);
+		return -EINVAL;
+	}
+
+	for (i = 0; i < MAC_OUI_LEN; i++)
+		rParamMacOui.ucMacOui[i] = *((P_UINT_8)nla_data(attr) + i);
+
+	DBGLOG(REQ, INFO, "Set MAC oui: %02x-%02x-%02x\n",
+		rParamMacOui.ucMacOui[0], rParamMacOui.ucMacOui[1],
+		rParamMacOui.ucMacOui[2]);
+
+	rStatus = kalIoctl(prGlueInfo, wlanoidSetScanMacOui,
+		&rParamMacOui, sizeof(rParamMacOui),
+		FALSE, FALSE, FALSE, &u4BufLen);
+	if (rStatus != WLAN_STATUS_SUCCESS) {
+		DBGLOG(REQ, ERROR, "Set MAC oui error: 0x%X\n", rStatus);
+		return -EFAULT;
+	}
+
+	return 0;
+}
+

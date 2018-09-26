@@ -648,6 +648,7 @@ wlanoidSetBssidListScanAdv(IN P_ADAPTER_T prAdapter,
 			   IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)
 {
 	P_PARAM_SCAN_REQUEST_ADV_T prScanRequest;
+	struct _PARAM_SCAN_RANDOM_MAC_ADDR_T rScanRandMacAddr;
 	PARAM_SSID_T rSsid[CFG_SCAN_SSID_MAX_NUM];
 	PUINT_8 pucIe;
 	UINT_8 ucSsidNum;
@@ -680,7 +681,8 @@ wlanoidSetBssidListScanAdv(IN P_ADAPTER_T prAdapter,
 	}
 
 	prScanRequest = (P_PARAM_SCAN_REQUEST_ADV_T) pvSetBuffer;
-
+	kalMemCopy(&rScanRandMacAddr, &(prScanRequest->rScanRandomMacAddr),
+				sizeof(struct _PARAM_SCAN_RANDOM_MAC_ADDR_T));
 	ucSsidNum = (UINT_8) (prScanRequest->u4SsidNum);
 	for (i = 0; i < prScanRequest->u4SsidNum; i++) {
 		if (prScanRequest->rSsid[i].u4SsidLen > ELEM_MAX_LEN_SSID) {
@@ -703,7 +705,7 @@ wlanoidSetBssidListScanAdv(IN P_ADAPTER_T prAdapter,
 		if ((prAdapter->fgEnOnlineScan == TRUE) && (prAdapter->ucRddStatus)) {
 			if (kalGetMediaStateIndicated(prAdapter->prGlueInfo) != PARAM_MEDIA_STATE_CONNECTED) {
 				aisFsmScanRequestAdv(prAdapter, ucSsidNum, rSsid, pucIe, u4IeLength,
-					prScanRequest->ucSetChannel);
+					prScanRequest->ucSetChannel, &rScanRandMacAddr);
 
 			} else
 				return WLAN_STATUS_FAILURE;
@@ -714,10 +716,10 @@ wlanoidSetBssidListScanAdv(IN P_ADAPTER_T prAdapter,
 	{
 		if (prAdapter->fgEnOnlineScan == TRUE) {
 			aisFsmScanRequestAdv(prAdapter, ucSsidNum, rSsid, pucIe, u4IeLength,
-				prScanRequest->ucSetChannel);
+				prScanRequest->ucSetChannel, &rScanRandMacAddr);
 		} else if (kalGetMediaStateIndicated(prAdapter->prGlueInfo) != PARAM_MEDIA_STATE_CONNECTED) {
 			aisFsmScanRequestAdv(prAdapter, ucSsidNum, rSsid, pucIe, u4IeLength,
-				prScanRequest->ucSetChannel);
+				prScanRequest->ucSetChannel, &rScanRandMacAddr);
 		} else
 			return WLAN_STATUS_FAILURE;
 	}
@@ -6703,7 +6705,7 @@ wlanoidSetMulticastList(IN P_ADAPTER_T prAdapter,
 	rCmdMacMcastAddr.u4NumOfGroupAddr = u4SetBufferLen / MAC_ADDR_LEN;
 	rCmdMacMcastAddr.ucBssIndex = prAdapter->prAisBssInfo->ucBssIndex;
 	kalMemCopy(rCmdMacMcastAddr.arAddress, pvSetBuffer, u4SetBufferLen);
-	DBGLOG(OID, INFO,
+	DBGLOG(OID, TRACE,
 		"MCAST white list: total=%d MAC0="MACSTR" MAC1="MACSTR" MAC2="MACSTR" MAC3="MACSTR" MAC4="MACSTR"\n",
 		rCmdMacMcastAddr.u4NumOfGroupAddr,
 		MAC2STR(rCmdMacMcastAddr.arAddress[0]), MAC2STR(rCmdMacMcastAddr.arAddress[1]),
@@ -12548,3 +12550,31 @@ uint32_t wlanoidGetWifiType(IN P_ADAPTER_T prAdapter,
 
 	return WLAN_STATUS_SUCCESS;
 }
+WLAN_STATUS
+wlanoidSetScanMacOui(IN P_ADAPTER_T prAdapter,
+		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)
+{
+	struct PARAM_BSS_MAC_OUI *prParamMacOui;
+	P_BSS_INFO_T prBssInfo;
+
+	ASSERT(prAdapter);
+	ASSERT(prAdapter->prGlueInfo);
+	ASSERT(pvSetBuffer);
+	ASSERT(u4SetBufferLen == sizeof(struct PARAM_BSS_MAC_OUI));
+
+	prParamMacOui = (struct PARAM_BSS_MAC_OUI *)pvSetBuffer;
+
+	prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, prParamMacOui->ucBssIndex);
+	if (!prBssInfo) {
+		DBGLOG(REQ, ERROR, "Invalid bss info (ind=%u)\n",
+			prParamMacOui->ucBssIndex);
+		return WLAN_STATUS_FAILURE;
+	}
+
+	kalMemCopy(prBssInfo->ucScanOui, prParamMacOui->ucMacOui, MAC_OUI_LEN);
+	prBssInfo->fgIsScanOuiSet = TRUE;
+	*pu4SetInfoLen = MAC_OUI_LEN;
+
+	return WLAN_STATUS_SUCCESS;
+}
+

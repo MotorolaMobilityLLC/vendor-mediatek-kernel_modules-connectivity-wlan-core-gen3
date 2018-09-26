@@ -535,6 +535,9 @@ typedef enum _ENUM_EVENT_ID_T {
 	EVENT_ID_RFTEST_READY = 0xFC,	/* 0xFC */
 	EVENT_ID_END
 } ENUM_EVENT_ID_T, *P_ENUM_EVENT_ID_T;
+enum ENUM_SCN_FUNC_MASK {
+	ENUM_SCN_RANDOM_MAC_EN = (1 << 0),
+};
 
 #define CMD_ID_SET_PSCN_ADD_HOTLIST_BSSID CMD_ID_SET_GSCAN_ADD_HOTLIST_BSSID	/* 0x45 (Set) */
 #define CMD_ID_SET_PSCN_ADD_SW_BSSID CMD_ID_SET_GSCAN_ADD_SWC_BSSID	/* 0x46 (Set) */
@@ -1475,7 +1478,14 @@ enum _CMD_SCAN_REQ_VER_E {
 	CMD_SCAN_REQ_VER_1 = 1,
 	CMD_SCAN_REQ_VER_2,
 	CMD_SCAN_REQ_VER_3,
+	CMD_SCAN_REQ_VER_4,
 	CMD_SCAN_REQ_VER_MAX,
+};
+enum _SCAN_REQ_MSG_VER_E {
+	SCAN_REQ_MSG_VER_1 = 1,
+	SCAN_REQ_MSG_VER_2,
+	SCAN_REQ_MSG_VER_3,
+	SCAN_REQ_MSG_VER_MAX,
 };
 
 typedef struct _CMD_SCAN_REQ_T {
@@ -1518,6 +1528,30 @@ typedef struct _CMD_SCAN_REQ_V2_T {
 	UINT_16 u2IELen;
 	UINT_8 aucIE[MAX_IE_LENGTH];
 } CMD_SCAN_REQ_V2, *P_CMD_SCAN_REQ_V2;
+struct _CMD_SCAN_REQ_V3_T {
+	UINT_8 ucSeqNum;
+	UINT_8 ucBssIndex;
+	UINT_8 ucScanType;
+	UINT_8 ucSSIDType;
+	UINT_8 ucSSIDNum;
+	UINT_8 ucNumProbeReq;
+	UINT_8 ucReserved;
+	UINT_8 ucStructVersion;
+	PARAM_SSID_T arSSID[CFG_SCAN_SSID_MAX_NUM];
+	UINT_16 u2ProbeDelayTime;
+	UINT_16 u2ChannelMinDwellTime;
+	UINT_16 u2ChannelDwellTime;
+	UINT_16 u2TimeoutValue;
+	UINT_8 aucBSSID[MAC_ADDR_LEN];
+	UINT_8 aucRandomMac[MAC_ADDR_LEN];
+	UINT_8 ucScnFuncMask;
+	UINT_8 ucChannelType;
+	UINT_8 ucChannelListNum;
+	CHANNEL_INFO_T arChannelList[MAXIMUM_OPERATION_CHANNEL_LIST];
+	UINT_16 u2IELen;
+	UINT_8 aucIE[MAX_IE_LENGTH];
+};
+
 
 typedef struct _CMD_SCAN_CANCEL_T {
 	UINT_8 ucSeqNum;
@@ -2246,6 +2280,9 @@ typedef struct _CMD_SET_PSCAN_PARAM {
 	BOOLEAN fgBatchScnEnable;
 	BOOLEAN fgGScnEnable;
 	UINT_32 u4BasePeriod;
+#if defined(MT6631)
+	UINT_8 ucScnFuncMask;
+#endif
 } CMD_SET_PSCAN_PARAM, *P_CMD_SET_PSCAN_PARAM;
 
 typedef struct _CMD_SET_PSCAN_ADD_HOTLIST_BSSID {

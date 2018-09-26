@@ -372,7 +372,7 @@ typedef struct _SCAN_PARAM_T {	/* Used by SCAN FSM */
 	UINT_16 u2TimeoutValue;
 
 	BOOLEAN fgIsObssScan;
-	BOOLEAN fgIsScanV2;
+	UINT_8 ucScanVersion;
 
 	/* Run time flags */
 	UINT_16 u2ProbeDelayTime;
@@ -381,7 +381,8 @@ typedef struct _SCAN_PARAM_T {	/* Used by SCAN FSM */
 	ENUM_SCAN_CHANNEL eScanChannel;
 	UINT_8 ucChannelListNum;
 	RF_CHANNEL_INFO_T arChnlInfoList[MAXIMUM_OPERATION_CHANNEL_LIST];
-
+	UINT_8 aucRandomMac[MAC_ADDR_LEN];
+	UINT_8 ucScnFuncMask;
 	/* Feedback information */
 	UINT_8 ucSeqNum;
 
@@ -494,6 +495,28 @@ typedef struct _MSG_SCN_SCAN_REQ_V2_T {
 	UINT_16 u2IELen;
 	UINT_8 aucIE[MAX_IE_LENGTH];
 } MSG_SCN_SCAN_REQ_V2, *P_MSG_SCN_SCAN_REQ_V2;
+struct _MSG_SCN_SCAN_REQ_V3_T {
+	MSG_HDR_T rMsgHdr;	/* Must be the first member */
+	UINT_8 ucSeqNum;
+	UINT_8 ucBssIndex;
+	ENUM_SCAN_TYPE_T eScanType;
+	UINT_8 ucSSIDType;	/* BIT(0) wildcard / BIT(1) P2P-wildcard / BIT(2) specific */
+	UINT_8 ucSSIDNum;
+	P_PARAM_SSID_T prSsid;
+	UINT_16 u2ProbeDelay;
+	UINT_16 u2ChannelDwellTime;	/* In TU. 1024us. */
+	UINT_16 u2TimeoutValue;	/* ms unit */
+	UINT_16 u2MinChannelDwellTime;	/* In TU. 1024us. */
+	UINT_8 aucBSSID[MAC_ADDR_LEN];
+	UINT_8 aucRandomMac[MAC_ADDR_LEN];
+	UINT_8 ucScnFuncMask;
+	ENUM_SCAN_CHANNEL eScanChannel;
+	UINT_8 ucChannelListNum;
+	RF_CHANNEL_INFO_T arChnlInfoList[MAXIMUM_OPERATION_CHANNEL_LIST];
+	UINT_16 u2IELen;
+	UINT_8 aucIE[MAX_IE_LENGTH];
+};
+
 
 typedef struct _MSG_SCN_SCAN_CANCEL_T {
 	MSG_HDR_T rMsgHdr;	/* Must be the first member */
@@ -692,6 +715,8 @@ VOID scnFsmSteps(IN P_ADAPTER_T prAdapter, IN ENUM_SCAN_STATE_T eNextState);
 VOID scnSendScanReq(IN P_ADAPTER_T prAdapter);
 
 VOID scnSendScanReqV2(IN P_ADAPTER_T prAdapter);
+VOID scnSendScanReqV3(IN P_ADAPTER_T prAdapter);
+
 
 /*----------------------------------------------------------------------------*/
 /* RX Event Handling                                                          */
@@ -710,6 +735,7 @@ VOID scnFsmMsgAbort(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr);
 VOID scnFsmHandleScanMsg(IN P_ADAPTER_T prAdapter, IN P_MSG_SCN_SCAN_REQ prScanReqMsg);
 
 VOID scnFsmHandleScanMsgV2(IN P_ADAPTER_T prAdapter, IN P_MSG_SCN_SCAN_REQ_V2 prScanReqMsg);
+VOID scnFsmHandleScanMsgV3(IN P_ADAPTER_T prAdapter, IN struct _MSG_SCN_SCAN_REQ_V3_T *prScanReqMsg);
 
 VOID scnFsmRemovePendingMsg(IN P_ADAPTER_T prAdapter, IN UINT_8 ucSeqNum, IN UINT_8 ucBssIndex);
 

@@ -1510,7 +1510,10 @@ typedef struct _PARAM_SCAN_REQUEST_EXT_T {
 	UINT_32 u4IELength;
 	PUINT_8 pucIE;
 } PARAM_SCAN_REQUEST_EXT_T, *P_PARAM_SCAN_REQUEST_EXT_T;
-
+struct _PARAM_SCAN_RANDOM_MAC_ADDR_T {
+	UINT_8 aucRandomMac[MAC_ADDR_LEN];
+	UINT_8 ucScnFuncMask;
+};
 typedef struct _PARAM_SCAN_REQUEST_ADV_T {
 	UINT_32 u4SsidNum;
 	PARAM_SSID_T rSsid[CFG_SCAN_SSID_MAX_NUM];
@@ -1518,6 +1521,7 @@ typedef struct _PARAM_SCAN_REQUEST_ADV_T {
 	PUINT_8 pucIE;
 	/* partial scan temp save request info */
 	UINT_8 ucSetChannel;
+	struct _PARAM_SCAN_RANDOM_MAC_ADDR_T rScanRandomMacAddr;
 } PARAM_SCAN_REQUEST_ADV_T, *P_PARAM_SCAN_REQUEST_ADV_T;
 
 /*--------------------------------------------------------------*/
@@ -1539,6 +1543,7 @@ typedef struct _PARAM_SCHED_SCAN_REQUEST_T {
 	UINT_16 u2ScanInterval;	/* in milliseconds */
 	UINT_8 ucChnlNum;
 	PUINT_8 pucChannels;
+	UINT_8 ucScnFuncMask;
 } PARAM_SCHED_SCAN_REQUEST, *P_PARAM_SCHED_SCAN_REQUEST;
 
 #if CFG_SUPPORT_PASSPOINT
@@ -2424,7 +2429,9 @@ wlanoidEnableRoaming(IN P_ADAPTER_T prAdapter,
 WLAN_STATUS
 wlanoidConfigRoaming(IN P_ADAPTER_T prAdapter,
 		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
-
+WLAN_STATUS
+wlanoidSetScanMacOui(IN P_ADAPTER_T prAdapter,
+		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 uint32_t wlanoidGetWifiType(IN P_ADAPTER_T prAdapter,
 			    IN void *pvSetBuffer,
 			    IN uint32_t u4SetBufferLen,

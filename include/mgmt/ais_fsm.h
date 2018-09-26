@@ -231,6 +231,7 @@ typedef struct _AIS_FSM_INFO_T {
 
 	UINT_8 ucScanSSIDNum;
 	PARAM_SSID_T arScanSSID[SCN_SSID_MAX_NUM];
+	struct _PARAM_SCAN_RANDOM_MAC_ADDR_T rScanRandMacAddr;
 
 	UINT_32 u4ScanIELength;
 	UINT_8 aucScanIEBuf[MAX_IE_LENGTH];
@@ -445,7 +446,8 @@ VOID aisFsmScanRequest(IN P_ADAPTER_T prAdapter, IN P_PARAM_SSID_T prSsid, IN PU
 
 VOID
 aisFsmScanRequestAdv(IN P_ADAPTER_T prAdapter, IN UINT_8 ucSsidNum, IN P_PARAM_SSID_T prSsid,
-		IN PUINT_8 pucIe, IN UINT_32 u4IeLength, IN UINT_8 ucSetChannel);
+		IN PUINT_8 pucIe, IN UINT_32 u4IeLength, IN UINT_8 ucSetChannel,
+		IN struct _PARAM_SCAN_RANDOM_MAC_ADDR_T *prScanRandMacAddr);
 
 /*----------------------------------------------------------------------------*/
 /* Internal State Checking                                                    */
