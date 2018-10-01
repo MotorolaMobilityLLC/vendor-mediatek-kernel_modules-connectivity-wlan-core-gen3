@@ -44,9 +44,10 @@
 #include "gl_typedef.h"
 
 extern UINT_8 aucDebugModule[];
+#ifdef CONFIG_LOG_TOO_MUCH_WARNING
 extern void set_logtoomuch_enable(int value);
 extern int get_logtoomuch_enable(void);
-
+#endif
 /*******************************************************************************
 *                              C O N S T A N T S
 ********************************************************************************
