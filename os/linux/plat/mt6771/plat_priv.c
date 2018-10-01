@@ -10,12 +10,9 @@
 */
 #include <linux/version.h>
 
-#if defined(COFNIG_MTK_CPU_CTRL) || \
-	(LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 146))
-
 #ifdef CONFIG_MTK_CPU_CTRL
 #include <cpu_ctrl.h>
-#else
+#elif LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 146)
 #include "legacy_controller.h"
 #endif
 
@@ -34,6 +31,8 @@
 #define MAX_CPU_FREQ 2340000 /* in kHZ */
 #define CLUSTER_NUM  2       /* 2 clusters, 4 big cores + 4 little cores */
 
+#if defined(COFNIG_MTK_CPU_CTRL) || \
+	(LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 146))
 int kalBoostCpu(unsigned int level)
 {
 	int i = 0;
@@ -66,6 +65,7 @@ int kalBoostCpu(unsigned int level)
 
 	return 0;
 }
+#endif
 
 #ifdef CONFIG_MTK_EMI
 VOID kalSetEmiMpuProtection(phys_addr_t emiPhyBase, UINT_32 size, BOOLEAN enable)
@@ -82,5 +82,4 @@ VOID kalSetEmiMpuProtection(phys_addr_t emiPhyBase, UINT_32 size, BOOLEAN enable
 			      enable ? FORBIDDEN:NO_PROTECTION);
 	emi_mpu_set_protection(&region_info);
 }
-#endif
 #endif
