@@ -5580,6 +5580,26 @@ VOID wlanInitFeatureOption(IN P_ADAPTER_T prAdapter)
 
 	prWifiVar->ucQoS = (UINT_8) wlanCfgGetUint32(prAdapter, "Qos", FEATURE_ENABLED);
 
+	prWifiVar->aucAifsN[WMM_AC_BE_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "BeAifsN", 3);
+	prWifiVar->aucAifsN[WMM_AC_BK_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "BkAifsN", 7);
+	prWifiVar->aucAifsN[WMM_AC_VI_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "ViAifsN", 1);
+	prWifiVar->aucAifsN[WMM_AC_VO_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "VoAifsN", 2);
+
+	prWifiVar->aucCwMin[WMM_AC_BE_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "BeCwMin", 15);
+	prWifiVar->aucCwMin[WMM_AC_BK_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "BkCwMin", 15);
+	prWifiVar->aucCwMin[WMM_AC_VI_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "ViCwMin", 7);
+	prWifiVar->aucCwMin[WMM_AC_VO_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "VoCwMin", 3);
+
+	prWifiVar->au2CwMax[WMM_AC_BE_INDEX] = (UINT_16) wlanCfgGetUint32(prAdapter, "BeCwMax", 63);
+	prWifiVar->au2CwMax[WMM_AC_BK_INDEX] = (UINT_16) wlanCfgGetUint32(prAdapter, "BkCwMax", 1023);
+	prWifiVar->au2CwMax[WMM_AC_VI_INDEX] = (UINT_16) wlanCfgGetUint32(prAdapter, "ViCwMax", 15);
+	prWifiVar->au2CwMax[WMM_AC_VO_INDEX] = (UINT_16) wlanCfgGetUint32(prAdapter, "VoCwMax", 7);
+
+	prWifiVar->au2TxOp[WMM_AC_BE_INDEX] = (UINT_16) wlanCfgGetUint32(prAdapter, "BeTxOp", 0);
+	prWifiVar->au2TxOp[WMM_AC_BK_INDEX] = (UINT_16) wlanCfgGetUint32(prAdapter, "BkTxOp", 0);
+	prWifiVar->au2TxOp[WMM_AC_VI_INDEX] = (UINT_16) wlanCfgGetUint32(prAdapter, "ViTxOp", 94);
+	prWifiVar->au2TxOp[WMM_AC_VO_INDEX] = (UINT_16) wlanCfgGetUint32(prAdapter, "VoTxOp", 47);
+
 	prWifiVar->ucStaHt = (UINT_8) wlanCfgGetUint32(prAdapter, "StaHT", FEATURE_ENABLED);
 	prWifiVar->ucStaVht = (UINT_8) wlanCfgGetUint32(prAdapter, "StaVHT", FEATURE_ENABLED);
 
