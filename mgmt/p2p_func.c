@@ -192,28 +192,25 @@ VOID p2pFuncCancelScan(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex, IN P_P2P_
 		if (!prScanInfo->fgIsScanRequest)
 			break;
 
-		if (prScanInfo->ucSeqNumOfScnMsg) {
-			/* There is a channel privilege on hand. */
-			DBGLOG(P2P, TRACE, "P2P Cancel Scan\n");
+		/* There is a channel privilege on hand. */
+		DBGLOG(P2P, TRACE, "P2P Cancel Scan\n");
 
-			prScanCancelMsg =
-			    (P_MSG_SCN_SCAN_CANCEL) cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_SCN_SCAN_CANCEL));
-			if (!prScanCancelMsg) {
-				/* Buffer not enough, can not cancel scan request. */
-				DBGLOG(P2P, TRACE, "Buffer not enough, can not cancel scan.\n");
-				ASSERT(FALSE);
-				break;
-			}
-
-			prScanCancelMsg->rMsgHdr.eMsgId = MID_P2P_SCN_SCAN_CANCEL;
-			prScanCancelMsg->ucBssIndex = ucBssIndex;
-			prScanCancelMsg->ucSeqNum = prScanInfo->ucSeqNumOfScnMsg++;
-			prScanCancelMsg->fgIsChannelExt = FALSE;
-			prScanInfo->fgIsScanRequest = FALSE;
-
-			mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prScanCancelMsg, MSG_SEND_METHOD_BUF);
-
+		prScanCancelMsg =
+		    (P_MSG_SCN_SCAN_CANCEL) cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_SCN_SCAN_CANCEL));
+		if (!prScanCancelMsg) {
+			/* Buffer not enough, can not cancel scan request. */
+			DBGLOG(P2P, TRACE, "Buffer not enough, can not cancel scan.\n");
+			ASSERT(FALSE);
+			break;
 		}
+
+		prScanCancelMsg->rMsgHdr.eMsgId = MID_P2P_SCN_SCAN_CANCEL;
+		prScanCancelMsg->ucBssIndex = ucBssIndex;
+		prScanCancelMsg->ucSeqNum = prScanInfo->ucSeqNumOfScnMsg++;
+		prScanCancelMsg->fgIsChannelExt = FALSE;
+		prScanInfo->fgIsScanRequest = FALSE;
+
+		mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prScanCancelMsg, MSG_SEND_METHOD_BUF);
 
 	} while (FALSE);
 

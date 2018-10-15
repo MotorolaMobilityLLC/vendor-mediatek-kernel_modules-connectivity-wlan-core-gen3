@@ -8,8 +8,14 @@
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
 */
+#include <linux/version.h>
 
+#ifdef CONFIG_MTK_CPU_CTRL
+#include <cpu_ctrl.h>
+#elif LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 146)
 #include "legacy_controller.h"
+#endif
+
 #include <linux/pm_qos.h>
 
 #ifdef CONFIG_MTK_EMI
@@ -25,6 +31,8 @@
 #define MAX_CPU_FREQ 2340000 /* in kHZ */
 #define CLUSTER_NUM  2       /* 2 clusters, 4 big cores + 4 little cores */
 
+#if defined(COFNIG_MTK_CPU_CTRL) || \
+	(LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 146))
 int kalBoostCpu(unsigned int level)
 {
 	int i = 0;
@@ -57,6 +65,7 @@ int kalBoostCpu(unsigned int level)
 
 	return 0;
 }
+#endif
 
 #ifdef CONFIG_MTK_EMI
 VOID kalSetEmiMpuProtection(phys_addr_t emiPhyBase, UINT_32 size, BOOLEAN enable)
@@ -74,4 +83,3 @@ VOID kalSetEmiMpuProtection(phys_addr_t emiPhyBase, UINT_32 size, BOOLEAN enable
 	emi_mpu_set_protection(&region_info);
 }
 #endif
-
