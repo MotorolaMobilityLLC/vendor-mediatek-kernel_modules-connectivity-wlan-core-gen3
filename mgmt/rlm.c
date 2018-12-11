@@ -1097,7 +1097,7 @@ static UINT_8 rlmRecIeInfoForClient(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInf
 	UINT_8 ucMaxBwAllowed;
 #endif
 #if CFG_SUPPORT_DFS
-	P_IE_CHANNEL_SWITCH_T prChannelSwitchIE;
+	P_IE_CHANNEL_SWITCH_T prChannelSwitchIE = NULL;
 	P_IE_SECONDARY_OFFSET_T prScoIE;
 	P_IE_WIDE_BAND_CHANNEL_T prWideBandIE;
 	struct CHANNEL_SWITCH_ANNOUNCE_PARAMS *prCsaParam;

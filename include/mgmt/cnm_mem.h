@@ -742,8 +742,8 @@ struct MEM_TRACK {
 	cnmMemAllocX(_prAdapter, eRameType, u4Length, __FILE__ ":" STRLINE(__LINE__))
 
 #define IS_FROM_BUF(_prAdapter, pucInfoBuffer) \
-	(((UINT_64)(pucInfoBuffer) >= (UINT_64)_prAdapter->rMgtBufInfo.pucBuf) && \
-	((UINT_64)(pucInfoBuffer) < (UINT_64)_prAdapter->rMgtBufInfo.pucBuf + MGT_BUFFER_SIZE))
+	(((PUINT_8)(pucInfoBuffer) >= (PUINT_8)_prAdapter->rMgtBufInfo.pucBuf) && \
+	((PUINT_8)(pucInfoBuffer) < (PUINT_8)_prAdapter->rMgtBufInfo.pucBuf + MGT_BUFFER_SIZE))
 #else
 #define cnmMgtPktAlloc cnmPktAlloc
 #define cnmMgtPktFree cnmPktFree
