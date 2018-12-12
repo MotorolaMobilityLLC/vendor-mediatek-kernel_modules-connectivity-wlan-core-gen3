@@ -1412,7 +1412,7 @@ p2pFuncDissolve(IN P_ADAPTER_T prAdapter,
 			wlanProcessCommandQueue(prAdapter, &prAdapter->prGlueInfo->rCmdQueue);
 			wlanReleasePowerControl(prAdapter);
 
-			kalMdelay(100);
+			kalMsleep(1000);
 		}
 
 		/* Change Connection Status. */

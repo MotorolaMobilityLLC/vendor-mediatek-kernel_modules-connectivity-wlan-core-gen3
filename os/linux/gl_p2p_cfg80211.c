@@ -751,6 +751,8 @@ int mtk_p2p_cfg80211_start_ap(struct wiphy *wiphy, struct net_device *dev, struc
 	PUINT_8 pucBuffer = (PUINT_8) NULL;
 	UINT_8 ucRoleIdx = 0;
 
+	DBGLOG(P2P, TRACE, "mtk_p2p_cfg80211_start_ap.\n");
+
 	do {
 		if ((wiphy == NULL) || (settings == NULL))
 			break;
@@ -934,35 +936,44 @@ int mtk_p2p_cfg80211_change_beacon(struct wiphy *wiphy, struct net_device *dev, 
 	return i4Rslt;
 }				/* mtk_p2p_cfg80211_change_beacon */
 
+
 int mtk_p2p_cfg80211_stop_ap(struct wiphy *wiphy, struct net_device *dev)
 {
 	P_GLUE_INFO_T prGlueInfo = (P_GLUE_INFO_T) NULL;
 	INT_32 i4Rslt = -EINVAL;
-	P_MSG_P2P_SWITCH_OP_MODE_T prP2pSwitchMode = (P_MSG_P2P_SWITCH_OP_MODE_T) NULL;
-	UINT_8 ucRoleIdx = 0;
+
+	UINT_8 u4Idx = 0;
+	UINT_32 rStatus;
+	UINT_32 u4BufLen;
 
 	do {
-		if (wiphy == NULL)
+		if (wiphy == NULL) {
+			DBGLOG(P2P, ERROR, "wiphy == NULL\n");
 			break;
+		}
 
 		DBGLOG(P2P, TRACE, "mtk_p2p_cfg80211_stop_ap.\n");
 		prGlueInfo = *((P_GLUE_INFO_T *) wiphy_priv(wiphy));
 
-		if (mtk_Netdev_To_RoleIdx(prGlueInfo->prP2PInfo, dev, &ucRoleIdx) < 0)
-			break;
-		/* Switch OP MOde. */
-		prP2pSwitchMode = cnmMemAlloc(prGlueInfo->prAdapter, RAM_TYPE_MSG, sizeof(MSG_P2P_SWITCH_OP_MODE_T));
-
-		if (prP2pSwitchMode == NULL) {
-			ASSERT(FALSE);
-			i4Rslt = -ENOMEM;
+		if (prGlueInfo == NULL) {
+			DBGLOG(P2P, ERROR, "prGlueInfo == NULL\n");
 			break;
 		}
 
-		prP2pSwitchMode->rMsgHdr.eMsgId = MID_MNY_P2P_STOP_AP;
-		prP2pSwitchMode->ucRoleIdx = ucRoleIdx;
+		if (mtk_Netdev_To_RoleIdx(prGlueInfo->prP2PInfo, dev, &u4Idx) < 0) {
+			DBGLOG(P2P, ERROR,
+				"mtk_Netdev_To_RoleIdx fail idx(%u).\n", u4Idx);
+			break;
+		}
 
-		mboxSendMsg(prGlueInfo->prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prP2pSwitchMode, MSG_SEND_METHOD_BUF);
+		rStatus = kalIoctl(prGlueInfo, wlanoidStopApRole,
+			&u4Idx, sizeof(unsigned char),
+			FALSE, FALSE, TRUE, &u4BufLen);
+
+		if (rStatus != WLAN_STATUS_SUCCESS) {
+			DBGLOG(P2P, ERROR, "stop ap fail 0x%x\n", rStatus);
+			break;
+		}
 
 		i4Rslt = 0;
 	} while (FALSE);
