@@ -1732,6 +1732,11 @@ int mtk_p2p_cfg80211_testmode_cmd(IN struct wiphy *wiphy, IN struct wireless_dev
 		i4Status = mtk_p2p_cfg80211_testmode_get_best_channel(wiphy, data, len);
 		break;
 #endif
+#if CFG_SUPPORT_HOTSPOT_WPS_MANAGER
+	case 0x33:
+		i4Status = mtk_p2p_cfg80211_testmode_hotspot_config_cmd(wiphy, data, len);
+		break;
+#endif
 	default:
 		i4Status = -EINVAL;
 		break;
@@ -2304,6 +2309,43 @@ nla_put_failure:
 	return -EMSGSIZE;
 }
 #endif
+
+#if CFG_SUPPORT_HOTSPOT_WPS_MANAGER
+int mtk_p2p_cfg80211_testmode_hotspot_config_cmd(IN struct wiphy *wiphy, IN void *data, IN int len)
+{
+	P_GLUE_INFO_T prGlueInfo = NULL;
+	P_NL80211_DRIVER_P2P_SIGMA_PARAMS prParams = (P_NL80211_DRIVER_P2P_SIGMA_PARAMS) NULL;
+
+	UINT_32 index;
+	UINT_32 value;
+
+	ASSERT(wiphy);
+
+	prGlueInfo = *((P_GLUE_INFO_T *) wiphy_priv(wiphy));
+
+	if (data && len) {
+		prParams = (P_NL80211_DRIVER_P2P_SIGMA_PARAMS) data;
+	} else {
+		DBGLOG(P2P, ERROR, "data is NULL or len is 0\n");
+		return -EINVAL;
+	}
+
+	index = prParams->idx;
+	value = prParams->value;
+
+	DBGLOG(P2P, TRACE, "HOTSPOT CONFIG, idx=%u value=%u\n",
+	       prParams->idx, prParams->value);
+	switch (index) {
+	case 1:		/* Max Clients */
+		kalP2PSetMaxClients(prGlueInfo, value);
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+#endif /*CFG_SUPPORT_HOTSPOT_WPS_MANAGER*/
 
 #endif /* CONFIG_NL80211_TESTMODE */
 
