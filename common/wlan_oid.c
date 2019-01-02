@@ -12578,3 +12578,43 @@ wlanoidSetScanMacOui(IN P_ADAPTER_T prAdapter,
 	return WLAN_STATUS_SUCCESS;
 }
 
+WLAN_STATUS
+wlanoidStopApRole(P_ADAPTER_T prAdapter, void *pvSetBuffer,
+	UINT_32 u4SetBufferLen, UINT_32 *pu4SetInfoLen)
+{
+	unsigned char u4Idx = 0;
+	P_MSG_P2P_SWITCH_OP_MODE_T prP2pSwitchMode = (P_MSG_P2P_SWITCH_OP_MODE_T) NULL;
+
+	if ((prAdapter == NULL) || (pvSetBuffer == NULL)
+		|| (pu4SetInfoLen == NULL)) {
+		DBGLOG(OID, WARN,
+			"(prAdapter == NULL) ||(pvSetBuffer == NULL) ||(pu4SetInfoLen == NULL)\n");
+		return WLAN_STATUS_FAILURE;
+	}
+
+	*pu4SetInfoLen = sizeof(unsigned char);
+	if (u4SetBufferLen < sizeof(unsigned char)) {
+		DBGLOG(OID, WARN, "u4SetBufferLen < sizeof(unsigned char)\n");
+		return WLAN_STATUS_INVALID_LENGTH;
+	}
+
+	u4Idx = *(unsigned char *) pvSetBuffer;
+
+	DBGLOG(OID, INFO, "wlanoidStopApRole ucRoleIdx = %d\n", u4Idx);
+
+	prP2pSwitchMode = cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_P2P_SWITCH_OP_MODE_T));
+	if (prP2pSwitchMode == NULL) {
+		DBGLOG(OID, WARN, "prP2pSwitchMode == NULL.\n");
+		return WLAN_STATUS_FAILURE;
+	}
+
+	prP2pSwitchMode->rMsgHdr.eMsgId = MID_MNY_P2P_STOP_AP;
+	prP2pSwitchMode->ucRoleIdx = u4Idx;
+	mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prP2pSwitchMode, MSG_SEND_METHOD_UNBUF);
+
+	DBGLOG(OID, INFO, "done, ucRoleIdx = %d\n", u4Idx);
+
+	return WLAN_STATUS_SUCCESS;
+
+}
+
