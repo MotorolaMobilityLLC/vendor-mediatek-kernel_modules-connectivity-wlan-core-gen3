@@ -393,7 +393,9 @@ VOID wlanDbgLogLevelUninit(VOID)
 	wlanDbgGetGlobalLogLevel(ENUM_WIFI_LOG_MODULE_FW, &u4FWLevel);
 	if (u4DriverLevel > ENUM_WIFI_LOG_LEVEL_OFF ||
 			u4FWLevel > ENUM_WIFI_LOG_LEVEL_OFF) {
+#ifdef CONFIG_LOG_TOO_MUCH_WARNING
 		set_logtoomuch_enable(1);
+#endif
 		wlanDbgSetGlobalLogLevel(ENUM_WIFI_LOG_MODULE_DRIVER, ENUM_WIFI_LOG_LEVEL_OFF);
 		wlanDbgSetGlobalLogLevel(ENUM_WIFI_LOG_MODULE_FW, ENUM_WIFI_LOG_LEVEL_OFF);
 		for (i = 0; i < DBG_MODULE_NUM; i++)
@@ -446,9 +448,10 @@ UINT_32 wlanDbgGetLogLevelImpl(IN P_ADAPTER_T prAdapter, UINT_32 u4Version,
 VOID wlanDbgSetLogLevelImpl(IN P_ADAPTER_T prAdapter, UINT_32 u4Version,
 		UINT_32 u4Module, UINT_32 u4level)
 {
+#ifdef CONFIG_LOG_TOO_MUCH_WARNING
 	UINT_32 u4DriverLevel = ENUM_WIFI_LOG_LEVEL_OFF;
 	UINT_32 u4FWLevel = ENUM_WIFI_LOG_LEVEL_OFF;
-
+#endif
 	if (u4level >= ENUM_WIFI_LOG_LEVEL_NUM)
 		return;
 
@@ -497,7 +500,7 @@ VOID wlanDbgSetLogLevelImpl(IN P_ADAPTER_T prAdapter, UINT_32 u4Version,
 	default:
 		break;
 	}
-
+#ifdef CONFIG_LOG_TOO_MUCH_WARNING
 	wlanDbgGetGlobalLogLevel(ENUM_WIFI_LOG_MODULE_DRIVER, &u4DriverLevel);
 	wlanDbgGetGlobalLogLevel(ENUM_WIFI_LOG_MODULE_FW, &u4FWLevel);
 	if (u4DriverLevel > ENUM_WIFI_LOG_LEVEL_OFF ||
@@ -508,6 +511,7 @@ VOID wlanDbgSetLogLevelImpl(IN P_ADAPTER_T prAdapter, UINT_32 u4Version,
 			u4FWLevel);
 		set_logtoomuch_enable(0);
 	}
+#endif
 }
 
 VOID wlanDbgLevelSync(VOID)
