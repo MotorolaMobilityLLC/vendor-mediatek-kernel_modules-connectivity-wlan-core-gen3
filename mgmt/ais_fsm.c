@@ -98,7 +98,11 @@ static VOID aisFsmSetOkcTimeout(IN P_ADAPTER_T prAdapter, ULONG ulParam);
 static VOID aisFsmRunEventScanDoneTimeOut(IN P_ADAPTER_T prAdapter, ULONG ulParam);
 static VOID aisRemoveOldestBcnTimeout(P_AIS_FSM_INFO_T prAisFsmInfo);
 static VOID aisRemoveDisappearedBlacklist(P_ADAPTER_T prAdapter);
+#if defined(MT6631)
+static VOID aisPreScan(P_ADAPTER_T prAdapter, struct _MSG_SCN_SCAN_REQ_V3_T *prMsg);
+#else
 static VOID aisPreScan(P_ADAPTER_T prAdapter, P_MSG_SCN_SCAN_REQ_V2 prMsg);
+#endif
 static VOID aisPostScan(P_ADAPTER_T prAdapter);
 static VOID aisFsmMayRequstPmkId(P_ADAPTER_T prAdapter, P_BSS_DESC_T prBssDesc);
 static VOID aisCheckNeighborApValidity(IN P_ADAPTER_T prAdapter);
@@ -5629,7 +5633,11 @@ static VOID aisPostScan(P_ADAPTER_T prAdapter)
 ** It will undate scan update index on Bss whose channel is not included in the scan request
 ** Additionally, will reset fgSeeProbeResp to false if Bss whose channel is included in the scan request
 */
+#if defined(MT6631)
+static VOID aisPreScan(P_ADAPTER_T prAdapter, struct _MSG_SCN_SCAN_REQ_V3_T *prMsg)
+#else
 static VOID aisPreScan(P_ADAPTER_T prAdapter, P_MSG_SCN_SCAN_REQ_V2 prMsg)
+#endif
 {
 	P_LINK_T prLink = &prAdapter->rWifiVar.rScanInfo.rBSSDescList;
 	P_BSS_DESC_T prBssDesc = NULL;
