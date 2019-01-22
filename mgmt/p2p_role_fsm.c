@@ -1130,7 +1130,7 @@ VOID p2pRoleFsmRunEventJoinComplete(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prM
 					 */
 					if (prJoinInfo->prTargetBssDesc)
 						scanReportBss2Cfg80211(prAdapter,
-								       OP_MODE_P2P_DEVICE, prJoinInfo->prTargetBssDesc);
+							BSS_TYPE_P2P_DEVICE, prJoinInfo->prTargetBssDesc);
 					kalP2PGCIndicateConnectionStatus(prAdapter->prGlueInfo,
 									 prP2pRoleFsmInfo->ucRoleIndex,
 									 &prP2pRoleFsmInfo->rConnReqInfo,
