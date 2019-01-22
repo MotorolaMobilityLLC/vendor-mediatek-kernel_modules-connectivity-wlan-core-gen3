@@ -838,7 +838,7 @@
 #define CFG_SUPPORT_SCN_PSCN	1
 
 #if CFG_SUPPORT_SCN_PSCN
-#define CFG_SUPPORT_GSCN	1	/* GSCN can be disabled here */
+#define CFG_SUPPORT_GSCN	0	/* GSCN not ready disabled here */
 #else
 #define CFG_SUPPORT_GSCN	0
 #endif
