@@ -55,6 +55,9 @@
 */
 /* #define MAX_IOREQ_NUM   10 */
 static struct wireless_dev *gprWdev;
+BOOLEAN fgNvramAvailable;
+UINT_8 g_aucNvram[CFG_FILE_WIFI_REC_SIZE];
+
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -619,9 +622,14 @@ static void glLoadNvram(IN P_GLUE_INFO_T prGlueInfo, OUT P_REG_INFO_T prRegInfo)
 	if ((!prGlueInfo) || (!prRegInfo))
 		return;
 
-	if (kalCfgDataRead16(prGlueInfo, sizeof(WIFI_CFG_PARAM_STRUCT) - sizeof(UINT_16), (PUINT_16) aucTmp) == TRUE) {
-		prGlueInfo->fgNvramAvailable = TRUE;
+	DBGLOG(INIT, INFO, "fgNvramAvailable = %u\n", fgNvramAvailable);
+	prGlueInfo->fgNvramAvailable = fgNvramAvailable;
+	if (!prGlueInfo->fgNvramAvailable) {
+		DBGLOG(INIT, WARN, "Nvram not available\n");
+		return;
+	}
 
+	do {
 		/* load MAC Address */
 		for (i = 0; i < PARAM_MAC_ADDR_LEN; i += sizeof(UINT_16)) {
 			kalCfgDataRead16(prGlueInfo,
@@ -727,10 +735,7 @@ static void glLoadNvram(IN P_GLUE_INFO_T prGlueInfo, OUT P_REG_INFO_T prRegInfo)
 		}
 		prRegInfo->prNvramSettings = (P_WIFI_CFG_PARAM_STRUCT)&prRegInfo->aucNvram;
 #endif
-	} else {
-		DBGLOG(INIT, INFO, "glLoadNvram fail\n");
-		prGlueInfo->fgNvramAvailable = FALSE;
-	}
+	} while (FALSE);
 
 }
 
@@ -1462,6 +1467,23 @@ static const struct net_device_ops wlan_netdev_ops = {
 	.ndo_select_queue = wlanSelectQueue,
 };
 
+static UINT_8 wlanNvramBufHandler(PVOID ctx, const CHAR *buf, UINT_16 length)
+{
+	DBGLOG(INIT, INFO, "buf = %p, length = %u\n", buf, length);
+	if (buf == NULL || length <= 0 || length != sizeof(g_aucNvram))
+		return -EINVAL;
+
+	if (copy_from_user(g_aucNvram, buf, length)) {
+		DBGLOG(INIT, ERROR, "copy nvram fail\n");
+		fgNvramAvailable = FALSE;
+		return -EINVAL;
+	}
+
+	fgNvramAvailable = TRUE;
+	return 0;
+}
+
+
 static void createWirelessDevice(void)
 {
 	struct wiphy *prWiphy = NULL;
@@ -1528,6 +1550,7 @@ static void createWirelessDevice(void)
 		DBGLOG(INIT, ERROR, "wiphy_register error\n");
 		goto free_wiphy;
 	}
+	register_file_buf_handler(wlanNvramBufHandler, (PVOID)NULL, ENUM_BUF_TYPE_NVRAM);
 	prWdev->wiphy = prWiphy;
 	gprWdev = prWdev;
 	DBGLOG(INIT, INFO, "Create wireless device success\n");
@@ -2571,7 +2594,7 @@ static int initWlan(void)
 	DBGLOG(INIT, INFO, "initWlan\n");
 
 	wlanDebugInit();
-
+	fgNvramAvailable = FALSE;
 	/* memory pre-allocation */
 	kalInitIOBuffer();
 	procInitFs();
