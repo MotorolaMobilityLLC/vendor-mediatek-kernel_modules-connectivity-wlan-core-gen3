@@ -2909,11 +2909,10 @@ struct __KAL_ATTRIB_PACKED__ WMM_ACTION_TSPEC_FRAME {
 /* The macro to copy the SSID, the length of pucDestSsid should have at least 32 bytes */
 #define COPY_SSID(pucDestSsid, ucDestSsidLen, pucSrcSsid, ucSrcSsidLen) \
 	do { \
-		ucDestSsidLen = ucSrcSsidLen; \
-		if (ucSrcSsidLen) { \
-			ASSERT(ucSrcSsidLen <= ELEM_MAX_LEN_SSID); \
-			kalMemCopy(pucDestSsid, pucSrcSsid,	\
-			((ucSrcSsidLen > ELEM_MAX_LEN_SSID) ? ELEM_MAX_LEN_SSID : ucSrcSsidLen)); \
+		ucDestSsidLen = (ucSrcSsidLen > ELEM_MAX_LEN_SSID) \
+			? ELEM_MAX_LEN_SSID : ucSrcSsidLen; \
+		if (ucDestSsidLen) { \
+			kalMemCopy(pucDestSsid, pucSrcSsid, ucDestSsidLen); \
 		} \
 	} while (FALSE)
 
