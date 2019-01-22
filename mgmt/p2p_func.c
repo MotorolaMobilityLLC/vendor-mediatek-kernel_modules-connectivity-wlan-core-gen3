@@ -1044,9 +1044,9 @@ VOID p2pFuncStopGO(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prP2pBssInfo)
 
 			/* Reset RLM related field of BSSINFO. */
 			rlmBssAborted(prAdapter, prP2pBssInfo);
-
-			prP2pBssInfo->eIntendOPMode = OP_MODE_P2P_DEVICE;
 		}
+
+		prP2pBssInfo->eIntendOPMode = OP_MODE_P2P_DEVICE;
 
 		DBGLOG(P2P, INFO, "Re activate P2P Network.\n");
 		nicDeactivateNetwork(prAdapter, prP2pBssInfo->ucBssIndex);
@@ -1174,8 +1174,8 @@ VOID p2pFuncReleaseCh(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIdx, IN P_P2P_CHN
 		if (!prChnlReqInfo->fgIsChannelRequested)
 			break;
 
-			DBGLOG(P2P, TRACE, "P2P Release Channel\n");
-			prChnlReqInfo->fgIsChannelRequested = FALSE;
+		DBGLOG(P2P, TRACE, "P2P Release Channel\n");
+		prChnlReqInfo->fgIsChannelRequested = FALSE;
 
 		/* 1. return channel privilege to CNM immediately */
 		prMsgChRelease = (P_MSG_CH_ABORT_T) cnmMemAlloc(prAdapter, RAM_TYPE_MSG, sizeof(MSG_CH_ABORT_T));
@@ -1339,7 +1339,7 @@ VOID
 p2pFuncDissolve(IN P_ADAPTER_T prAdapter,
 		IN P_BSS_INFO_T prP2pBssInfo, IN BOOLEAN fgSendDeauth, IN UINT_16 u2ReasonCode)
 {
-	DEBUGFUNC("p2pFuncDissolve()");
+	BOOLEAN fgWaitDeauthSendout = FALSE;
 
 	do {
 
@@ -1357,6 +1357,8 @@ p2pFuncDissolve(IN P_ADAPTER_T prAdapter,
 				/* 2012/02/14 frog: After formation before join group, prStaRecOfAP is NULL. */
 				p2pFuncDisconnect(prAdapter,
 						  prP2pBssInfo, prP2pBssInfo->prStaRecOfAP, fgSendDeauth, u2ReasonCode);
+
+				fgWaitDeauthSendout = fgSendDeauth;
 			}
 
 			/*
@@ -1389,6 +1391,8 @@ p2pFuncDissolve(IN P_ADAPTER_T prAdapter,
 
 					prCurrStaRec = bssRemoveHeadClient(prAdapter, prP2pBssInfo);
 				}
+
+				fgWaitDeauthSendout = TRUE;
 			}
 
 			break;
@@ -1396,12 +1400,14 @@ p2pFuncDissolve(IN P_ADAPTER_T prAdapter,
 			return;	/* 20110420 -- alreay in Device Mode. */
 		}
 
-		/* Make the deauth frame send to FW ASAP. */
-		wlanAcquirePowerControl(prAdapter);
-		wlanProcessCommandQueue(prAdapter, &prAdapter->prGlueInfo->rCmdQueue);
-		wlanReleasePowerControl(prAdapter);
+		if (fgWaitDeauthSendout) {
+			/* Make the deauth frame send to FW ASAP. */
+			wlanAcquirePowerControl(prAdapter);
+			wlanProcessCommandQueue(prAdapter, &prAdapter->prGlueInfo->rCmdQueue);
+			wlanReleasePowerControl(prAdapter);
 
-		kalMdelay(100);
+			kalMdelay(100);
+		}
 
 		/* Change Connection Status. */
 		p2pChangeMediaState(prAdapter, prP2pBssInfo, PARAM_MEDIA_STATE_DISCONNECTED);
