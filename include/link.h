@@ -267,7 +267,7 @@ struct LINK_MGMT {
 /* Iterate over a link list of given type */
 #define LINK_FOR_EACH_ENTRY(prObj, prLink, rMember, _TYPE) \
 	for (prObj = LINK_ENTRY((prLink)->prNext, _TYPE, rMember); \
-	 &prObj->rMember != (P_LINK_ENTRY_T)(prLink); \
+	 prObj && (&prObj->rMember != (P_LINK_ENTRY_T)(prLink)); \
 	 prObj = LINK_ENTRY(prObj->rMember.prNext, _TYPE, rMember))
 
 /* Iterate backwards over a link list of given type */
