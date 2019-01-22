@@ -323,7 +323,7 @@ PVOID cnmMemAlloc(IN P_ADAPTER_T prAdapter, IN ENUM_RAM_TYPE_T eRamType, IN UINT
 	}
 
 #if CFG_DBG_MGT_BUF
-	prBufInfo->u4AllocCount++;
+	GLUE_INC_REF_CNT(prBufInfo->u4AllocCount);
 #endif
 
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, eRamType == RAM_TYPE_MSG ? SPIN_LOCK_MSG_BUF : SPIN_LOCK_MGT_BUF);
@@ -366,7 +366,9 @@ PVOID cnmMemAlloc(IN P_ADAPTER_T prAdapter, IN ENUM_RAM_TYPE_T eRamType, IN UINT
 	if (pvMemory) {
 		struct MEM_TRACK *prMemTrack = (struct MEM_TRACK *)pvMemory;
 
+		KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MGT_BUF);
 		LINK_INSERT_TAIL(&prAdapter->rMemTrackLink, &prMemTrack->rLinkEntry);
+		KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MGT_BUF);
 		prMemTrack->pucFileAndLine = fileAndLine;
 		prMemTrack->u2CmdIdAndWhere = 0x0000;
 		pvMemory = (PVOID)(prMemTrack + 1);
@@ -382,10 +384,10 @@ PVOID cnmMemAlloc(IN P_ADAPTER_T prAdapter, IN ENUM_RAM_TYPE_T eRamType, IN UINT
 #endif
 
 #if CFG_DBG_MGT_BUF
-	prBufInfo->u4AllocNullCount++;
+	GLUE_INC_REF_CNT(prBufInfo->u4AllocNullCount);
 
 	if (pvMemory)
-		prAdapter->u4MemAllocDynamicCount++;
+		GLUE_INC_REF_CNT(prAdapter->u4MemAllocDynamicCount);
 #endif
 
 	return pvMemory;
@@ -436,7 +438,9 @@ VOID cnmMemFree(IN P_ADAPTER_T prAdapter, IN PVOID pvMemory)
 #if CFG_DBG_MGT_BUF
 		struct MEM_TRACK *prTrack = (struct MEM_TRACK *)((PUINT_8)pvMemory - sizeof(struct MEM_TRACK));
 
+		KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_MGT_BUF);
 		LINK_REMOVE_KNOWN_ENTRY(&prAdapter->rMemTrackLink, &prTrack->rLinkEntry);
+		KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_MGT_BUF);
 		kalMemFree(prTrack, PHY_MEM_TYPE, 0);
 #else
 		/* For Linux, it is supported because size is not needed */
@@ -448,17 +452,15 @@ VOID cnmMemFree(IN P_ADAPTER_T prAdapter, IN PVOID pvMemory)
 #endif
 
 #if CFG_DBG_MGT_BUF
-		prAdapter->u4MemFreeDynamicCount++;
+		GLUE_INC_REF_CNT(prAdapter->u4MemFreeDynamicCount);
 #endif
 		return;
 	}
 
-	KAL_ACQUIRE_SPIN_LOCK(prAdapter, eRamType == RAM_TYPE_MSG ? SPIN_LOCK_MSG_BUF : SPIN_LOCK_MGT_BUF);
-
 #if CFG_DBG_MGT_BUF
-	prBufInfo->u4FreeCount++;
+	GLUE_INC_REF_CNT(prBufInfo->u4FreeCount);
 #endif
-
+	KAL_ACQUIRE_SPIN_LOCK(prAdapter, eRamType == RAM_TYPE_MSG ? SPIN_LOCK_MSG_BUF : SPIN_LOCK_MGT_BUF);
 	/* Convert number of block into bit cluster */
 	ASSERT(prBufInfo->aucAllocatedBlockNum[u4BlockIndex] > 0);
 
