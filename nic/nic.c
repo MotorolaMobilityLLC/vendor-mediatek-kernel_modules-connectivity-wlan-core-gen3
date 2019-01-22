@@ -1535,7 +1535,7 @@ WLAN_STATUS nicDeactivateNetwork(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex)
 	rCmdActivateCtrl.ucBMCWlanIndex =
 		prBssInfo->ucBMCWlanIndex;
 
-	DBGLOG(NIC, INFO, "[wlan index][Network]=%d activate=%d\n", ucBssIndex, 0);
+	DBGLOG(NIC, TRACE, "[wlan index][Network]=%d activate=%d\n", ucBssIndex, 0);
 	DBGLOG(NIC, INFO,
 	       "[wlan index][Network] OwnMac=" MACSTR " BSSID=" MACSTR " BCIndex = %d NetType=%d\n",
 		MAC2STR(prBssInfo->aucOwnMacAddr),

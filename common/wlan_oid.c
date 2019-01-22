@@ -6705,7 +6705,7 @@ wlanoidSetMulticastList(IN P_ADAPTER_T prAdapter,
 	rCmdMacMcastAddr.u4NumOfGroupAddr = u4SetBufferLen / MAC_ADDR_LEN;
 	rCmdMacMcastAddr.ucBssIndex = prAdapter->prAisBssInfo->ucBssIndex;
 	kalMemCopy(rCmdMacMcastAddr.arAddress, pvSetBuffer, u4SetBufferLen);
-	DBGLOG(OID, INFO,
+	DBGLOG(OID, TRACE,
 		"MCAST white list: total=%d MAC0="MACSTR" MAC1="MACSTR" MAC2="MACSTR" MAC3="MACSTR" MAC4="MACSTR"\n",
 		rCmdMacMcastAddr.u4NumOfGroupAddr,
 		MAC2STR(rCmdMacMcastAddr.arAddress[0]), MAC2STR(rCmdMacMcastAddr.arAddress[1]),
