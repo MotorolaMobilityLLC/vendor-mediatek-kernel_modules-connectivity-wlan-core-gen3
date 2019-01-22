@@ -3818,6 +3818,7 @@ VOID kalReleaseIOBuffer(IN PVOID pvAddr, IN UINT_32 u4Size)
 	}
 }
 
+#if (CFG_SUPPORT_DEBUG_STATISTICS == 1)
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief decode ethernet type from package head
@@ -3906,6 +3907,7 @@ UINT_8 kalGetPktEtherType(IN PUINT_8 pucPkt)
 
 	return ucResult;
 }
+#endif
 
 /*----------------------------------------------------------------------------*/
 /*!

@@ -120,11 +120,14 @@ typedef enum _ENUM_DBG_MODULE_T {
 	DBG_WMM_IDX,
 	DBG_MODULE_NUM		/* Notice the XLOG check */
 } ENUM_DBG_MODULE_T;
+
+#if (CFG_SUPPORT_DEBUG_STATISTICS == 1)
 enum PKT_TYPE {
 	PKT_RX,
 	PKT_TX,
 	PKT_TX_DONE
 };
+#endif
 
 enum PKT_PHASE {
 	PHASE_XMIT_RCV,
@@ -397,13 +400,14 @@ VOID glNotifyDrvStatus(enum DRV_STATUS_T eDrvStatus, PVOID pvInfo);
 
 VOID wlanDebugTC4AndPktInit(VOID);
 VOID wlanDebugTC4AndPktUninit(VOID);
-
+#if (CFG_SUPPORT_DEBUG_STATISTICS == 1)
 VOID wlanPktStatusDebugDumpInfo(P_ADAPTER_T prAdapter);
 VOID wlanPktStatusDebugTraceInfoARP(UINT_8 status, UINT_8 eventType, UINT_16 u2ArpOpCode, PUINT_8 pucPkt);
 VOID wlanPktStatusDebugTraceInfoIP(UINT_8 status, UINT_8 eventType, UINT_8 ucIpProto, UINT_16 u2IpId
 	, PUINT_8 pucPkt);
 VOID wlanPktStatusDebugTraceInfo(UINT_8 status, UINT_8 eventType
 	, UINT_16 u2EtherType, UINT_8 ucIpProto, UINT_16 u2IpId, UINT_16 u2ArpOpCode, PUINT_8 pucPkt);
+#endif
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
