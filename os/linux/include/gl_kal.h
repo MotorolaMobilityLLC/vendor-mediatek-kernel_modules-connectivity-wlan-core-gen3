@@ -412,6 +412,27 @@ struct KAL_HALT_CTRL_T {
 #define KAL_GET_PKT_ARRIVAL_TIME(_p)            GLUE_GET_PKT_ARRIVAL_TIME(_p)
 
 /*----------------------------------------------------------------------------*/
+/* Macros for kernel related defines                      */
+/*----------------------------------------------------------------------------*/
+#if KERNEL_VERSION(4, 7, 0) <= CFG80211_VERSION_CODE
+/**
+ * enum nl80211_band - Frequency band
+ * @NL80211_BAND_2GHZ: 2.4 GHz ISM band
+ * @NL80211_BAND_5GHZ: around 5 GHz band (4.9 - 5.7 GHz)
+ * @NL80211_BAND_60GHZ: around 60 GHz band (58.32 - 64.80 GHz)
+ * @NUM_NL80211_BANDS: number of bands, avoid using this in userspace
+ *	 since newer kernel versions may support more bands
+ */
+#define KAL_BAND_2GHZ NL80211_BAND_2GHZ
+#define KAL_BAND_5GHZ NL80211_BAND_5GHZ
+#define KAL_NUM_BANDS NUM_NL80211_BANDS
+#else
+#define KAL_BAND_2GHZ IEEE80211_BAND_2GHZ
+#define KAL_BAND_5GHZ IEEE80211_BAND_5GHZ
+#define KAL_NUM_BANDS IEEE80211_NUM_BANDS
+#endif
+
+/*----------------------------------------------------------------------------*/
 /* Macros of wake_lock operations for using in Driver Layer                   */
 /*----------------------------------------------------------------------------*/
 #if CONFIG_ANDROID		/* Defined in Android kernel source */

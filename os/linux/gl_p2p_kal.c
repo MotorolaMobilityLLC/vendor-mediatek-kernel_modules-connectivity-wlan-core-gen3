@@ -1248,16 +1248,16 @@ struct ieee80211_channel *kalP2pFuncGetChannelEntry(IN P_GL_P2P_INFO_T prP2pInfo
 
 		switch (prChannelInfo->eBand) {
 		case BAND_2G4:
-			if (bands[NL80211_BAND_2GHZ]) {
-				prTargetChannelEntry = bands[NL80211_BAND_2GHZ]->channels;
-				u4TblSize = bands[NL80211_BAND_2GHZ]->n_channels;
+			if (bands[KAL_BAND_2GHZ]) {
+				prTargetChannelEntry = bands[KAL_BAND_2GHZ]->channels;
+				u4TblSize = bands[KAL_BAND_2GHZ]->n_channels;
 			} else
 				DBGLOG(P2P, ERROR, "2.4G band entry is NULL!\n");
 			break;
 		case BAND_5G:
-			if (bands[NL80211_BAND_5GHZ]) {
-				prTargetChannelEntry = bands[NL80211_BAND_5GHZ]->channels;
-				u4TblSize = bands[NL80211_BAND_5GHZ]->n_channels;
+			if (bands[KAL_BAND_5GHZ]) {
+				prTargetChannelEntry = bands[KAL_BAND_5GHZ]->channels;
+				u4TblSize = bands[KAL_BAND_5GHZ]->n_channels;
 			} else
 				DBGLOG(P2P, ERROR, "5G band entry is NULL!\n");
 			break;

@@ -650,11 +650,11 @@ int mtk_cfg80211_get_channel_info(P_GLUE_INFO_T prGlueInfo, struct cfg80211_scan
 		DBGLOG(REQ, TRACE, "partial scan set channel band=%d\n", prchannelinfo->band);
 
 		switch (prchannelinfo->band) {
-		case NL80211_BAND_2GHZ:
+		case KAL_BAND_2GHZ:
 			prPartialScanChannel->arChnlInfoList[i].eBand = BAND_2G4;
 			break;
 
-		case NL80211_BAND_5GHZ:
+		case KAL_BAND_5GHZ:
 			prPartialScanChannel->arChnlInfoList[i].eBand = BAND_5G;
 			break;
 
@@ -1701,10 +1701,10 @@ int mtk_cfg80211_remain_on_channel(struct wiphy *wiphy,
 		prMsgChnlReq->ucChannelNum = nicFreq2ChannelNum(chan->center_freq * 1000);
 
 		switch (chan->band) {
-		case NL80211_BAND_2GHZ:
+		case KAL_BAND_2GHZ:
 			prMsgChnlReq->eBand = BAND_2G4;
 			break;
-		case NL80211_BAND_5GHZ:
+		case KAL_BAND_5GHZ:
 			prMsgChnlReq->eBand = BAND_5G;
 			break;
 		default:

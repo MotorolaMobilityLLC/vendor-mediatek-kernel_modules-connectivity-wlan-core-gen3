@@ -102,10 +102,10 @@ static BOOLEAN __channel_format_switch(IN struct ieee80211_channel *channel,
 			prRfChnlInfo->ucChannelNum = nicFreq2ChannelNum(channel->center_freq * 1000);
 
 			switch (channel->band) {
-			case NL80211_BAND_2GHZ:
+			case KAL_BAND_2GHZ:
 				prRfChnlInfo->eBand = BAND_2G4;
 				break;
-			case NL80211_BAND_5GHZ:
+			case KAL_BAND_5GHZ:
 				prRfChnlInfo->eBand = BAND_5G;
 				break;
 			default:
@@ -547,10 +547,10 @@ int mtk_p2p_cfg80211_scan(struct wiphy *wiphy, struct cfg80211_scan_request *req
 			DBGLOG(P2P, TRACE, "Scanning Channel: %d, freq: %d\n",
 			       prRfChannelInfo->ucChannelNum, prChannel->center_freq);
 			switch (prChannel->band) {
-			case NL80211_BAND_2GHZ:
+			case KAL_BAND_2GHZ:
 				prRfChannelInfo->eBand = BAND_2G4;
 				break;
-			case NL80211_BAND_5GHZ:
+			case KAL_BAND_5GHZ:
 				prRfChannelInfo->eBand = BAND_5G;
 				break;
 			default:
