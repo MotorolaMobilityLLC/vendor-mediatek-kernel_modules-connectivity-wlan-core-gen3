@@ -1842,6 +1842,7 @@ WLAN_STATUS nicTxCmd(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN UIN
 	PUINT_8 pucOutputBuf = (PUINT_8) NULL;	/* Pointer to Transmit Data Structure Frame */
 	P_TX_CTRL_T prTxCtrl;
 	P_HW_MAC_TX_DESC_T prTxDesc = NULL;
+	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 
 	KAL_SPIN_LOCK_DECLARATION();
 
@@ -1872,6 +1873,11 @@ WLAN_STATUS nicTxCmd(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN UIN
 			/* <3> Copy Frame Body */
 			kalCopyFrame(prAdapter->prGlueInfo, prNativePacket,
 				     pucOutputBuf + ucTxDescLength + NIC_TX_DESC_PADDING_LENGTH);
+		} else {
+			DBGLOG(TX, WARN, "prNativePacket is null\n");
+			nicTxReturnMsduInfo(prAdapter, prMsduInfo);
+			rStatus = WLAN_STATUS_FAILURE;
+			goto out;
 		}
 		DBGLOG(TX, INFO,
 		       "TX SEC:BSS[%u]WIDX:PID[%u:%u]S[%u]L[%u]E[%u]R[%u]S[%d]F[%u]FR[%u]AI[%d]PO[%d]\n",
@@ -1999,8 +2005,8 @@ WLAN_STATUS nicTxCmd(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN UIN
 	/* <4> Write frame to data port */
 	HAL_WRITE_TX_PORT(prAdapter,
 			  (UINT_32) u2OverallLength, pucOutputBuf, prAdapter->u4CoalescingBufCachedSize);
-
-	return WLAN_STATUS_SUCCESS;
+out:
+	return rStatus;
 }				/* end of nicTxCmd() */
 
 /*----------------------------------------------------------------------------*/
