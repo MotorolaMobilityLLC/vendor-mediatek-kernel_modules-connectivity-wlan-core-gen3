@@ -159,6 +159,139 @@ wlanImageDividDownload(IN P_ADAPTER_T prAdapter, IN PVOID pvFwImageMapFile);
 *                              F U N C T I O N S
 ********************************************************************************
 */
+
+UINT_32 dumpCrBeforeReset(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
+{
+#if defined(MT6631)
+	UINT_32 val = 0;
+	UINT_32 u4InfraPseOffset = 0x0394;
+
+	if (prGlueInfo == NULL) {
+		DBGLOG(INIT, WARN, "prGlueInfo == NULL\n");
+		return -1;
+	}
+
+	/*Pin-Hao need check some cr.*/
+	/* SET INFRA AO REMAPPING PSE Client REG according to Chip ID */
+	switch (u2ChipID) {
+	case 0x6797:
+		u4InfraPseOffset = 0x0340;
+		break;
+	case 0x6759:
+	case 0x6758:
+	case 0x6775:
+		u4InfraPseOffset = 0x0384;
+		break;
+	case 0x6771:
+		u4InfraPseOffset = 0x0394;
+		break;
+	default:
+		DBGLOG(INIT, WARN, "Using default offset 0x%04x for chip id 0x%04x\n",
+			   u4InfraPseOffset, u2ChipID);
+		break;
+	}
+
+
+	DBGLOG(INIT, ERROR,
+	       "HIF_BASE_ADDR+0x300: 0x%08x\n",
+	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+				0x300));
+
+	DBGLOG(INIT, ERROR,
+	       "HIF_BASE_ADDR+0x304: 0x%08x\n",
+	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+				0x304));
+
+	DBGLOG(INIT, ERROR,
+	       "HIF_BASE_ADDR+0x308: 0x%08x\n",
+	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+				0x308));
+
+	DBGLOG(INIT, ERROR,
+	       "HIF_BASE_ADDR+0x310: 0x%08x\n",
+	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+				0x310));
+
+	DBGLOG(INIT, ERROR,
+	       "HIF_BASE_ADDR+0x320: 0x%08x\n",
+	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+				0x320));
+
+	DBGLOG(INIT, ERROR,
+	       "HIF_BASE_ADDR+0x328: 0x%08x\n",
+	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+				0x328));
+
+	DBGLOG(INIT, ERROR,
+	       "HIF_BASE_ADDR+0x32c: 0x%08x\n",
+	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+				0x32c));
+
+	DBGLOG(INIT, ERROR,
+	       "HIF_BASE_ADDR+0x330: 0x%08x\n",
+	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+				0x330));
+
+	DBGLOG(INIT, ERROR, "INFRASYS_AO_REG_BASE+0x0394 write 0x800c.\n");
+	if (u2ChipID == 0x6771) {
+		val = 0x800c;
+		CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.InfraRegBaseAddr,
+				 u4InfraPseOffset, val);
+	} else {
+		val = 0x800c << 16;
+		CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.InfraRegBaseAddr, u4InfraPseOffset,
+				  CONNSYS_REG_READ(prGlueInfo->rHifInfo.InfraRegBaseAddr,
+						   u4InfraPseOffset) | val);
+	}
+
+	DBGLOG(INIT, ERROR, "CONNSYS_CONFIG+0x6c write 0x6\n");
+	val = 0x6;
+	CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
+			  0x6c, val);
+	DBGLOG(INIT, ERROR,
+		   "CONNSYS_CONFIG+0x6c: 0x%08x\n",
+		   CONNSYS_REG_READ(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
+				0x6c));
+
+	DBGLOG(INIT, ERROR, "CONNSYS_CONFIG+0x6c write 0x3\n");
+	val = 0x3;
+	CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
+			  0x6c, val);
+	DBGLOG(INIT, ERROR,
+		   "CONNSYS_CONFIG+0x6c: 0x%08x\n",
+		   CONNSYS_REG_READ(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
+				0x6c));
+
+	DBGLOG(INIT, ERROR, "CONNSYS_CONFIG+0x6c write 0x4\n");
+	val = 0x4;
+	CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
+			  0x6c, val);
+	DBGLOG(INIT, ERROR,
+		   "CONNSYS_CONFIG+0x6c: 0x%08x\n",
+		   CONNSYS_REG_READ(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
+				0x6c));
+
+	DBGLOG(INIT, ERROR, "CONNSYS_CONFIG+0x6c write 0x12\n");
+	val = 0x12;
+	CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
+			  0x6c, val);
+	DBGLOG(INIT, ERROR,
+		   "CONNSYS_CONFIG+0x6c: 0x%08x\n",
+		   CONNSYS_REG_READ(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
+				0x6c));
+
+	DBGLOG(INIT, ERROR, "CONNSYS_CONFIG+0x6c write 0x17\n");
+	val = 0x17;
+	CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
+			  0x6c, val);
+	DBGLOG(INIT, ERROR,
+		   "CONNSYS_CONFIG+0x6c: 0x%08x\n",
+		   CONNSYS_REG_READ(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
+				0x6c));
+#endif
+	return 0;
+}
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This is a private routine, which is used to check if HW access is needed
@@ -1946,6 +2079,8 @@ VOID wlanReleasePendingOid(IN P_ADAPTER_T prAdapter, IN ULONG ulParamPtr)
 #if (CFG_SUPPORT_TRACE_TC4 == 1)
 					wlanDumpTcResAndTxedCmd(NULL, 0);
 #endif
+					if (prAdapter != NULL)
+						dumpCrBeforeReset(prAdapter->prGlueInfo, prAdapter->u2ChipID);
 					GL_RESET_TRIGGER(prAdapter, RST_FLAG_DO_CORE_DUMP);
 				}
 
