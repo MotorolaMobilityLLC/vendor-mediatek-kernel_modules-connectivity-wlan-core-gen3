@@ -1528,17 +1528,20 @@ WLAN_STATUS nicDeactivateNetwork(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIndex)
 
 	rCmdActivateCtrl.ucBssIndex = ucBssIndex;
 	rCmdActivateCtrl.ucActive = 0;
-	/* rCmdActivateCtrl.ucBMCWlanIndex = prBssInfo->ucBMCWlanIndex; */
+	rCmdActivateCtrl.ucNetworkType =
+		(UINT_8)prBssInfo->eNetworkType;
+	rCmdActivateCtrl.ucOwnMacAddrIndex =
+		prBssInfo->ucOwnMacIndex;
+	rCmdActivateCtrl.ucBMCWlanIndex =
+		prBssInfo->ucBMCWlanIndex;
 
-#if DBG
-	DBGLOG(NIC, TRACE, "[wlan index][Network]=%d activate=%d\n", ucBssIndex, 0);
-	DBGLOG(NIC, TRACE,
-	       "[wlan index][Network] OwnMac=" MACSTR " BSSID=" MACSTR " BCIndex = %d\n",
+	DBGLOG(NIC, INFO, "[wlan index][Network]=%d activate=%d\n", ucBssIndex, 0);
+	DBGLOG(NIC, INFO,
+	       "[wlan index][Network] OwnMac=" MACSTR " BSSID=" MACSTR " BCIndex = %d NetType=%d\n",
 		MAC2STR(prBssInfo->aucOwnMacAddr),
 		MAC2STR(prBssInfo->aucBSSID),
-		prBssInfo->ucBMCWlanIndex);
-#endif
-	rCmdActivateCtrl.ucOwnMacAddrIndex = prBssInfo->ucOwnMacIndex;
+		prBssInfo->ucBMCWlanIndex,
+		prBssInfo->eNetworkType);
 
 	u4Status = wlanSendSetQueryCmd(prAdapter,
 				       CMD_ID_BSS_ACTIVATE_CTRL,
