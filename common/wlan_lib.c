@@ -1943,6 +1943,9 @@ VOID wlanReleasePendingOid(IN P_ADAPTER_T prAdapter, IN ULONG ulParamPtr)
 					DBGLOG(INIT, WARN,
 					       "No response from chip for %u times, set NoAck flag!\n",
 						prAdapter->ucOidTimeoutCount);
+#if (CFG_SUPPORT_TRACE_TC4 == 1)
+					wlanDumpTcResAndTxedCmd(NULL, 0);
+#endif
 					GL_RESET_TRIGGER(prAdapter, RST_FLAG_DO_CORE_DUMP);
 				}
 
