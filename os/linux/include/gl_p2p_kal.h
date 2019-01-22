@@ -196,6 +196,8 @@ kalP2PGCIndicateConnectionStatus(IN P_GLUE_INFO_T prGlueInfo,
 				 IN PUINT_8 pucRxIEBuf, IN UINT_16 u2RxIELen, IN UINT_16 u2StatusReason,
 				 IN WLAN_STATUS eStatus);
 
+VOID kalP2PGOIndicateStatus(IN P_GLUE_INFO_T prGlueInfo, IN BOOLEAN fgReady);
+
 VOID
 kalP2PGOStationUpdate(IN P_GLUE_INFO_T prGlueInfo,
 		      IN UINT_8 ucRoleIndex, IN P_STA_RECORD_T prCliStaRec, IN BOOLEAN fgIsNew);

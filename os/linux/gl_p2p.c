@@ -1058,8 +1058,7 @@ static int p2pOpen(IN struct net_device *prDev)
 	mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prFuncSwitch, MSG_SEND_METHOD_BUF);
 #endif
 
-	/* 2. carrier on & start TX queue */
-	netif_carrier_on(prDev);
+	/* 2. start TX queue, set carrier on after link is ready */
 	netif_tx_start_all_queues(prDev);
 
 	return 0;		/* success */
@@ -1137,8 +1136,6 @@ static int p2pStop(IN struct net_device *prDev)
 	prGlueInfo->prP2PInfo->eState = PARAM_MEDIA_STATE_DISCONNECTED;
 
 	netif_tx_stop_all_queues(prDev);
-	if (netif_carrier_ok(prDev))
-		netif_carrier_off(prDev);
 
 	return 0;
 }				/* end of p2pStop() */
