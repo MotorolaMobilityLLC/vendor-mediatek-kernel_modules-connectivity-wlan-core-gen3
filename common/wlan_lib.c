@@ -567,7 +567,7 @@ wlanAdapterStart(IN P_ADAPTER_T prAdapter, IN P_REG_INFO_T prRegInfo)
 		nicTxInitResetResource(prAdapter);
 
 		/* 3. FW download here */
-		DBGLOG(INIT, INFO, "FW download start...\n");
+		DBGLOG(INIT, TRACE, "FW download start...\n");
 
 #if CFG_ENABLE_FW_DIVIDED_DOWNLOAD
 		/* 3a. parse file header for decision of divided firmware download or not */
@@ -3378,7 +3378,7 @@ WLAN_STATUS wlanUpdateNetworkAddress(IN P_ADAPTER_T prAdapter)
 		/* eFUSE has a valid address, don't do anything */
 		if (prAdapter->fgIsEmbbededMacAddrValid == FALSE) {
 #if CFG_SHOW_MACADDR_SOURCE
-			DBGLOG(INIT, INFO, "Using dynamically generated MAC address");
+			DBGLOG(INIT, TRACE, "Using dynamically generated MAC address");
 #endif
 			/* dynamic generate */
 			u4SysTime = (UINT_32) kalGetTimeTick();

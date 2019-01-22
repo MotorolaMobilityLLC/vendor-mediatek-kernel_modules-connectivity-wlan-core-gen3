@@ -672,7 +672,7 @@ VOID p2pRoleFsmRunEventStartAP(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr
 	do {
 		ASSERT_BREAK((prAdapter != NULL) && (prMsgHdr != NULL));
 
-		DBGLOG(P2P, INFO, "p2pRoleFsmRunEventStartAP\n");
+		DBGLOG(P2P, TRACE, "p2pRoleFsmRunEventStartAP\n");
 
 		prP2pStartAPMsg = (P_MSG_P2P_START_AP_T) prMsgHdr;
 
