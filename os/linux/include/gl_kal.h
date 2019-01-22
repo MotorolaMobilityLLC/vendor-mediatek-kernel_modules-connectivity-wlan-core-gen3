@@ -218,9 +218,17 @@ typedef enum _ENUM_KAL_MEM_ALLOCATION_TYPE_E {
 } ENUM_KAL_MEM_ALLOCATION_TYPE;
 
 #if CONFIG_ANDROID		/* Defined in Android kernel source */
+
+#ifdef CONFIG_WAKELOCK
 typedef struct wake_lock KAL_WAKE_LOCK_T, *P_KAL_WAKE_LOCK_T;
 #define KAL_WAKELOCK_DECLARE(_lock) \
 	struct wake_lock _lock
+#else
+#define KAL_WAKE_LOCK_T struct wakeup_source
+#define KAL_WAKELOCK_DECLARE(_lock) \
+	struct wakeup_source _lock
+#endif /*CONFIG_WAKELOCK*/
+
 #else
 typedef UINT_32 KAL_WAKE_LOCK_T, *P_KAL_WAKE_LOCK_T;
 #define KAL_WAKELOCK_DECLARE(_lock)
@@ -407,6 +415,7 @@ struct KAL_HALT_CTRL_T {
 /* Macros of wake_lock operations for using in Driver Layer                   */
 /*----------------------------------------------------------------------------*/
 #if CONFIG_ANDROID		/* Defined in Android kernel source */
+#ifdef CONFIG_WAKELOCK
 #define KAL_WAKE_LOCK_INIT(_prAdapter, _prWakeLock, _pcName) \
 	wake_lock_init(_prWakeLock, WAKE_LOCK_SUSPEND, _pcName)
 
@@ -424,6 +433,25 @@ struct KAL_HALT_CTRL_T {
 
 #define KAL_WAKE_LOCK_ACTIVE(_prAdapter, _prWakeLock) \
 	wake_lock_active(_prWakeLock)
+#else
+#define KAL_WAKE_LOCK_INIT(_prAdapter, _prWakeLock, _pcName) \
+	wakeup_source_init(_prWakeLock, _pcName)
+
+#define KAL_WAKE_LOCK_DESTROY(_prAdapter, _prWakeLock) \
+	wakeup_source_trash(_prWakeLock)
+
+#define KAL_WAKE_LOCK(_prAdapter, _prWakeLock) \
+		__pm_stay_awake(_prWakeLock)
+
+#define KAL_WAKE_LOCK_TIMEOUT(_prAdapter, _prWakeLock, _u4Timeout) \
+	__pm_wakeup_event(_prWakeLock, _u4Timeout)
+
+#define KAL_WAKE_UNLOCK(_prAdapter, _prWakeLock) \
+	__pm_relax(_prWakeLock)
+
+#define KAL_WAKE_LOCK_ACTIVE(_prAdapter, _prWakeLock) \
+	((_prWakeLock)->active)
+#endif /*CONFIG_WAKELOCK*/
 
 #else
 #define KAL_WAKE_LOCK_INIT(_prAdapter, _prWakeLock, _pcName)

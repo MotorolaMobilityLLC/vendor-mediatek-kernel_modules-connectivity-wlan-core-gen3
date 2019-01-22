@@ -87,7 +87,11 @@
 #include <linux/delay.h>	/* udelay and mdelay macro */
 
 #if CONFIG_ANDROID
+#ifdef CONFIG_WAKELOCK
 #include <linux/wakelock.h>
+#else
+#include <linux/device.h>
+#endif /*CONFIG_WAKELOCK*/
 #endif
 
 #include <linux/irq.h>		/* IRQT_FALLING */
