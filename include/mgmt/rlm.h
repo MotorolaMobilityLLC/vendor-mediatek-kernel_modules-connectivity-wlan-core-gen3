@@ -219,6 +219,19 @@ struct RADIO_MEASUREMENT_REPORT_PARAMS {
 	LINK_T rFreeReportLink;
 };
 
+#if CFG_SUPPORT_DFS
+struct CHANNEL_SWITCH_ANNOUNCE_PARAMS {
+	BOOLEAN fgReadyToSwitch;
+	BOOLEAN fgHasSCOIE;
+	BOOLEAN fgHasWideBandIE;
+	UINT_8 ucNewChannel;
+	ENUM_CHNL_EXT_T eNewSCO;
+	UINT_8 ucNewVhtBw;
+	UINT_8 ucNewVhtS1;
+	UINT_8 ucNewVhtS2;
+};
+#endif
+
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************

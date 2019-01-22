@@ -513,6 +513,9 @@ struct _AIS_SPECIFIC_BSS_INFO_T {
 	struct LINK_MGMT  rNeighborApList;
 	OS_SYSTIME rNeiApRcvTime;
 	UINT_32 u4NeiApValidInterval;
+#if CFG_SUPPORT_DFS
+	struct CHANNEL_SWITCH_ANNOUNCE_PARAMS rCsaParam;
+#endif
 };
 
 struct _BOW_SPECIFIC_BSS_INFO_T {
