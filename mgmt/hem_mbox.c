@@ -154,6 +154,7 @@ static MSG_HNDL_ENTRY_T arMsgMapTable[] = {
     /*--------------------------------------------------*/
 	{MID_AIS_SCN_SCAN_REQ, scnFsmMsgStart},
 	{MID_AIS_SCN_SCAN_REQ_V2, scnFsmMsgStart},
+	{MID_AIS_SCN_SCAN_REQ_V3, scnFsmMsgStart},
 	{MID_AIS_SCN_SCAN_CANCEL, scnFsmMsgAbort},
 	{MID_P2P_SCN_SCAN_REQ, scnFsmMsgStart},
 	{MID_P2P_SCN_SCAN_REQ_V2, scnFsmMsgStart},

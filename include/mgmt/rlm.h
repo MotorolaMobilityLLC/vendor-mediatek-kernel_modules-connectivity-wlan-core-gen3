@@ -187,6 +187,7 @@ struct NORMAL_SCAN_PARAMS {
 	UINT_8 ucSsidNum;
 	BOOLEAN fgExist;
 	BOOLEAN fgFull2Partial;
+	struct _PARAM_SCAN_RANDOM_MAC_ADDR_T rScanRandMacAddr;
 };
 
 /* Beacon RM related parameters */
@@ -371,7 +372,7 @@ VOID rlmStartNextMeasurement(P_ADAPTER_T prAdapter, BOOLEAN fgNewStarted);
 
 BOOLEAN rlmBcnRmRunning(P_ADAPTER_T prAdapter);
 
-BOOLEAN rlmFillScanMsg(P_ADAPTER_T prAdapter, P_MSG_SCN_SCAN_REQ_V2 prMsg);
+BOOLEAN rlmFillScanMsg(P_ADAPTER_T prAdapter, struct _MSG_SCN_SCAN_REQ_V3_T *prMsg);
 
 VOID rlmDoBeaconMeasurement(P_ADAPTER_T prAdapter, ULONG ulParam);
 

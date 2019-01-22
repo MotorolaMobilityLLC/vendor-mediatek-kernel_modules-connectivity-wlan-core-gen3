@@ -2983,7 +2983,7 @@ BOOLEAN rlmBcnRmRunning(P_ADAPTER_T prAdapter)
 	return prAdapter->rWifiVar.rRmReqParams.rBcnRmParam.eState == RM_ON_GOING;
 }
 
-BOOLEAN rlmFillScanMsg(P_ADAPTER_T prAdapter, P_MSG_SCN_SCAN_REQ_V2 prMsg)
+BOOLEAN rlmFillScanMsg(P_ADAPTER_T prAdapter, struct _MSG_SCN_SCAN_REQ_V3_T *prMsg)
 {
 	struct RADIO_MEASUREMENT_REQ_PARAMS *prRmReq = &prAdapter->rWifiVar.rRmReqParams;
 	P_IE_MEASUREMENT_REQ_T prCurrReq = NULL;
