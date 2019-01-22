@@ -60,11 +60,8 @@
 #define RSN_AKM_SUITE_PSK               0x02AC0F00
 #define RSN_AKM_SUITE_FT_802_1X         0x03AC0F00
 #define RSN_AKM_SUITE_FT_PSK            0x04AC0F00
-#if (KERNEL_VERSION(4, 12, 0) <= LINUX_VERSION_CODE)
-/*In Kenel 4.12 or newer , already defined in ieee80211.h*/
 #define WLAN_AKM_SUITE_FT_8021X         0x000FAC03
 #define WLAN_AKM_SUITE_FT_PSK           0x000FAC04
-#endif
 #if CFG_SUPPORT_802_11W
 #define RSN_AKM_SUITE_802_1X_SHA256     0x05AC0F00
 #define RSN_AKM_SUITE_PSK_SHA256        0x06AC0F00
