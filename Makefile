@@ -19,6 +19,8 @@ WLAN_CHIP_ID=MT6631
 else
 WLAN_CHIP_ID=MT6630
 endif
+DRIVER_BUILD_DATE=$(shell date +%Y%m%d%H%M%S)
+ccflags-y += -DDRIVER_BUILD_DATE='"$(DRIVER_BUILD_DATE)"'
 
 ccflags-y += -DLINUX -D$(WLAN_CHIP_ID)
 
