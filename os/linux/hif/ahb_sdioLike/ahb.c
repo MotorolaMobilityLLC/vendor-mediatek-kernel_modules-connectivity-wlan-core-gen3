@@ -1187,6 +1187,12 @@ static int HifAhbBusCntClr(VOID)
 	return 0;
 }
 
+static int hifAhbSetMpuProtect(BOOLEAN enable)
+{
+	kalSetEmiMpuProtection(gConEmiPhyBase, WIFI_EMI_MEM_SIZE, enable);
+	return 0;
+}
+
 /*----------------------------------------------------------------------------*/
 /*!
 * \brief This function configs the DMA TX/RX settings before any real TX/RX.
@@ -1260,6 +1266,7 @@ static int HifAhbPltmProbe(IN struct platform_device *pDev)
 	rWmtCb.wlan_remove_cb = HifAhbRemove;
 	rWmtCb.wlan_bus_cnt_get_cb = HifAhbBusCntGet;
 	rWmtCb.wlan_bus_cnt_clr_cb = HifAhbBusCntClr;
+	rWmtCb.wlan_emi_mpu_set_protection_cb = hifAhbSetMpuProtect;
 	mtk_wcn_wmt_wlan_reg(&rWmtCb);
 
 	return 0;
