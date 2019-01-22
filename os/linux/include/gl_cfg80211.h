@@ -180,9 +180,15 @@ typedef enum _ENUM_TESTMODE_STA_STATISTICS_ATTR {
 ********************************************************************************
 */
 /* cfg80211 hooks */
+#if (KERNEL_VERSION(4, 12, 0) <= LINUX_VERSION_CODE)
+int
+mtk_cfg80211_change_iface(struct wiphy *wiphy,
+			  struct net_device *ndev, enum nl80211_iftype type, struct vif_params *params);
+#else
 int
 mtk_cfg80211_change_iface(struct wiphy *wiphy,
 			  struct net_device *ndev, enum nl80211_iftype type, u32 *flags, struct vif_params *params);
+#endif
 
 int
 mtk_cfg80211_add_key(struct wiphy *wiphy,
