@@ -1548,9 +1548,10 @@ VOID rlmDomainBuildCmdByConfigTable(P_ADAPTER_T prAdapter, P_CMD_SET_COUNTRY_CHA
 						/*
 						 * Cmd setting (Default table information) and
 						 * Configuration table has repetition channel entry,
-						 * ex : Default table (ex: 2.4G, limit = 20dBm) --> ch1~14 limit =20dBm,
-						 * Configuration table (ex: ch1, limit = 22dBm) --> ch 1 = 22 dBm
-						 * Cmd final setting -->  ch1 = 22dBm, ch12~14 = 20dBm
+						 * ex:
+						 * Default table (ex: 2.4G, limit = 20dBm) --> ch1~14 limit = 20dBm,
+						 * Configuration table (ex: ch1, limit = 22dBm) --> ch1 = 22 dBm
+						 * Cmd final setting --> ch1 = 22dBm, ch12~14 = 20dBm
 						 */
 						kalMemCopy(&prCmdPwrLimit->cPwrLimitCCK,
 							   &g_rRlmPowerLimitConfiguration[i].aucPwrLimit,
@@ -1571,11 +1572,14 @@ VOID rlmDomainBuildCmdByConfigTable(P_ADAPTER_T prAdapter, P_CMD_SET_COUNTRY_CHA
 				if (k == prCmd->ucNum) {
 
 					/*
-					 * Full search cmd (Default table setting) no match channey,
-					 * ex : Default table (ex: 2.4G, limit = 20dBm) --> ch1~14 limit =20dBm,
-					 * Configuration table (ex: ch36, limit = 22dBm) --> ch 36 = 22 dBm
-					 * Cmd final setting -->  ch1~14 = 20dBm, ch36= 22dBm
+					 * Full search cmd (Default table information) no match channel,
+					 * ex:
+					 * Default table (ex: 2.4G, limit = 20dBm; 5G UNII1, limit = 63dBm)
+					 *                --> ch1~14 limit = 20dBm,
+					 * Configuration table (ex: ch36, limit = 22dBm) --> ch36 = 22dBm
+					 * Cmd final setting --> ch1~14 = 20dBm, ch36 = 22dBm
 					 */
+					prCmdPwrLimit->ucCentralCh = g_rRlmPowerLimitConfiguration[i].ucCentralCh;
 					kalMemCopy(&prCmdPwrLimit->cPwrLimitCCK,
 						   &g_rRlmPowerLimitConfiguration[i].aucPwrLimit, PWR_LIMIT_NUM);
 					prCmd->ucNum++;
@@ -1592,10 +1596,11 @@ VOID rlmDomainBuildCmdByConfigTable(P_ADAPTER_T prAdapter, P_CMD_SET_COUNTRY_CHA
 			} else {
 
 				/*
-				 * Default table power limit value are 63--> cmd table no channel entry
-				 * ex : Default table (ex: 2.4G, limit = 63Bm) --> no channel entry in cmd,
-				 * Configuration table (ex: ch36, limit = 22dBm) --> ch 36 = 22 dBm
-				 * Cmd final setting -->   ch36= 22dBm
+				 * Default table power limit value are max on all subbands,
+				 * ex:
+				 * Default table (ex: 2.4G and 5G, limit = 63dBm) --> no channel entry in cmd,
+				 * Configuration table (ex: ch36, limit = 22dBm) --> ch36 = 22dBm
+				 * Cmd final setting --> ch36 = 22dBm
 				 */
 				prCmdPwrLimit->ucCentralCh = g_rRlmPowerLimitConfiguration[i].ucCentralCh;
 				kalMemCopy(&prCmdPwrLimit->cPwrLimitCCK, &g_rRlmPowerLimitConfiguration[i].aucPwrLimit,
