@@ -12430,3 +12430,51 @@ wlanoidSetWifiLogLevel(IN P_ADAPTER_T prAdapter,
 
 	return WLAN_STATUS_SUCCESS;
 }
+
+WLAN_STATUS
+wlanoidEnableRoaming(IN P_ADAPTER_T prAdapter,
+		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)
+{
+	DBGLOG(OID, INFO, "enable roaming\n");
+
+	aisRemoveBlacklistBySource(prAdapter, AIS_BLACK_LIST_FROM_FWK);
+
+	return WLAN_STATUS_SUCCESS;
+}
+
+WLAN_STATUS
+wlanoidConfigRoaming(IN P_ADAPTER_T prAdapter,
+		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)
+{
+	struct nlattr *attrlist;
+	struct AIS_BLACKLIST_ITEM *prBlackList;
+	UINT_32 len_shift = 0;
+	UINT_32 numOfList[2] = { 0 };
+	int i;
+
+	attrlist = (struct nlattr *)pvSetBuffer;
+
+	/* get the number of blacklist and copy those mac addresses from HAL */
+	if (attrlist->nla_type == WIFI_ATTRIBUTE_ROAMING_BLACKLIST_NUM) {
+		numOfList[0] = nla_get_u32(attrlist);
+		len_shift += NLA_ALIGN(attrlist->nla_len);
+	}
+	DBGLOG(REQ, INFO, "Get the number of blacklist=%d\n", numOfList[0]);
+
+	if (numOfList[0] >= 0 && numOfList[0] <= MAX_FW_ROAMING_BLACKLIST_SIZE) {
+		/*Refresh all the FWKBlacklist */
+		aisRemoveBlacklistBySource(prAdapter, AIS_BLACK_LIST_FROM_FWK);
+
+		/* Start to receive blacklist mac addresses and set to FWK blacklist */
+		attrlist = (struct nlattr *)((UINT_8 *) pvSetBuffer + len_shift);
+		for (i = 0; i < numOfList[0]; i++) {
+			if (attrlist->nla_type == WIFI_ATTRIBUTE_ROAMING_BLACKLIST_BSSID)
+				prBlackList = aisAddBlacklistByBssid(prAdapter, nla_data(attrlist),
+									AIS_BLACK_LIST_FROM_FWK);
+			len_shift += NLA_ALIGN(attrlist->nla_len);
+			attrlist = (struct nlattr *)((UINT_8 *) pvSetBuffer + len_shift);
+		}
+	}
+
+	return WLAN_STATUS_SUCCESS;
+}
