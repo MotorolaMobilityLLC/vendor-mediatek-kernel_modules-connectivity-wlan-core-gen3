@@ -565,8 +565,7 @@ BOOLEAN nicTxReleaseTCResource(IN P_ADAPTER_T prAdapter, IN UINT_8 ucTC, IN UINT
 {
 	P_TX_TCQ_STATUS_T prTcqStatus;
 	BOOLEAN bStatus = FALSE;
-	UINT_32 i, u4BufferCountToBeFreed;
-	UINT_16 au2FreeTcResource[TC_NUM] = { 0 };
+	UINT_32 u4BufferCountToBeFreed;
 	P_QUE_MGT_T prQM = NULL;
 
 	KAL_SPIN_LOCK_DECLARATION();

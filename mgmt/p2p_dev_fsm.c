@@ -64,7 +64,7 @@ UINT_8 p2pDevFsmInit(IN P_ADAPTER_T prAdapter)
 		prP2pBssInfo->u2HwDefaultFixedRateCode = RATE_OFDM_6M;
 
 		prP2pBssInfo->ucPhyTypeSet = prAdapter->rWifiVar.ucAvailablePhyTypeSet
-					     & PHY_TYPE_SET_802_11GN | PHY_TYPE_SET_802_11ANAC;
+					     & (PHY_TYPE_SET_802_11GN | PHY_TYPE_SET_802_11ANAC);
 		prP2pBssInfo->ucNonHTBasicPhyType = (UINT_8)
 		    rNonHTApModeAttributes[prP2pBssInfo->ucConfigAdHocAPMode].ePhyTypeIndex;
 		prP2pBssInfo->u2BSSBasicRateSet =
