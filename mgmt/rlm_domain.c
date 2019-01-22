@@ -744,6 +744,7 @@ VOID rlmDomainGetChnlList(P_ADAPTER_T prAdapter,
 			for (j = 0; j < prSubband->ucNumChannels; j++) {
 				if (ucNum >= ucMaxChannelNum)
 					break;
+				paucChannelList[ucNum].eDFS = prSubband->fgDfs;
 				paucChannelList[ucNum].eBand = prSubband->ucBand;
 				paucChannelList[ucNum].ucChannelNum =
 				    prSubband->ucFirstChannelNum + j * prSubband->ucChannelSpan;
