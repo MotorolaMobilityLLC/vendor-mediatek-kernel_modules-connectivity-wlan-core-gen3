@@ -1260,7 +1260,7 @@ static int HifAhbPltmProbe(IN struct platform_device *pDev)
 	wmt_set_jtag_for_mcu();
 	wmt_set_jtag_for_gps();
 #endif /* CONF_HIF_PMIC_TEST */
-
+	kalMemZero(&rWmtCb, sizeof(MTK_WCN_WMT_WLAN_CB_INFO));
 	/* Register WIFI probe/remove functions to WMT */
 	rWmtCb.wlan_probe_cb = HifAhbProbe;
 	rWmtCb.wlan_remove_cb = HifAhbRemove;
