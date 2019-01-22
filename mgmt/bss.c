@@ -2142,16 +2142,7 @@ VOID bssInitForAP(IN P_ADAPTER_T prAdapter, IN P_BSS_INFO_T prBssInfo, IN BOOLEA
 	prBssInfo->ucNonHTBasicPhyType = (UINT_8)
 	    rNonHTApModeAttributes[prBssInfo->ucConfigAdHocAPMode].ePhyTypeIndex;
 	prBssInfo->u2BSSBasicRateSet = rNonHTApModeAttributes[prBssInfo->ucConfigAdHocAPMode].u2BSSBasicRateSet;
-
-	/* 4 <1.1> Mask CCK 1M For Sco scenario */
-	prBssInfo->u2BSSBasicRateSet &= ~RATE_SET_BIT_1M;
-	/* prBssInfo->u2OperationalRateSet &= ~RATE_SET_BIT_1M; */
-
 	prBssInfo->u2OperationalRateSet = rNonHTPhyAttributes[prBssInfo->ucNonHTBasicPhyType].u2SupportedRateSet;
-
-	/* 4 <1.1> Mask CCK 1M For Sco scenario */
-	prBssInfo->u2BSSBasicRateSet &= ~RATE_SET_BIT_1M;
-	/* prBssInfo->u2OperationalRateSet &= ~RATE_SET_BIT_1M; */
 
 	if (fgIsRateUpdate) {
 		rateGetDataRatesFromRateSet(prBssInfo->u2OperationalRateSet,
