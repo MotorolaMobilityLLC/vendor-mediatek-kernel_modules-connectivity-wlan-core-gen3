@@ -1203,6 +1203,10 @@
 #define BSS_COEXIST_OBSS_SCAN_EXEMPTION_REQ         BIT(3)
 #define BSS_COEXIST_OBSS_SCAN_EXEMPTION_GRANT       BIT(4)
 
+/* 7.3.2.79 Bss max idle period element*/
+#define ELEM_MAX_LEN_BSS_MAX_IDLE_PERIOD			(5 - ELEM_HDR_LEN)
+
+
 /* 802.11u 7.3.2.92 Interworking IE */
 #define ELEM_MAX_LEN_INTERWORKING                   (11 - ELEM_HDR_LEN)
 
@@ -1871,7 +1875,7 @@ struct __KAL_ATTRIB_PACKED__ IE_BSS_LOAD {
 };
 
 /* 8.4.2.81 Bss Max Idle Period */
-struct __KAL_ATTRIB_PACKED__ IE_BSS_MAX_IDLE_PERIOD {
+struct  __KAL_ATTRIB_PACKED__ IE_BSS_MAX_IDLE_PERIOD_T {
 	UINT_8 ucId;
 	UINT_8 ucLength;
 	UINT_16 u2MaxIdlePeriod; /* unit is 1000 TUs, 1024ms */
