@@ -5583,7 +5583,7 @@ VOID wlanInitFeatureOption(IN P_ADAPTER_T prAdapter)
 	prWifiVar->aucAifsN[WMM_AC_BE_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "BeAifsN", 3);
 	prWifiVar->aucAifsN[WMM_AC_BK_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "BkAifsN", 7);
 	prWifiVar->aucAifsN[WMM_AC_VI_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "ViAifsN", 1);
-	prWifiVar->aucAifsN[WMM_AC_VO_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "VoAifsN", 2);
+	prWifiVar->aucAifsN[WMM_AC_VO_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "VoAifsN", 1);
 
 	prWifiVar->aucCwMin[WMM_AC_BE_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "BeCwMin", 15);
 	prWifiVar->aucCwMin[WMM_AC_BK_INDEX] = (UINT_8) wlanCfgGetUint32(prAdapter, "BkCwMin", 15);
