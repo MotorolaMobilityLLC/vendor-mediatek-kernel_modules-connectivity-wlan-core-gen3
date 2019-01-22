@@ -1007,6 +1007,9 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0))
 	struct cfg80211_scan_info rScanInfo = { 0 };
 #endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0))
+		struct cfg80211_roam_info rRoamInfo = { };
+#endif
 
 	GLUE_SPIN_LOCK_DECLARATION();
 
@@ -1132,11 +1135,20 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 
 			/* CFG80211 Indication */
 			if (eStatus == WLAN_STATUS_ROAM_OUT_FIND_BEST) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 12, 0))
+				rRoamInfo.bss = bss;
+				rRoamInfo.req_ie = prGlueInfo->aucReqIe;
+				rRoamInfo.req_ie_len = prGlueInfo->u4ReqIeLength;
+				rRoamInfo.resp_ie = prGlueInfo->aucRspIe;
+				rRoamInfo.resp_ie_len = prGlueInfo->u4RspIeLength;
+				cfg80211_roamed(prGlueInfo->prDevHandler, &rRoamInfo, GFP_KERNEL);
+#else
 				cfg80211_roamed_bss(prGlueInfo->prDevHandler,
 						    bss,
 						    prGlueInfo->aucReqIe,
 						    prGlueInfo->u4ReqIeLength,
 						    prGlueInfo->aucRspIe, prGlueInfo->u4RspIeLength, GFP_KERNEL);
+#endif
 			} else {
 				cfg80211_connect_result(prGlueInfo->prDevHandler, arBssid,
 							prGlueInfo->aucReqIe,
