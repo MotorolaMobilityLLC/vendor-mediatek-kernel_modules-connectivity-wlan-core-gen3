@@ -317,7 +317,6 @@ VOID nicReleaseAdapterMemory(IN P_ADAPTER_T prAdapter)
 				}
 			}
 #endif
-			ASSERT(prAdapter->u4MemFreeDynamicCount == prAdapter->u4MemAllocDynamicCount);
 		}
 	} while (FALSE);
 #endif
