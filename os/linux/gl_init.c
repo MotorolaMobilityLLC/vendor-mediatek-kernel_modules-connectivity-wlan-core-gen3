@@ -78,6 +78,7 @@ typedef struct _WLANDEV_INFO_T {
 *                            P U B L I C   D A T A
 ********************************************************************************
 */
+static int g_fixedIfindex = 0;
 
 #define CHAN2G(_channel, _freq, _flags)         \
 {                                           \
@@ -1502,10 +1503,19 @@ static INT_32 wlanNetRegister(struct wireless_dev *prWdev)
 			break;
 		}
 
+		if (g_fixedIfindex != 0) {
+			prWdev->netdev->ifindex = g_fixedIfindex;
+			DBGLOG(INIT, INFO, "ifindex was assigned as %d before.\n",
+				prWdev->netdev->ifindex);
+		}
 		if (register_netdev(prWdev->netdev) < 0) {
 			DBGLOG(INIT, ERROR, "Register net_device failed\n");
 			wlanClearDevIdx(prWdev->netdev);
 			i4DevIdx = -1;
+		} else {
+			g_fixedIfindex = prWdev->netdev->ifindex;
+			DBGLOG(INIT, INFO, "Use ifindex as %d from now\n",
+				g_fixedIfindex);
 		}
 #if 1
 		prNetDevPrivate = (P_NETDEV_PRIVATE_GLUE_INFO) netdev_priv(prGlueInfo->prDevHandler);
