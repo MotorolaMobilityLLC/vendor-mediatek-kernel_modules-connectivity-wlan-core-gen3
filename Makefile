@@ -30,6 +30,9 @@ ccflags-y += -DCFG_SUPPORT_AGPS_ASSIST=1
 ccflags-y += -DCFG_SUPPORT_TSF_USING_BOOTTIME=1
 ccflags-y += -DARP_MONITER_ENABLE=1
 
+# Moto read MACs from boot params
+ccflags-y += -DMOTO_UTAGS_MAC=1
+
 ifeq ($(CONFIG_MTK_WIFI_MCC_SUPPORT), y)
     ccflags-y += -DCFG_SUPPORT_CHNL_CONFLICT_REVISE=0
 else
