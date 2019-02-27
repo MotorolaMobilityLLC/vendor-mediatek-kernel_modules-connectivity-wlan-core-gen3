@@ -3057,6 +3057,8 @@ int tx_thread(void *data)
 		if (prGlueInfo->fgEnSdioTestPattern == TRUE)
 			kalSetEvent(prGlueInfo);
 #endif
+		if (test_and_clear_bit(GLUE_FLAG_RESET_CONN_BIT, &prGlueInfo->ulFlag))
+			aisBssBeaconTimeout(prGlueInfo->prAdapter);
 
 #if CFG_DBG_GPIO_PINS
 		/* TX thread go to sleep */
@@ -3559,6 +3561,12 @@ VOID kalTimeoutHandler(unsigned long arg)
 VOID kalSetEvent(P_GLUE_INFO_T pr)
 {
 	set_bit(GLUE_FLAG_TXREQ_BIT, &pr->ulFlag);
+	wake_up_interruptible(&pr->waitq);
+}
+
+VOID kalSetResetConnEvent(P_GLUE_INFO_T pr)
+{
+	set_bit(GLUE_FLAG_RESET_CONN_BIT, &pr->ulFlag);
 	wake_up_interruptible(&pr->waitq);
 }
 
