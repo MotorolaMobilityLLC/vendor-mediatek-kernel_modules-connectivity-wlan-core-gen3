@@ -828,4 +828,7 @@ int mtk_cfg80211_vendor_config_roaming(struct wiphy *wiphy,
 
 int mtk_cfg80211_vendor_enable_roaming(struct wiphy *wiphy,
 				       struct wireless_dev *wdev, const void *data, int data_len);
+int mtk_cfg80211_vendor_get_supported_feature_set(
+	struct wiphy *wiphy, struct wireless_dev *wdev,
+	const void *data, int data_len);
 #endif /* _GL_VENDOR_H */
