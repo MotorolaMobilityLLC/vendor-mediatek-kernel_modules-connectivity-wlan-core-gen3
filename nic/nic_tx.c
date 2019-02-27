@@ -1064,6 +1064,7 @@ UINT_32 nicTxMsduQueueMthread(IN P_ADAPTER_T prAdapter)
 	QUE_T qDataPort0, qDataPort1;
 	P_QUE_T prDataPort0, prDataPort1;
 	UINT_32 u4TxLoopCount;
+	UINT_32 u4TxDataLoopCount;
 
 	KAL_SPIN_LOCK_DECLARATION();
 
@@ -1074,16 +1075,18 @@ UINT_32 nicTxMsduQueueMthread(IN P_ADAPTER_T prAdapter)
 	QUEUE_INITIALIZE(prDataPort1);
 
 	u4TxLoopCount = prAdapter->rWifiVar.u4HifTxloopCount;
+	u4TxDataLoopCount = prAdapter->rWifiVar.u4HifTxDataloopCount;
 
 	while (u4TxLoopCount--) {
-		while (QUEUE_IS_NOT_EMPTY((&(prAdapter->rTxP0Queue)))) {
-			KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_TX_PORT_QUE);
-			QUEUE_MOVE_ALL((prDataPort0), (&(prAdapter->rTxP0Queue)));
-			KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_TX_PORT_QUE);
+		while (u4TxDataLoopCount--) {
+			if (QUEUE_IS_NOT_EMPTY((&(prAdapter->rTxP0Queue)))) {
+				KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_TX_PORT_QUE);
+				QUEUE_MOVE_ALL((prDataPort0), (&(prAdapter->rTxP0Queue)));
+				KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_TX_PORT_QUE);
 
-			nicTxMsduQueue(prAdapter, 0, prDataPort0);
+				nicTxMsduQueue(prAdapter, 0, prDataPort0);
+			}
 		}
-
 		while (QUEUE_IS_NOT_EMPTY((&(prAdapter->rTxP1Queue)))) {
 			KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_TX_PORT_QUE);
 			QUEUE_MOVE_ALL((prDataPort1), (&(prAdapter->rTxP1Queue)));

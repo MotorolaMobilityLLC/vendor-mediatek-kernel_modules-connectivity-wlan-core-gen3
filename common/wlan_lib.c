@@ -5721,6 +5721,7 @@ VOID wlanInitFeatureOption(IN P_ADAPTER_T prAdapter)
 	prWifiVar->u4HifIstLoopCount = (UINT_32) wlanCfgGetUint32(prAdapter, "IstLoop", CFG_IST_LOOP_COUNT);
 	prWifiVar->u4Rx2OsLoopCount = (UINT_32) wlanCfgGetUint32(prAdapter, "Rx2OsLoop", 4);
 	prWifiVar->u4HifTxloopCount = (UINT_32) wlanCfgGetUint32(prAdapter, "HifTxLoop", 1);
+	prWifiVar->u4HifTxDataloopCount = (UINT_32) wlanCfgGetUint32(prAdapter, "HifTxDataLoop", 1);
 	prWifiVar->u4TxFromOsLoopCount = (UINT_32) wlanCfgGetUint32(prAdapter, "OsTxLoop", 1);
 	prWifiVar->u4TxRxLoopCount = (UINT_32) wlanCfgGetUint32(prAdapter, "Rx2ReorderLoop", 1);
 

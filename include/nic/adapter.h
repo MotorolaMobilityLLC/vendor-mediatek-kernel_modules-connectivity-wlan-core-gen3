@@ -748,6 +748,7 @@ typedef struct _WIFI_VAR_T {
 	UINT_32 u4HifIstLoopCount;
 	UINT_32 u4Rx2OsLoopCount;
 	UINT_32 u4HifTxloopCount;
+	UINT_32 u4HifTxDataloopCount;
 	UINT_32 u4TxRxLoopCount;
 	UINT_32 u4TxFromOsLoopCount;
 
