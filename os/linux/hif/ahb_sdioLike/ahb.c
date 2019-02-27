@@ -364,13 +364,11 @@ VOID glClearHifInfo(GLUE_INFO_T *GlueInfo)
 #if (CONF_MTK_AHB_DMA == 1)
 	HifDmaUnInit(&GlueInfo->rHifInfo);
 #endif
-#ifndef CONFIG_OF
 	iounmap(GlueInfo->rHifInfo.HifRegBaseAddr);
 	if (GlueInfo->rHifInfo.InfraRegBaseAddr)
 		iounmap(GlueInfo->rHifInfo.InfraRegBaseAddr);
 	if (GlueInfo->rHifInfo.ConnCfgRegBaseAddr)
 		iounmap(GlueInfo->rHifInfo.ConnCfgRegBaseAddr);
-#endif
 #if defined(MT6797)
 	iounmap(GlueInfo->rHifInfo.confRegBaseAddr);
 #endif
