@@ -99,8 +99,8 @@ BOOLEAN wlan_perf_monitor_force_enable = FALSE;
 
 #if defined(CONFIG_MTK_QOS_SUPPORT)
 static struct pm_qos_request vcore_req;
-static atomic_t vcore_change_ref;
-static atomic_t vcore_tx_ref;
+static atomic_t vcore_req_cnt;
+static atomic_t vcore_changed;
 static struct mutex vcore_mutex;
 #endif
 /*******************************************************************************
@@ -5550,8 +5550,8 @@ VOID __weak kalSetEmiMpuProtection(phys_addr_t emiPhyBase, UINT_32 size, BOOLEAN
 VOID kalVcoreInitUninit(BOOLEAN fgInit)
 {
 	if (fgInit) {
-		atomic_set(&vcore_change_ref, 0);
-		atomic_set(&vcore_tx_ref, 0);
+		atomic_set(&vcore_req_cnt, 0);
+		atomic_set(&vcore_changed, 0);
 		mutex_init(&vcore_mutex);
 		pm_qos_add_request(&vcore_req, PM_QOS_VCORE_OPP, PM_QOS_VCORE_OPP_DEFAULT_VALUE);
 	} else {
@@ -5562,41 +5562,47 @@ VOID kalVcoreInitUninit(BOOLEAN fgInit)
 
 inline VOID kalMayChangeVcore(VOID)
 {
-	if (unlikely(!atomic_read(&vcore_tx_ref))) {
-		atomic_inc(&vcore_tx_ref);
-		kalChangeVcore(VCORE_RESUME);
+	if (unlikely(!atomic_read(&vcore_changed))) {
+		atomic_inc(&vcore_changed);
+		kalTakeVcoreAction(VCORE_SET_HIGHER);
 	}
 }
 
-VOID kalChangeVcore(UINT_8 ucAction)
+VOID kalTakeVcoreAction(UINT_8 ucAction)
 {
 #if defined(CONFIG_MTK_QOS_SUPPORT)
 	mutex_lock(&vcore_mutex);
 	switch (ucAction) {
+	case VCORE_ADD_HIGHER_REQ:
+		/* Only increase request count */
+		atomic_inc(&vcore_req_cnt);
+		DBGLOG(SW4, INFO, "Add request higher vcore request, total request count %d\n",
+		       atomic_read(&vcore_req_cnt));
+		break;
+	case VCORE_DEC_HIGHER_REQ:
+		DBGLOG(SW4, INFO, "Remove request higher vcore request, total request count %d\n",
+		       atomic_read(&vcore_req_cnt));
+		if (atomic_read(&vcore_req_cnt) > 0 && atomic_dec_return(&vcore_req_cnt) == 0)
+			pm_qos_update_request(&vcore_req, PM_QOS_VCORE_OPP_DEFAULT_VALUE); /* default is 0.725v */
+		break;
+	case VCORE_RESTORE_DEF:
+		if (atomic_read(&vcore_changed) > 0 && atomic_read(&vcore_req_cnt) > 0) {
+			DBGLOG(SW4, TRACE, "Connsys sleep, request to 0.725v\n");
+			atomic_set(&vcore_changed, 0);
+			pm_qos_update_request(&vcore_req, PM_QOS_VCORE_OPP_DEFAULT_VALUE); /* default is 0.725v */
+		}
+		break;
 	case VCORE_SET_HIGHER:
-		if (atomic_inc_return(&vcore_change_ref) == 1) {
-			DBGLOG(SW4, INFO, "Set higher, request to 0.8v\n");
+		if (atomic_read(&vcore_req_cnt) > 0) {
+			DBGLOG(SW4, TRACE, "Start Txing data, request to 0.8v\n");
 			pm_qos_update_request(&vcore_req, VCORE_OPP_0); /* OPP_0 represents 0.8v */
 		}
 		break;
-	case VCORE_SET_DEFAULT:
-		if (atomic_read(&vcore_change_ref) > 0 && atomic_dec_return(&vcore_change_ref) == 0) {
-			DBGLOG(SW4, INFO, "Set default, request to 0.725v\n");
-			pm_qos_update_request(&vcore_req, PM_QOS_VCORE_OPP_DEFAULT_VALUE); /* default is 0.725v */
-		}
-		break;
-	case VCORE_SUSPEND:
-		if (atomic_read(&vcore_tx_ref) > 0 && atomic_read(&vcore_change_ref) > 0) {
-			DBGLOG(SW4, INFO, "Connsys sleep, request to 0.725v\n");
-			atomic_set(&vcore_tx_ref, 0);
-			pm_qos_update_request(&vcore_req, PM_QOS_VCORE_OPP_DEFAULT_VALUE); /* default is 0.725v */
-		}
-		break;
-	case VCORE_RESUME:
-		if (atomic_read(&vcore_change_ref) > 0) {
-			DBGLOG(SW4, INFO, "Start Txing data, request to 0.8v\n");
-			pm_qos_update_request(&vcore_req, VCORE_OPP_0); /* OPP_0 represents 0.8v */
-		}
+	case VCORE_CLEAR_ALL_REQ:
+		atomic_set(&vcore_req_cnt, 0);
+		atomic_set(&vcore_changed, 0);
+		pm_qos_update_request(&vcore_req, PM_QOS_VCORE_OPP_DEFAULT_VALUE); /* default is 0.725v */
+		DBGLOG(SW4, INFO, "Clear all vcore change request, and set vcore to default\n");
 		break;
 	default:
 		DBGLOG(SW4, ERROR, "Unknown vcore action %d\n", ucAction);
