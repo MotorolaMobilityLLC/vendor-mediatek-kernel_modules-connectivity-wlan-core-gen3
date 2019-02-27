@@ -551,6 +551,109 @@ BOOLEAN wlanDbgSetGlobalLogLevel(UINT_32 u4Module, UINT_32 u4Level)
 	return TRUE;
 }
 
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+#define MGMG_FRAME_MAX_LENGTH	(WLAN_MAC_MGMT_HEADER_LEN + CFG_CFG80211_IE_BUF_LEN)
+#define MGMG_FRAME_MAX_NUM 6
+
+struct MGMT_FRAME_ENTRY {
+	UINT_32 u4Length;
+	UINT_8 aucFrameBody[MGMG_FRAME_MAX_LENGTH];
+};
+
+struct SAA_MGMT_RECORD {
+	struct MGMT_FRAME_ENTRY	*pMgmtFrame;
+	UINT_32 u4MgmtIndex;
+};
+
+static struct SAA_MGMT_RECORD grSaaMgmtRec;
+#endif
+
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+VOID wlanMgmtFrameDebugInit(VOID)
+{
+	grSaaMgmtRec.pMgmtFrame = kalMemAlloc(MGMG_FRAME_MAX_NUM * sizeof(struct MGMT_FRAME_ENTRY), VIR_MEM_TYPE);
+	if (grSaaMgmtRec.pMgmtFrame)
+		kalMemZero(grSaaMgmtRec.pMgmtFrame, MGMG_FRAME_MAX_NUM * sizeof(struct MGMT_FRAME_ENTRY));
+	grSaaMgmtRec.u4MgmtIndex = 0;
+}
+
+VOID wlanMgmtFrameDebugUnInit(VOID)
+{
+	if (grSaaMgmtRec.pMgmtFrame)
+		kalMemFree(grSaaMgmtRec.pMgmtFrame, VIR_MEM_TYPE, MGMG_FRAME_MAX_NUM * sizeof(struct MGMT_FRAME_ENTRY));
+	grSaaMgmtRec.u4MgmtIndex = 0;
+}
+
+VOID wlanMgmtFrameDebugReset(VOID)
+{
+	UINT_8 uIndex = 0;
+	struct MGMT_FRAME_ENTRY *prMgmtFrame = NULL;
+
+	if (!grSaaMgmtRec.pMgmtFrame) {
+		DBGLOG(SAA, WARN, "grSaaMgmtRec.pMgmtFrame is NULL!");
+		return;
+	}
+
+	for (uIndex = 0; uIndex < MGMG_FRAME_MAX_NUM; uIndex++) {
+		prMgmtFrame = &grSaaMgmtRec.pMgmtFrame[uIndex];
+		kalMemZero(prMgmtFrame->aucFrameBody, MGMG_FRAME_MAX_LENGTH);
+		prMgmtFrame->u4Length = 0;
+	}
+	grSaaMgmtRec.u4MgmtIndex = 0;
+}
+
+VOID wlanMgmtFrameDebugAdd(IN PUINT_8 pucStartAddr, IN UINT_32 u4Length)
+{
+	struct MGMT_FRAME_ENTRY *prMgmtFrame = NULL;
+
+	if (!grSaaMgmtRec.pMgmtFrame) {
+		DBGLOG(SAA, WARN, "grSaaMgmtRec.pMgmtFrame is NULL!");
+		return;
+	}
+
+	if (grSaaMgmtRec.u4MgmtIndex == MGMG_FRAME_MAX_NUM) {
+		DBGLOG(SAA, INFO, "Management frame buffer full, dump old records.");
+		wlanMgmtFrameDebugDump();
+	}
+
+	if (grSaaMgmtRec.u4MgmtIndex < MGMG_FRAME_MAX_NUM) {
+		prMgmtFrame = &grSaaMgmtRec.pMgmtFrame[grSaaMgmtRec.u4MgmtIndex];
+		if (u4Length < MGMG_FRAME_MAX_LENGTH) {
+			kalMemCopy(prMgmtFrame->aucFrameBody, pucStartAddr, u4Length);
+			prMgmtFrame->u4Length = u4Length;
+		} else {
+			kalMemCopy(prMgmtFrame->aucFrameBody, pucStartAddr, MGMG_FRAME_MAX_LENGTH);
+			prMgmtFrame->u4Length = MGMG_FRAME_MAX_LENGTH;
+		}
+		grSaaMgmtRec.u4MgmtIndex++;
+	}
+}
+
+VOID wlanMgmtFrameDebugDump(VOID)
+{
+	UINT_8 uIndex = 0;
+	struct MGMT_FRAME_ENTRY *prMgmtFrame = NULL;
+
+	if (!grSaaMgmtRec.pMgmtFrame) {
+		DBGLOG(SAA, WARN, "grSaaMgmtRec.pMgmtFrame is NULL!");
+		return;
+	}
+
+	if (grSaaMgmtRec.u4MgmtIndex > MGMG_FRAME_MAX_NUM) {
+		DBGLOG(SAA, WARN, "grSaaMgmtRec.u4MgmtIndex(%d) exceeds maximum value!",
+						grSaaMgmtRec.u4MgmtIndex);
+		grSaaMgmtRec.u4MgmtIndex = MGMG_FRAME_MAX_NUM;
+	}
+
+	for (uIndex = 0; uIndex < grSaaMgmtRec.u4MgmtIndex; uIndex++) {
+		prMgmtFrame = &grSaaMgmtRec.pMgmtFrame[uIndex];
+		dumpMemory8(prMgmtFrame->aucFrameBody, prMgmtFrame->u4Length);
+		kalMemZero(prMgmtFrame->aucFrameBody, MGMG_FRAME_MAX_LENGTH);
+		prMgmtFrame->u4Length = 0;
+	}
+	grSaaMgmtRec.u4MgmtIndex = 0;
+}
+#endif
 
 VOID wlanPrintFwLog(PUINT_8 pucLogContent, UINT_16 u2MsgSize, UINT_8 ucMsgType)
 {

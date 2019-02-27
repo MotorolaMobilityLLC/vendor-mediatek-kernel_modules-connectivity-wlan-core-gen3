@@ -608,6 +608,11 @@ WLAN_STATUS assocSendReAssocReqFrame(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T
 
 	/* 4 <6> Enqueue the frame to send this (Re)Association Request frame. */
 	DBGLOG(SAA, TRACE, "Send (Re)Assoc Req, SeqNo: %d\n", prMsduInfo->ucTxSeqNum);
+
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+	wlanMgmtFrameDebugAdd(prMsduInfo->prPacket, prMsduInfo->u2FrameLength);
+#endif
+
 	nicTxEnqueueMsdu(prAdapter, prMsduInfo);
 
 	return WLAN_STATUS_SUCCESS;
@@ -762,6 +767,10 @@ assocCheckRxReAssocRspFrameStatus(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRf
 			return WLAN_STATUS_FAILURE;
 		}
 	}
+
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+	wlanMgmtFrameDebugAdd(prSwRfb->pvHeader, prSwRfb->u2PacketLen);
+#endif
 
 	/* 4 <3> Parse the Fixed Fields of (Re)Association Resp Frame Body. */
 	/* WLAN_GET_FIELD_16(&prAssocRspFrame->u2CapInfo, &u2RxCapInfo); */

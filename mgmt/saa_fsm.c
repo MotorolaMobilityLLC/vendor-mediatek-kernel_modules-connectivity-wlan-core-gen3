@@ -156,10 +156,14 @@ saaFsmSteps(IN P_ADAPTER_T prAdapter,
 						eNextState = AA_STATE_RESOURCE;
 						fgIsTransition = TRUE;
 					}
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+					wlanMgmtFrameDebugReset();
+#endif
 				} else {
 					if (saaFsmSendEventJoinComplete(prAdapter,
 									WLAN_STATUS_FAILURE,
-									prStaRec, NULL) == WLAN_STATUS_RESOURCES) {
+									prStaRec,
+									NULL) == WLAN_STATUS_RESOURCES) {
 						eNextState = AA_STATE_RESOURCE;
 						fgIsTransition = TRUE;
 					}
@@ -550,8 +554,12 @@ saaFsmRunEventTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN E
 	if (rTxDoneStatus != TX_RESULT_SUCCESS) {
 		DBGLOG(SAA, INFO, "EVENT-TX DONE: Status[%u] SeqNo[%d] Current Time = %u\n",
 		       rTxDoneStatus, prMsduInfo->ucTxSeqNum, kalGetTimeTick());
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+		wlanMgmtFrameDebugDump();
+#endif
 		wlanTriggerStatsLog(prAdapter, prAdapter->rWifiVar.u4StatsLogDuration);
 	}
+
 
 	eNextState = prStaRec->eAuthAssocState;
 
@@ -659,7 +667,10 @@ VOID saaFsmRunEventTxReqTimeOut(IN P_ADAPTER_T prAdapter, IN ULONG plParamPtr)
 	if (!prStaRec)
 		return;
 
-	DBGLOG(SAA, LOUD, "EVENT-TIMER: TX REQ TIMEOUT, Current Time = %d\n", kalGetTimeTick());
+	DBGLOG(SAA, WARN, "EVENT-TIMER: TX REQ TIMEOUT, Current Time = %d\n", kalGetTimeTick());
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+	wlanMgmtFrameDebugDump();
+#endif
 
 	/* Trigger statistics log if Auth/Assoc Tx timeout */
 	wlanTriggerStatsLog(prAdapter, prAdapter->rWifiVar.u4StatsLogDuration);
@@ -691,11 +702,15 @@ VOID saaFsmRunEventRxRespTimeOut(IN P_ADAPTER_T prAdapter, IN ULONG ulParamPtr)
 	P_STA_RECORD_T prStaRec = (P_STA_RECORD_T) ulParamPtr;
 	ENUM_AA_STATE_T eNextState;
 
-	DBGLOG(SAA, LOUD, "EVENT-TIMER: RX RESP TIMEOUT, Current Time = %d\n", kalGetTimeTick());
+	DBGLOG(SAA, WARN, "EVENT-TIMER: RX RESP TIMEOUT, Current Time = %d\n", kalGetTimeTick());
 
 	ASSERT(prStaRec);
 	if (!prStaRec)
 		return;
+
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+	wlanMgmtFrameDebugDump();
+#endif
 
 	eNextState = prStaRec->eAuthAssocState;
 
@@ -829,7 +844,9 @@ VOID saaFsmRunEventRxAuth(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb)
 				DBGLOG(SAA, INFO,
 				       "Auth Req was rejected by [" MACSTR "], StatusCode: %d\n",
 				       MAC2STR(prStaRec->aucMacAddr), u2StatusCode);
-
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+				wlanMgmtFrameDebugDump();
+#endif
 				eNextState = AA_STATE_IDLE;
 			}
 
@@ -843,6 +860,13 @@ VOID saaFsmRunEventRxAuth(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb)
 #endif
 			saaFsmSteps(prAdapter, prStaRec, eNextState, (P_SW_RFB_T) NULL);
 		}
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+		else {
+			DBGLOG(SAA, INFO, "Invalid Auth Rsp frame, dump SAA management frames.");
+			wlanMgmtFrameDebugDump();
+		}
+#endif
+
 		break;
 
 	case SAA_STATE_SEND_AUTH3:
@@ -882,7 +906,9 @@ VOID saaFsmRunEventRxAuth(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb)
 				DBGLOG(SAA, INFO,
 				       "Auth Req was rejected by [" MACSTR "], StatusCode: %d\n",
 				       MAC2STR(prStaRec->aucMacAddr), u2StatusCode);
-
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+				wlanMgmtFrameDebugDump();
+#endif
 				eNextState = AA_STATE_IDLE;
 			}
 
@@ -891,6 +917,11 @@ VOID saaFsmRunEventRxAuth(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb)
 
 			saaFsmSteps(prAdapter, prStaRec, eNextState, (P_SW_RFB_T) NULL);
 		}
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+		else
+			wlanMgmtFrameDebugDump();
+#endif
+
 		break;
 
 	default:
@@ -964,6 +995,9 @@ WLAN_STATUS saaFsmRunEventRxAssoc(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRf
 				DBGLOG(SAA, INFO,
 				       "Assoc Req was rejected by [" MACSTR "], StatusCode: %d\n",
 				       MAC2STR(prStaRec->aucMacAddr), u2StatusCode);
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+				wlanMgmtFrameDebugDump();
+#endif
 			}
 
 			/* Reset Send Auth/(Re)Assoc Frame Count */
@@ -981,6 +1015,13 @@ WLAN_STATUS saaFsmRunEventRxAssoc(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRf
 #endif
 			saaFsmSteps(prAdapter, prStaRec, eNextState, prRetainedSwRfb);
 		}
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+		else {
+			DBGLOG(SAA, INFO, "Invalid Assoc Rsp frame, dump SAA management frames.");
+			wlanMgmtFrameDebugDump();
+		}
+#endif
+
 		break;
 
 	default:

@@ -429,6 +429,10 @@ authSendAuthFrame(IN P_ADAPTER_T prAdapter,
 
 	/* 4 <6> Inform TXM  to send this Authentication frame. */
 	DBGLOG(SAA, TRACE, "Send Auth, StatusCode: %d, SeqNo: %d\n", u2StatusCode, prMsduInfo->ucTxSeqNum);
+
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+	wlanMgmtFrameDebugAdd(prMsduInfo->prPacket, prMsduInfo->u2FrameLength);
+#endif
 	nicTxEnqueueMsdu(prAdapter, prMsduInfo);
 
 	return WLAN_STATUS_SUCCESS;
@@ -595,6 +599,10 @@ authCheckRxAuthFrameStatus(IN P_ADAPTER_T prAdapter,
 
 	if (!prStaRec)
 		return WLAN_STATUS_INVALID_PACKET;
+
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+	wlanMgmtFrameDebugAdd(prSwRfb->pvHeader, prSwRfb->u2PacketLen);
+#endif
 
 	/* 4 <1> locate the Authentication Frame. */
 	prAuthFrame = (P_WLAN_AUTH_FRAME_T) prSwRfb->pvHeader;

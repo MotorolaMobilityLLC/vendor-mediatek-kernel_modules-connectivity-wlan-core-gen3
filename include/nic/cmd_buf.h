@@ -160,6 +160,12 @@ VOID wlanTraceReleaseTcRes(P_ADAPTER_T prAdapter, UINT_16 u2TxRlsCnt, UINT_16 u2
 VOID wlanTraceTxCmd(P_CMD_INFO_T prCmd);
 VOID wlanDumpTcResAndTxedCmd(PUINT_8 pucBuf, UINT_32 maxLen);
 #endif
+
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+VOID wlanMgmtFrameDebugInit(VOID);
+VOID wlanMgmtFrameDebugUnInit(VOID);
+#endif
+
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************

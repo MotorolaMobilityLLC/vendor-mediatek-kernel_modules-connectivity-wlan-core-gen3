@@ -397,6 +397,12 @@ VOID wlanDbgLevelSync(VOID);
 BOOLEAN wlanDbgGetGlobalLogLevel(UINT_32 u4Module, UINT_32 *pu4Level);
 BOOLEAN wlanDbgSetGlobalLogLevel(UINT_32 u4Module, UINT_32 u4Level);
 
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+VOID wlanMgmtFrameDebugReset(VOID);
+VOID wlanMgmtFrameDebugAdd(IN PUINT_8 pucStartAddr, IN UINT_32 u4Length);
+VOID wlanMgmtFrameDebugDump(VOID);
+#endif
+
 VOID glNotifyDrvStatus(enum DRV_STATUS_T eDrvStatus, PVOID pvInfo);
 
 VOID wlanDebugTC4AndPktInit(VOID);

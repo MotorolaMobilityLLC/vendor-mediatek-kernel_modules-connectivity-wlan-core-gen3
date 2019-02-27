@@ -2472,6 +2472,9 @@ static INT_32 wlanProbe(PVOID pvData)
 					       ENUM_WIFI_LOG_LEVEL_VERSION_V1,
 					       ENUM_WIFI_LOG_MODULE_FW,
 					       u4LogLevel);
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+		wlanMgmtFrameDebugInit();
+#endif
 	} else {
 		switch (eFailReason) {
 		case FAIL_MET_INIT_PROCFS:
@@ -2674,7 +2677,9 @@ static VOID wlanRemove(VOID)
 
 	kalHaltUnlock();
 	wlanDebugTC4AndPktUninit();
-
+#if CFG_SUPPORT_MGMT_FRAME_DEBUG
+	wlanMgmtFrameDebugUnInit();
+#endif
 	/* 4 <6> Unregister the card */
 	wlanNetUnregister(prDev->ieee80211_ptr);
 
