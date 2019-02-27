@@ -1378,7 +1378,7 @@ VOID kalP2PSetMaxClients(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4MaxClient)
 	ASSERT(prGlueInfo);
 	ASSERT(prGlueInfo->prP2PInfo);
 
-	if (u4MaxClient == 0 || prGlueInfo->prP2PInfo->ucMaxClients >= P2P_MAXIMUM_CLIENT_COUNT)
+	if (u4MaxClient == 0 || u4MaxClient >= P2P_MAXIMUM_CLIENT_COUNT)
 		prGlueInfo->prP2PInfo->ucMaxClients = P2P_MAXIMUM_CLIENT_COUNT;
 	else
 		prGlueInfo->prP2PInfo->ucMaxClients = u4MaxClient;
@@ -1400,7 +1400,7 @@ BOOLEAN kalP2PMaxClients(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4NumClient)
 	ASSERT(prGlueInfo->prP2PInfo);
 
 	if (prGlueInfo->prP2PInfo->ucMaxClients) {
-		if ((UINT_8) u4NumClient > prGlueInfo->prP2PInfo->ucMaxClients)
+		if ((UINT_8) u4NumClient >= prGlueInfo->prP2PInfo->ucMaxClients)
 			return TRUE;
 		else
 			return FALSE;
