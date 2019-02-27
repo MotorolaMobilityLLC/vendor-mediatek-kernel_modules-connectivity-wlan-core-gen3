@@ -232,6 +232,12 @@ VOID cnmPktFree(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo)
 		prMsduInfo->prPacket = NULL;
 	}
 
+	if (prMsduInfo->pucCookie) {
+		kalMemFree(prMsduInfo->pucCookie, VIR_MEM_TYPE, prMsduInfo->u2CookieLen);
+		prMsduInfo->u2CookieLen = 0;
+		prMsduInfo->pucCookie = NULL;
+	}
+
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_TX_MSDU_INFO_LIST);
 	QUEUE_INSERT_TAIL(prQueList, &prMsduInfo->rQueEntry);
 	KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_TX_MSDU_INFO_LIST);
