@@ -1700,6 +1700,18 @@ WLAN_STATUS nicTxMsduQueue(IN P_ADAPTER_T prAdapter, UINT_8 ucPortIdx, P_QUE_T p
 			GLUE_DEC_REF_CNT(prTxCtrl->i4TxMgmtPendingNum);
 		} else if (prMsduInfo->eSrc == TX_PACKET_OS) {
 			wlanTxProfilingTagMsdu(prAdapter, prMsduInfo, TX_PROF_TAG_DRV_DEQUE);
+			if (prMsduInfo->pfTxDoneHandler) {
+				/* Record history */
+				pucAheadBuf = ((struct sk_buff *)prMsduInfo->prPacket)->data;
+				prMsduInfo->u2CookieLen = ((struct sk_buff *)prMsduInfo->prPacket)->len;
+				DBGLOG(TX, INFO, "u2CookieLen is %u\n", prMsduInfo->u2CookieLen);
+				prMsduInfo->pucCookie = kalMemAlloc(prMsduInfo->u2CookieLen, VIR_MEM_TYPE);
+				if (prMsduInfo->pucCookie != NULL)
+					kalMemCopy(prMsduInfo->pucCookie, pucAheadBuf, prMsduInfo->u2CookieLen);
+				else
+					DBGLOG(TX, INFO, "prMsduInfo->pucCookie Alloc failed\n");
+				/* Record history */
+			}
 			kalSendComplete(prAdapter->prGlueInfo, prNativePacket, WLAN_STATUS_SUCCESS);
 			prMsduInfo->prPacket = NULL;
 		} else if (prMsduInfo->eSrc == TX_PACKET_FORWARDING) {
