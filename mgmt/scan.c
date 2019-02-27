@@ -1370,7 +1370,9 @@ P_BSS_DESC_T scanAddToBssDesc(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb)
 	}
 	prBssDesc->u2IELength = u2IELength;
 
-	kalMemCopy(prBssDesc->aucIEBuf, prWlanBeaconFrame->aucInfoElem, u2IELength);
+	if (fgIsValidSsid ||
+	    ((prWlanBeaconFrame->u2FrameCtrl & MASK_FRAME_TYPE) == MAC_FRAME_PROBE_RSP))
+		kalMemCopy(prBssDesc->aucIEBuf, prWlanBeaconFrame->aucInfoElem, u2IELength);
 
 	/* 4 <2.2> reset prBssDesc variables in case that AP has been reconfigured */
 	prBssDesc->fgIsERPPresent = FALSE;
@@ -1775,7 +1777,9 @@ P_BSS_DESC_T scanAddToBssDesc(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb)
 	if ((prWlanBeaconFrame->u2FrameCtrl & 0x50) == 0x50)
 		prBssDesc->fgSeenProbeResp = TRUE;
 	/* 4 <7> Update BSS_DESC_T's Last Update TimeStamp. */
-	GET_CURRENT_SYSTIME(&prBssDesc->rUpdateTime);
+	if (fgIsValidSsid ||
+	    ((prWlanBeaconFrame->u2FrameCtrl & MASK_FRAME_TYPE) == MAC_FRAME_PROBE_RSP))
+		GET_CURRENT_SYSTIME(&prBssDesc->rUpdateTime);
 
 	if (prBssDesc->fgIsConnected) {
 		rTsf.rTime = prBssDesc->rUpdateTime;
