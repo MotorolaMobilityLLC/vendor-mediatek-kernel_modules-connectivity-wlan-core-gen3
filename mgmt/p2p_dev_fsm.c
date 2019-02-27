@@ -882,6 +882,13 @@ VOID p2pFsmRunEventChGrant(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr)
 
 		prMsgChGrant = (P_MSG_CH_GRANT_T) prMsgHdr;
 
+		if (!prAdapter->fgIsP2PRegistered) {
+			/* P2P is removed but the previous channel request is not cancelled */
+			DBGLOG(P2P, WARN, "Ignore channel grant event when P2P is unregistered\n");
+			cnmMemFree(prAdapter, prMsgHdr);
+			break;
+		}
+
 		prP2pBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, prMsgChGrant->ucBssIndex);
 		prAdapter->prP2pInfo->ucExtendChanFlag = 0;
 
