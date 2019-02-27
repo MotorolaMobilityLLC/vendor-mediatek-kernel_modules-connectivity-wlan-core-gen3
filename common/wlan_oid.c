@@ -11853,10 +11853,10 @@ WLAN_STATUS
 wlanoidSendSarEnable(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBufferLen,
 		     PUINT_32 pu4SetInfoLen)
 {
-	struct CMD_SET_SAR_ENABLE rCmdSarEnable;
+	struct CMD_SET_SAR_MODE rCmdSarMode;
 
-	kalMemZero(&rCmdSarEnable, sizeof(rCmdSarEnable));
-	rCmdSarEnable.ucSarEnable = *(PUINT_8)pvSetBuffer;
+	kalMemZero(&rCmdSarMode, sizeof(rCmdSarMode));
+	rCmdSarMode.ucSarMode = *(PUINT_8)pvSetBuffer;
 	return wlanSendSetQueryCmd(prAdapter,
 				   CMD_ID_SET_SAR_ENABLE,
 				   TRUE,
@@ -11864,8 +11864,8 @@ wlanoidSendSarEnable(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBuff
 				   TRUE,
 				   nicCmdEventSetCommon,
 				   nicOidCmdTimeoutCommon,
-				   sizeof(struct CMD_SET_SAR_ENABLE),
-				   (PUINT_8)&rCmdSarEnable, pvSetBuffer, u4SetBufferLen);
+				   sizeof(struct CMD_SET_SAR_MODE),
+				   (PUINT_8)&rCmdSarMode, pvSetBuffer, u4SetBufferLen);
 }
 
 /*
