@@ -776,7 +776,9 @@ BOOL kalDevWriteWithSdioCmd52(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Addr, IN
 UINT_32 kalReadExtCfg(IN P_GLUE_INFO_T prGlueInfo);
 #endif
 
+#if (CFG_SUPPORT_DEBUG_STATISTICS == 1)
 UINT_8 kalGetPktEtherType(IN PUINT_8 pucPkt);
+#endif
 
 BOOLEAN
 kalQoSFrameClassifierAndPacketInfo(IN P_GLUE_INFO_T prGlueInfo,

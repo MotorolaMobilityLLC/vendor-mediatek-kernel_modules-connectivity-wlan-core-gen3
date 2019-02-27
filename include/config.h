@@ -546,7 +546,8 @@
 
 #define CFG_RX_PKTS_DUMP                        0
 
-#define CFG_SUPPORT_STATISTICS			1
+#define CFG_SUPPORT_STATISTICS					1
+#define CFG_SUPPORT_DEBUG_STATISTICS			0
 
 #define CFG_FORCE_USE_20BW			0
 

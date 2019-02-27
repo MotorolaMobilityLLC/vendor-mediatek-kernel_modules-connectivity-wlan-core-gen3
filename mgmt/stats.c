@@ -265,9 +265,9 @@ statsParsePktInfo(P_ADAPTER_T prAdapter, PUINT_8 pucPkt, struct sk_buff *skb, UI
 	case ETH_P_ARP:
 	{
 		UINT_16 u2OpCode = (pucEthBody[6] << 8) | pucEthBody[7];
-
+#if (CFG_SUPPORT_DEBUG_STATISTICS == 1)
 		wlanPktStatusDebugTraceInfoARP(status, eventType, u2OpCode, pucPkt);
-
+#endif
 		switch (eventType) {
 		case EVENT_RX:
 			GLUE_SET_INDEPENDENT_PKT(skb, TRUE);
@@ -295,8 +295,9 @@ statsParsePktInfo(P_ADAPTER_T prAdapter, PUINT_8 pucPkt, struct sk_buff *skb, UI
 		UINT_8 ucIpVersion = (pucEthBody[0] & IPVH_VERSION_MASK) >> IPVH_VERSION_OFFSET;
 		UINT_16 u2IpId = *(UINT_16 *) &pucEthBody[4];
 
+#if (CFG_SUPPORT_DEBUG_STATISTICS == 1)
 		wlanPktStatusDebugTraceInfoIP(status, eventType, ucIpProto, u2IpId, pucPkt);
-
+#endif
 		if (ucIpVersion != IPVERSION)
 			break;
 		switch (ucIpProto) {
