@@ -620,8 +620,12 @@ BOOLEAN aisFsmStateInit_RetryJOIN(IN P_ADAPTER_T prAdapter, P_STA_RECORD_T prSta
 	if (!prAisFsmInfo->ucAvailableAuthTypes)
 		return FALSE;
 
-	if (prAisFsmInfo->ucAvailableAuthTypes & (UINT_8) AUTH_TYPE_OPEN_SYSTEM) {
+	if (prStaRec->u2StatusCode != STATUS_CODE_AUTH_ALGORITHM_NOT_SUPPORTED) {
+		prAisFsmInfo->ucAvailableAuthTypes = 0;
+		return FALSE;
+	}
 
+	if (prAisFsmInfo->ucAvailableAuthTypes & (UINT_8) AUTH_TYPE_OPEN_SYSTEM) {
 		DBGLOG(AIS, INFO, "RETRY JOIN INIT: Retry Authentication with AuthType == OPEN_SYSTEM.\n");
 
 		prAisFsmInfo->ucAvailableAuthTypes &= ~(UINT_8) AUTH_TYPE_OPEN_SYSTEM;
