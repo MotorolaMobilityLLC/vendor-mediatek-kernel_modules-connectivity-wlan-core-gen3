@@ -1068,7 +1068,6 @@ int Set_TxBfProfilePnWrite(struct net_device *prNetDev, UINT_8 *prInBuf)
 	UINT_16 au2XSTS[12];
 	INT_32 rv;
 
-	INT_32 i4Status = 0;
 
 	DBGLOG(RFTEST, ERROR, "TxBfProfilePnWrite\n");
 
