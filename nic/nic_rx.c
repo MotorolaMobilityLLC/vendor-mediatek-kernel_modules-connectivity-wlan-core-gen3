@@ -1644,7 +1644,12 @@ VOID nicRxProcessEventPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb
 	prGlueInfo = prAdapter->prGlueInfo;
 	wiphy = priv_to_wiphy(prGlueInfo);
 
-	if (prEvent->ucEID != EVENT_ID_DEBUG_MSG)
+	if (prEvent->ucEID != EVENT_ID_LINK_QUALITY &&
+	    prEvent->ucEID != EVENT_ID_RX_ADDBA &&
+	    prEvent->ucEID != EVENT_ID_TX_DONE &&
+	    prEvent->ucEID != EVENT_ID_BSS_ABSENCE_PRESENCE &&
+	    prEvent->ucEID != EVENT_ID_STA_STATISTICS &&
+	    prEvent->ucEID != EVENT_ID_DEBUG_MSG)
 		DBGLOG(RX, EVENT, "RX EVENT: ID[0x%02X] SEQ[%u] LEN[%u]\n",
 		prEvent->ucEID, prEvent->ucSeqNum, prEvent->u2PacketLength);
 
