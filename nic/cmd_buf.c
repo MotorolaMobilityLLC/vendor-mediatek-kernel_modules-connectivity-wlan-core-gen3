@@ -201,11 +201,29 @@ P_CMD_INFO_T cmdBufAllocateCmdInfo(IN P_ADAPTER_T prAdapter, IN UINT_32 u4Length
 		P_GLUE_INFO_T prGlueInfo = prAdapter->prGlueInfo;
 		P_QUE_T prCmdQue = &prGlueInfo->rCmdQueue;
 		P_QUE_T prPendingCmdQue = &prAdapter->rPendingCmdQueue;
+		P_QUE_T prCmdTxQue = &prAdapter->rTxCmdQueue;
 		P_TX_TCQ_STATUS_T prTc = &prAdapter->rTxCtrl.rTc;
 
 		fgCmdDumpIsDone = TRUE;
 		cmdBufDumpCmdQueue(prCmdQue, "waiting Tx CMD queue");
 		cmdBufDumpCmdQueue(prPendingCmdQue, "waiting response CMD queue");
+		cmdBufDumpCmdQueue(prCmdTxQue, "waiting Txing to hif queue");
+		if (prCmdQue->u4NumElem + prPendingCmdQue->u4NumElem +
+		    prCmdTxQue->u4NumElem + prAdapter->rFreeCmdList.u4NumElem < CFG_TX_MAX_CMD_PKT_NUM) {
+			UINT_8 i = 0;
+			P_CMD_INFO_T prCmd = &prAdapter->arHifCmdDesc[0];
+
+			DBGLOG(NIC, INFO, "There maybe some cmd info were leaked, free %u\n",
+			       prAdapter->rFreeCmdList.u4NumElem);
+			for (i = 0; i <= CFG_TX_MAX_CMD_PKT_NUM - 4; i += 4) {
+				DBGLOG(NIC, INFO,
+				       "ID:%d, N:%p, S:%p; ID:%d, N:%p, S:%p; ID:%d, N:%p, S:%p; ID:%d, N:%p, S:%p\n",
+				       prCmd[i].ucCID, prCmd[i].rQueEntry.prNext, &prCmd[i],
+				       prCmd[i + 1].ucCID, prCmd[i + 1].rQueEntry.prNext, &prCmd[i + 1],
+				       prCmd[i + 2].ucCID, prCmd[i + 2].rQueEntry.prNext, &prCmd[i + 2],
+				       prCmd[i + 3].ucCID, prCmd[i + 3].rQueEntry.prNext, &prCmd[i + 3]);
+			}
+		}
 		DBGLOG(NIC, INFO, "Tc4 number:%d\n", prTc->au2FreeBufferCount[TC4_INDEX]);
 		/* glResetTrigger(prAdapter); */
 	}
