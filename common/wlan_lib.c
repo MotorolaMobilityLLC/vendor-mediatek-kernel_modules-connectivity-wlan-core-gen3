@@ -6936,12 +6936,14 @@ wlanArpTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN ENUM_TX_
 	PUINT_8 pucArp = NULL;
 	UINT_32 u4PacketLen = 0;
 
-
 	if (prMsduInfo->pucCookie) {
 		pucAheadBuf = prMsduInfo->pucCookie;
 		u4PacketLen = prMsduInfo->u2CookieLen;
 		pucArp = pucAheadBuf + ETH_HLEN;
-		WLAN_GET_FIELD_BE16(&pucAheadBuf[ARP_OPERATION_OFFSET], &u2ArpOp);
+		if (u4PacketLen > (ETHER_HEADER_LEN+ARP_OPERATION_OFFSET)) {
+			WLAN_GET_FIELD_BE16(&pucAheadBuf[ETHER_HEADER_LEN+ARP_OPERATION_OFFSET], &u2ArpOp);
+		} else
+			DBGLOG(TX, WARN, "packet len:%u\n", u4PacketLen);
 		if (rTxDoneStatus)
 			DBGLOG(TX, INFO,
 			       "ARP %s PKT[0x%p] WIDX:PID[%u:%u] SN[%d] TxDone[%u] TMAC&IP[" MACSTR "]&[" IPV4STR "]\n",
