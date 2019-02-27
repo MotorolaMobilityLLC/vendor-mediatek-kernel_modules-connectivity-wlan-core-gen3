@@ -1002,7 +1002,11 @@ VOID wlanSchedScanStoppedWorkQueue(struct work_struct *work)
 
 	/* 2. indication to cfg80211 */
 	/* 20150205 change cfg80211_sched_scan_stopped to work queue due to sched_scan_mtx dead lock issue */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0))
 	cfg80211_sched_scan_stopped(priv_to_wiphy(prGlueInfo));
+#else
+	cfg80211_sched_scan_stopped(priv_to_wiphy(prGlueInfo), 0);
+#endif
 	DBGLOG(SCN, INFO,
 	       "cfg80211_sched_scan_stopped event send done WorkQueue thread return from wlanSchedScanStoppedWorkQueue\n");
 	return;
@@ -1522,8 +1526,13 @@ static void createWirelessDevice(void)
 	prWiphy->signal_type = CFG80211_SIGNAL_TYPE_MBM;
 	prWiphy->cipher_suites = mtk_cipher_suites;
 	prWiphy->n_cipher_suites = ARRAY_SIZE(mtk_cipher_suites);
-	prWiphy->flags = WIPHY_FLAG_SUPPORTS_FW_ROAM | WIPHY_FLAG_HAS_REMAIN_ON_CHANNEL |
-		WIPHY_FLAG_SUPPORTS_SCHED_SCAN;
+	prWiphy->flags = WIPHY_FLAG_SUPPORTS_FW_ROAM | WIPHY_FLAG_HAS_REMAIN_ON_CHANNEL;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0))
+	prWiphy->flags |= WIPHY_FLAG_SUPPORTS_SCHED_SCAN;
+#else
+	/*In kernel 4.12 or newer, this obsoletes WIPHY_FLAG_SUPPORTS_SCHED_SCAN*/
+	prWiphy->max_sched_scan_reqs = 1;
+#endif
 	prWiphy->regulatory_flags = REGULATORY_CUSTOM_REG;
 #if CFG_SUPPORT_TDLS
 	TDLSEX_WIPHY_FLAGS_INIT(prWiphy->flags);
