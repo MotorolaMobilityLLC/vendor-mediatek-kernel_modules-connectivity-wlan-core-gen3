@@ -188,7 +188,7 @@ VOID HifDmaInit(GL_HIF_INFO_T *HifInfo)
 		DBGLOG(INIT, ERROR, "[CCF]Cannot get HIF DMA clock\n");
 		/* return PTR_ERR(HifInfo->clk_wifi_dma); */
 	}
-	DBGLOG(INIT, INFO, "[CCF]HIF DMA clock = %p\n", HifInfo->clk_wifi_dma);
+	DBGLOG(INIT, TRACE, "[CCF]HIF DMA clock = %p\n", HifInfo->clk_wifi_dma);
 #endif
 #endif
 
