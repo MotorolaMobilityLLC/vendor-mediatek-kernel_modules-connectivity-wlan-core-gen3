@@ -2557,7 +2557,7 @@ VOID nicTxProcessTxDoneEvent(IN P_ADAPTER_T prAdapter, IN P_WIFI_EVENT_T prEvent
 		return;
 	}
 
-	clear_bit(prTxDone->ucPacketSeq, &prAdapter->au8PidPool[prTxDone->ucWlanIndex]);
+	clear_bit(prTxDone->ucPacketSeq, &prAdapter->au8PidPool[prTxDone->ucWlanIndex][0]);
 
 	if (prTxDone->ucFlag & BIT(0)) {
 		/* Tx Done with advanced info */
@@ -3246,7 +3246,11 @@ UINT_8 nicTxAssignPID(IN P_ADAPTER_T prAdapter, IN UINT_8 ucWlanIndex)
 {
 	UINT_8 ucRetval = 0;
 	UINT_8 ucZeroBits = 0;
+#if CONFIG_ARM64
+	PULONG pu8PidPool;
+#else
 	PUINT_64 pu8PidPool;
+#endif
 	/* Bit 7 represents data frame, don't assign PID directly */
 	BOOLEAN fgCanAssign = !(ucWlanIndex & BIT(7));
 
@@ -3259,7 +3263,7 @@ UINT_8 nicTxAssignPID(IN P_ADAPTER_T prAdapter, IN UINT_8 ucWlanIndex)
 		return 0;
 	}
 	KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_TXING_MGMT_LIST);
-	pu8PidPool = prAdapter->au8PidPool[ucWlanIndex];
+	pu8PidPool = &prAdapter->au8PidPool[ucWlanIndex][0];
 	if (!fgCanAssign) {
 		/* Because we always assign PID from the lowest one, if the highest reserved bits are not set,
 		** means left PIDs are enough for data frame; otherwise, need to count left PID number in slow path.

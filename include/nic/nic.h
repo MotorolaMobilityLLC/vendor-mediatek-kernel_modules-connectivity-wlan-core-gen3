@@ -91,10 +91,22 @@ enum POWER_SAVE_CALLER_T {
 
 #define PS_SYNC_WITH_FW		BIT(31)
 
+enum ENUM_WMT_CHIPINFO_TYPE_T {
+	WMTCHIN_CHIPID = 0x0,
+	WMTCHIN_HWVER = WMTCHIN_CHIPID + 1,
+	WMTCHIN_MAPPINGHWVER = WMTCHIN_HWVER + 1,
+	WMTCHIN_FWVER = WMTCHIN_MAPPINGHWVER + 1,
+	WMTCHIN_IPVER = WMTCHIN_FWVER + 1,
+	WMTCHIN_MAX,
+};
+
+
 /*******************************************************************************
 *                    E X T E R N A L   R E F E R E N C E S
 ********************************************************************************
 */
+extern UINT_32 mtk_wcn_wmt_ic_info_get(enum ENUM_WMT_CHIPINFO_TYPE_T type);
+
 
 /*******************************************************************************
 *                            P U B L I C   D A T A

@@ -229,7 +229,7 @@ WLAN_STATUS bowCmdGetMacStatus(IN P_ADAPTER_T prAdapter, IN P_AMPC_COMMAND prCmd
 	ENUM_CHNL_EXT_T eBssSCO;
 	UINT_8 ucNumOfChannel = 0;	/* MAX_BOW_NUMBER_OF_CHANNEL; */
 
-	RF_CHANNEL_INFO_T aucChannelList[MAX_BOW_NUMBER_OF_CHANNEL] = {0};
+	RF_CHANNEL_INFO_T aucChannelList[MAX_BOW_NUMBER_OF_CHANNEL] = { {0} };
 
 	ASSERT(prAdapter);
 

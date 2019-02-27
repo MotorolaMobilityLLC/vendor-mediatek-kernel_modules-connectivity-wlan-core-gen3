@@ -12446,7 +12446,6 @@ WLAN_STATUS
 wlanoidConfigRoaming(IN P_ADAPTER_T prAdapter,
 		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)
 {
-	P_GLUE_INFO_T prGlueInfo = NULL;
 	struct nlattr *attrlist;
 	struct AIS_BLACKLIST_ITEM *prBlackList;
 	UINT_32 len_shift = 0;
