@@ -113,6 +113,7 @@ static irqreturn_t HifDmaISR(IN int irq, IN void *arg);
 ********************************************************************************
 */
 DEFINE_SPINLOCK(HifLock);
+DEFINE_SPINLOCK(HifSdioLock);
 
 /*******************************************************************************
 *                           P R I V A T E   D A T A
@@ -126,6 +127,8 @@ static probe_card pfWlanProbe;
 static remove_card pfWlanRemove;
 
 static BOOLEAN WlanDmaFatalErr;
+
+int sdioDisableRefCnt;
 
 #if (CONF_HIF_DEV_MISC == 1)
 static const struct file_operations MtkAhbOps = {
@@ -318,7 +321,7 @@ VOID glSetHifInfo(GLUE_INFO_T *GlueInfo, ULONG ulCookie)
 
 	/* Init DMA */
 	WlanDmaFatalErr = 0;	/* reset error flag */
-
+	sdioDisableRefCnt = 0;
 #if (CONF_MTK_AHB_DMA == 1)
 	HifDmaInit(HifInfo);
 #endif /* CONF_MTK_AHB_DMA */

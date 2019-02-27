@@ -85,6 +85,8 @@ typedef union _sdio_gen3_cmd53_info {
 struct sdio_func;
 extern struct sdio_func g_sdio_func;
 extern spinlock_t HifLock;
+extern spinlock_t HifSdioLock;
+extern int sdioDisableRefCnt;
 typedef void (sdio_irq_handler_t)(struct sdio_func *);
 
 struct sdio_func {
@@ -139,12 +141,26 @@ int ahb_sdio_claim_irq(struct sdio_func *func, sdio_irq_handler_t *handler);
 extern UINT_8 **g_pHifRegBaseAddr;
 
 #define __disable_irq()						\
-{											\
-	writel(0x01, (volatile UINT_32*)(*g_pHifRegBaseAddr + 0x200));\
+{										\
+	unsigned long ulFlags;\
+\
+	spin_lock_irqsave(&HifSdioLock, ulFlags); \
+	if (!sdioDisableRefCnt) \
+		writel(0x01, (UINT_32 *)(*g_pHifRegBaseAddr + 0x200));\
+	sdioDisableRefCnt++; \
+	spin_unlock_irqrestore(&HifSdioLock, ulFlags); \
 }
 #define __enable_irq()						\
 {											\
-	writel(0, (volatile UINT_32*)(*g_pHifRegBaseAddr + 0x200));\
+	unsigned long ulFlags;\
+\
+	spin_lock_irqsave(&HifSdioLock, ulFlags); \
+	if (sdioDisableRefCnt == 1) { \
+		sdioDisableRefCnt = 0; \
+		writel(0, (UINT_32 *)(*g_pHifRegBaseAddr + 0x200));\
+	} else if (sdioDisableRefCnt > 0) \
+		sdioDisableRefCnt--; \
+	spin_unlock_irqrestore(&HifSdioLock, ulFlags); \
 }
 
 /*  ===========================  PART 2: mmc/sdio.h ============================ */
