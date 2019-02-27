@@ -1139,7 +1139,13 @@ WLAN_STATUS saaFsmRunEventRxDeauth(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwR
 					}
 #endif
 #if CFG_SUPPORT_RN
+				if ((prDeauthFrame != NULL) && (prDeauthFrame->aucSrcAddr[0] & 0x02)) {
+					DBGLOG(SAA, INFO, "Deauth from hotspot, do not reconnect.\n");
+					saaSendDisconnectMsgHandler(prAdapter, prStaRec, prAisBssInfo, FRM_DEAUTH);
+				} else {
+					DBGLOG(SAA, INFO, "Do reconnect.\n");
 					saaAutoReConnect(prAdapter, prStaRec, prAisBssInfo, FRM_DEAUTH);
+				}
 #else
 					saaSendDisconnectMsgHandler(prAdapter, prStaRec, prAisBssInfo, FRM_DEAUTH);
 #endif
