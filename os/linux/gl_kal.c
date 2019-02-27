@@ -5521,7 +5521,7 @@ BOOLEAN kalIsValidMacAddr(IN const uint8_t *addr)
 {
 	return is_valid_ether_addr(addr);
 }
-
+#if (KERNEL_VERSION(3, 19, 0) <= CFG80211_VERSION_CODE)
 static BOOLEAN kalParseRandomMac(
 	IN P_GLUE_INFO_T prGlueInfo,
 	IN UINT_8 *pucMacAddr, IN UINT_8 *pucMacAddrMask,
@@ -5577,4 +5577,18 @@ BOOLEAN kalSchedScanParseRandomMac(
 	}
 	return TRUE;
 }
-
+#else /* if (KERNEL_VERSION(3, 19, 0) <= CFG80211_VERSION_CODE) */
+BOOLEAN kalScanParseRandomMac(
+	IN P_GLUE_INFO_T prGlueInfo,
+	IN struct cfg80211_scan_request *request,
+	OUT PUINT_8 pucRandomMac)
+{
+	return FALSE;
+}
+BOOLEAN kalSchedScanParseRandomMac(
+	const struct net_device *ndev,
+	IN struct cfg80211_sched_scan_request *request)
+{
+	return FALSE;
+}
+#endif
