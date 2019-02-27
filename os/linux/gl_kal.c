@@ -2645,10 +2645,16 @@ int hif_thread(void *data)
 	struct net_device *dev = data;
 	P_GLUE_INFO_T prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(dev));
 	int ret = 0;
+	KAL_WAKE_LOCK_T *prHifThreadWakeLock;
 
-	KAL_WAKELOCK_DECLARE(rHifThreadWakeLock);
-	KAL_WAKE_LOCK_INIT(prGlueInfo->prAdapter, &rHifThreadWakeLock, "WLAN hif_thread");
-	KAL_WAKE_LOCK(prGlueInfo->prAdapter, &rHifThreadWakeLock);
+	prHifThreadWakeLock = kalMemAlloc(sizeof(KAL_WAKE_LOCK_T), PHY_MEM_TYPE);
+	if (!prHifThreadWakeLock) {
+		DBGLOG(INIT, ERROR, "%s MemAlloc Fail\n", KAL_GET_CURRENT_THREAD_NAME());
+		return FALSE;
+	}
+
+	KAL_WAKE_LOCK_INIT(prGlueInfo->prAdapter, prHifThreadWakeLock, "WLAN hif_thread");
+	KAL_WAKE_LOCK(prGlueInfo->prAdapter, prHifThreadWakeLock);
 
 	DBGLOG(INIT, INFO, "%s:%u starts running...\n", KAL_GET_CURRENT_THREAD_NAME(), KAL_GET_CURRENT_THREAD_ID());
 
@@ -2665,7 +2671,7 @@ int hif_thread(void *data)
 
 		/* Unlock wakelock if hif_thread going to idle */
 		if (!(prGlueInfo->ulFlag & GLUE_FLAG_HIF_PROCESS))
-			KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, &rHifThreadWakeLock);
+			KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, prHifThreadWakeLock);
 
 		/*
 		 * sleep on waitqueue if no events occurred. Event contain (1) GLUE_FLAG_INT
@@ -2680,8 +2686,8 @@ int hif_thread(void *data)
 #if 0 /*defined(MT6797)*/
 		nicDisableInterrupt(prGlueInfo->prAdapter);
 #endif
-		if (!KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, &rHifThreadWakeLock))
-			KAL_WAKE_LOCK(prGlueInfo->prAdapter, &rHifThreadWakeLock);
+		if (!KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, prHifThreadWakeLock))
+			KAL_WAKE_LOCK(prGlueInfo->prAdapter, prHifThreadWakeLock);
 
 		wlanAcquirePowerControl(prGlueInfo->prAdapter);
 
@@ -2735,9 +2741,10 @@ int hif_thread(void *data)
 
 	complete(&prGlueInfo->rHifHaltComp);
 
-	if (KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, &rHifThreadWakeLock))
-		KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, &rHifThreadWakeLock);
-	KAL_WAKE_LOCK_DESTROY(prGlueInfo->prAdapter, &rHifThreadWakeLock);
+	if (KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, prHifThreadWakeLock))
+		KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, prHifThreadWakeLock);
+	KAL_WAKE_LOCK_DESTROY(prGlueInfo->prAdapter, prHifThreadWakeLock);
+	kalMemFree(prHifThreadWakeLock, VIR_MEM_TYPE, sizeof(KAL_WAKE_LOCK_T));
 
 	DBGLOG(INIT, TRACE, "%s:%u stopped!\n", KAL_GET_CURRENT_THREAD_NAME(), KAL_GET_CURRENT_THREAD_ID());
 
@@ -2754,12 +2761,17 @@ int rx_thread(void *data)
 	P_QUE_ENTRY_T prQueueEntry = NULL;
 	int ret = 0;
 	UINT_32 u4LoopCount;
+	KAL_WAKE_LOCK_T *prRxThreadWakeLock;
 
 	/* for spin lock acquire and release */
 	KAL_SPIN_LOCK_DECLARATION();
-	KAL_WAKELOCK_DECLARE(rRxThreadWakeLock);
-	KAL_WAKE_LOCK_INIT(prGlueInfo->prAdapter, &rRxThreadWakeLock, "WLAN rx_thread");
-	KAL_WAKE_LOCK(prGlueInfo->prAdapter, &rRxThreadWakeLock);
+	prRxThreadWakeLock = kalMemAlloc(sizeof(KAL_WAKE_LOCK_T), PHY_MEM_TYPE);
+	if (!prRxThreadWakeLock) {
+		DBGLOG(INIT, ERROR, "%s MemAlloc Fail\n", KAL_GET_CURRENT_THREAD_NAME());
+		return FALSE;
+	}
+	KAL_WAKE_LOCK_INIT(prGlueInfo->prAdapter, prRxThreadWakeLock, "WLAN rx_thread");
+	KAL_WAKE_LOCK(prGlueInfo->prAdapter, prRxThreadWakeLock);
 
 	DBGLOG(INIT, INFO, "%s:%u starts running...\n", KAL_GET_CURRENT_THREAD_NAME(), KAL_GET_CURRENT_THREAD_ID());
 
@@ -2778,7 +2790,7 @@ int rx_thread(void *data)
 
 		/* Unlock wakelock if rx_thread going to idle */
 		if (!(prGlueInfo->ulFlag & GLUE_FLAG_RX_PROCESS))
-			KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, &rRxThreadWakeLock);
+			KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, prRxThreadWakeLock);
 
 		/*
 		 * sleep on waitqueue if no events occurred.
@@ -2788,8 +2800,8 @@ int rx_thread(void *data)
 						       ((prGlueInfo->ulFlag & GLUE_FLAG_RX_PROCESS) != 0));
 		} while (ret != 0);
 
-		if (!KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, &rRxThreadWakeLock))
-			KAL_WAKE_LOCK(prGlueInfo->prAdapter, &rRxThreadWakeLock);
+		if (!KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, prRxThreadWakeLock))
+			KAL_WAKE_LOCK(prGlueInfo->prAdapter, prRxThreadWakeLock);
 
 		if (test_and_clear_bit(GLUE_FLAG_RX_TO_OS_BIT, &prGlueInfo->ulFlag)) {
 			u4LoopCount = prGlueInfo->prAdapter->rWifiVar.u4Rx2OsLoopCount;
@@ -2817,10 +2829,10 @@ int rx_thread(void *data)
 
 	complete(&prGlueInfo->rRxHaltComp);
 
-	if (KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, &rRxThreadWakeLock))
-		KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, &rRxThreadWakeLock);
-	KAL_WAKE_LOCK_DESTROY(prGlueInfo->prAdapter, &rRxThreadWakeLock);
-
+	if (KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, prRxThreadWakeLock))
+		KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, prRxThreadWakeLock);
+	KAL_WAKE_LOCK_DESTROY(prGlueInfo->prAdapter, prRxThreadWakeLock);
+	kalMemFree(prRxThreadWakeLock, VIR_MEM_TYPE, sizeof(KAL_WAKE_LOCK_T));
 	DBGLOG(INIT, TRACE, "%s:%u stopped!\n", KAL_GET_CURRENT_THREAD_NAME(), KAL_GET_CURRENT_THREAD_ID());
 
 	return 0;
@@ -2847,9 +2859,13 @@ int tx_thread(void *data)
 	P_GL_IO_REQ_T prIoReq = NULL;
 	int ret = 0;
 	BOOLEAN fgNeedHwAccess = FALSE;
+	KAL_WAKE_LOCK_T *prTxThreadWakeLock;
 
-	KAL_WAKELOCK_DECLARE(rTxThreadWakeLock);
-
+	prTxThreadWakeLock = kalMemAlloc(sizeof(KAL_WAKE_LOCK_T), PHY_MEM_TYPE);
+	if (!prTxThreadWakeLock) {
+		DBGLOG(INIT, ERROR, "%s MemAlloc Fail\n", KAL_GET_CURRENT_THREAD_NAME());
+		return FALSE;
+	}
 #if CFG_SUPPORT_MULTITHREAD
 	prGlueInfo->u4TxThreadPid = KAL_GET_CURRENT_THREAD_ID();
 #endif
@@ -2859,8 +2875,8 @@ int tx_thread(void *data)
 	ASSERT(prGlueInfo->prAdapter);
 	set_user_nice(current, prGlueInfo->prAdapter->rWifiVar.cThreadNice);
 
-	KAL_WAKE_LOCK_INIT(prGlueInfo->prAdapter, &rTxThreadWakeLock, "WLAN tx_thread");
-	KAL_WAKE_LOCK(prGlueInfo->prAdapter, &rTxThreadWakeLock);
+	KAL_WAKE_LOCK_INIT(prGlueInfo->prAdapter, prTxThreadWakeLock, "WLAN tx_thread");
+	KAL_WAKE_LOCK(prGlueInfo->prAdapter, prTxThreadWakeLock);
 
 	DBGLOG(INIT, INFO, "%s:%u starts running...\n", KAL_GET_CURRENT_THREAD_NAME(), KAL_GET_CURRENT_THREAD_ID());
 
@@ -2879,7 +2895,7 @@ int tx_thread(void *data)
 
 		/* Unlock wakelock if tx_thread going to idle */
 		if (!(prGlueInfo->ulFlag & GLUE_FLAG_TX_PROCESS))
-			KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, &rTxThreadWakeLock);
+			KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, prTxThreadWakeLock);
 
 		/*
 		 * sleep on waitqueue if no events occurred. Event contain (1) GLUE_FLAG_INT
@@ -2891,8 +2907,8 @@ int tx_thread(void *data)
 						       ((prGlueInfo->ulFlag & GLUE_FLAG_TX_PROCESS) != 0));
 		} while (ret != 0);
 
-		if (!KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, &rTxThreadWakeLock))
-			KAL_WAKE_LOCK(prGlueInfo->prAdapter, &rTxThreadWakeLock);
+		if (!KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, prTxThreadWakeLock))
+			KAL_WAKE_LOCK(prGlueInfo->prAdapter, prTxThreadWakeLock);
 #if CFG_DBG_GPIO_PINS
 		/* TX thread Wake up */
 		mtk_wcn_stp_debug_gpio_assert(IDX_TX_THREAD, DBG_TIE_LOW);
@@ -3066,10 +3082,10 @@ int tx_thread(void *data)
 	wlanReleasePendingOid(prGlueInfo->prAdapter, 0);
 
 	complete(&prGlueInfo->rHaltComp);
-	if (KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, &rTxThreadWakeLock))
-		KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, &rTxThreadWakeLock);
-	KAL_WAKE_LOCK_DESTROY(prGlueInfo->prAdapter, &rTxThreadWakeLock);
-
+	if (KAL_WAKE_LOCK_ACTIVE(prGlueInfo->prAdapter, prTxThreadWakeLock))
+		KAL_WAKE_UNLOCK(prGlueInfo->prAdapter, prTxThreadWakeLock);
+	KAL_WAKE_LOCK_DESTROY(prGlueInfo->prAdapter, prTxThreadWakeLock);
+	kalMemFree(prTxThreadWakeLock, VIR_MEM_TYPE, sizeof(KAL_WAKE_LOCK_T));
 	DBGLOG(INIT, TRACE, "%s:%u stopped!\n", KAL_GET_CURRENT_THREAD_NAME(), KAL_GET_CURRENT_THREAD_ID());
 
 	return 0;
