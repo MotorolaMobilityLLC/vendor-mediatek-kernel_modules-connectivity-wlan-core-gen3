@@ -1120,5 +1120,14 @@ UINT_8 kalGetEapolKeyType(P_NATIVE_PACKET prPacket);
 VOID nicConfigProcSetCamCfgWrite(BOOLEAN enabled);
 
 VOID kalSetEmiMpuProtection(phys_addr_t emiPhyBase, UINT_32 size, BOOLEAN enable);
+BOOLEAN kalIsValidMacAddr(IN const UINT_8 *addr);
+
+BOOLEAN kalScanParseRandomMac(
+	IN P_GLUE_INFO_T prGlueInfo,
+	IN struct cfg80211_scan_request *request,
+	OUT UINT_8 *pucRandomMac);
+BOOLEAN kalSchedScanParseRandomMac(
+	const struct net_device *ndev,
+	IN struct cfg80211_sched_scan_request *request);
 
 #endif /* _GL_KAL_H */

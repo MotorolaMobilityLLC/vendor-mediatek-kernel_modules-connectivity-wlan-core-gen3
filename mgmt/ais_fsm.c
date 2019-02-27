@@ -974,7 +974,7 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 	P_CONNECTION_SETTINGS_T prConnSettings;
 	P_BSS_DESC_T prBssDesc;
 	P_MSG_CH_REQ_T prMsgChReq;
-	P_MSG_SCN_SCAN_REQ_V2 prScanReqMsg;
+	struct _MSG_SCN_SCAN_REQ_V3_T *prScanReqMsg;
 	P_AIS_REQ_HDR_T prAisReq;
 	ENUM_BAND_T eBand;
 	UINT_8 ucChannel;
@@ -1365,16 +1365,16 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 #endif
 			}
 
-			prScanReqMsg = (P_MSG_SCN_SCAN_REQ_V2) cnmMemAlloc(prAdapter,
-									   RAM_TYPE_MSG,
-									   OFFSET_OF
-									   (MSG_SCN_SCAN_REQ_V2, aucIE) + u2ScanIELen);
+			prScanReqMsg = (struct _MSG_SCN_SCAN_REQ_V3_T *) cnmMemAlloc(prAdapter,
+							   RAM_TYPE_MSG,
+							   OFFSET_OF
+							   (struct _MSG_SCN_SCAN_REQ_V3_T, aucIE) + u2ScanIELen);
 			if (!prScanReqMsg) {
 				ASSERT(0);	/* Can't trigger SCAN FSM */
 				return;
 			}
-			kalMemZero(prScanReqMsg, OFFSET_OF(MSG_SCN_SCAN_REQ_V2, aucIE) + u2ScanIELen);
-			prScanReqMsg->rMsgHdr.eMsgId = MID_AIS_SCN_SCAN_REQ_V2;
+			kalMemZero(prScanReqMsg, OFFSET_OF(struct _MSG_SCN_SCAN_REQ_V3_T, aucIE) + u2ScanIELen);
+			prScanReqMsg->rMsgHdr.eMsgId = MID_AIS_SCN_SCAN_REQ_V3;
 			prScanReqMsg->ucSeqNum = ++prAisFsmInfo->ucSeqNumOfScanReq;
 			prScanReqMsg->ucBssIndex = prAdapter->prAisBssInfo->ucBssIndex;
 			if (rlmFillScanMsg(prAdapter, prScanReqMsg)) {
@@ -1414,6 +1414,9 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 					prScanReqMsg->ucSSIDNum = prAisFsmInfo->ucScanSSIDNum;
 					prScanReqMsg->prSsid = prAisFsmInfo->arScanSSID;
 				}
+				kalMemCopy(prScanReqMsg->aucRandomMac, &(prAisFsmInfo->rScanRandMacAddr.aucRandomMac),
+							MAC_ADDR_LEN);
+				prScanReqMsg->ucScnFuncMask = prAisFsmInfo->rScanRandMacAddr.ucScnFuncMask;
 			} else {
 				prScanReqMsg->eScanType = SCAN_TYPE_ACTIVE_SCAN;
 
@@ -1604,6 +1607,8 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 			mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prScanReqMsg, MSG_SEND_METHOD_BUF);
 			prAisFsmInfo->fgTryScan = FALSE;	/* Will enable background sleep for infrastructure */
 			prAisFsmInfo->ucJoinFailCntAfterScan = 0;
+			kalMemZero(&(prAisFsmInfo->rScanRandMacAddr),
+						sizeof(struct _PARAM_SCAN_RANDOM_MAC_ADDR_T));
 #if CFG_SUPPORT_ABORT_SCAN
 			AisFsmSetScanState(prAdapter, TRUE);
 #endif
@@ -2238,7 +2243,8 @@ VOID aisFsmRunEventScanDone(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr)
 		cnmTimerStartTimer(prAdapter, &prAisFsmInfo->rScanDoneTimer,
 			SEC_TO_MSEC(AIS_SCN_DONE_TIMEOUT_SEC));
 		aisFsmScanRequestAdv(prAdapter, prParam->ucSsidNum, prParam->arSSID,
-					prParam->aucScanIEBuf, prParam->u4IELen, prParam->fgFull2Partial);
+					prParam->aucScanIEBuf, prParam->u4IELen, prParam->fgFull2Partial,
+					&(prParam->rScanRandMacAddr));
 	} else /* Radio Measurement is on-going, schedule to next Measurement Element */
 		rlmStartNextMeasurement(prAdapter, FALSE);
 
@@ -4155,7 +4161,7 @@ VOID aisFsmScanRequest(IN P_ADAPTER_T prAdapter, IN P_PARAM_SSID_T prSsid, IN PU
 /*----------------------------------------------------------------------------*/
 VOID
 aisFsmScanRequestAdv(IN P_ADAPTER_T prAdapter, IN UINT_8 ucSsidNum, IN P_PARAM_SSID_T prSsid, IN PUINT_8 pucIe,
-	IN UINT_32 u4IeLength,  IN UINT_8 ucSetChannel)
+	IN UINT_32 u4IeLength,  IN UINT_8 ucSetChannel, IN struct _PARAM_SCAN_RANDOM_MAC_ADDR_T *prScanRandMacAddr)
 {
 	UINT_32 i;
 	P_CONNECTION_SETTINGS_T prConnSettings;
@@ -4167,6 +4173,7 @@ aisFsmScanRequestAdv(IN P_ADAPTER_T prAdapter, IN UINT_8 ucSsidNum, IN P_PARAM_S
 	ASSERT(prAdapter);
 	ASSERT(ucSsidNum <= SCN_SSID_MAX_NUM);
 	ASSERT(u4IeLength <= MAX_IE_LENGTH);
+	ASSERT(prScanRandMacAddr);
 
 	prAisBssInfo = prAdapter->prAisBssInfo;
 	prAisFsmInfo = &(prAdapter->rWifiVar.rAisFsmInfo);
@@ -4203,7 +4210,8 @@ aisFsmScanRequestAdv(IN P_ADAPTER_T prAdapter, IN UINT_8 ucSsidNum, IN P_PARAM_S
 			prAdapter->prGlueInfo->pucScanChannel = (PUINT_8)&(prAdapter->prGlueInfo->rScanChannelInfo);
 			DBGLOG(AIS, TRACE, "partial scan set pucScanChannel\n");
 		}
-
+		kalMemCopy(&(prAisFsmInfo->rScanRandMacAddr), prScanRandMacAddr,
+			sizeof(struct _PARAM_SCAN_RANDOM_MAC_ADDR_T));
 		if (prAisFsmInfo->eCurrentState == AIS_STATE_NORMAL_TR) {
 			if (prAisBssInfo->eCurrentOPMode == OP_MODE_INFRASTRUCTURE
 			    && prAisFsmInfo->fgIsInfraChannelFinished == FALSE) {
@@ -4249,6 +4257,8 @@ aisFsmScanRequestAdv(IN P_ADAPTER_T prAdapter, IN UINT_8 ucSsidNum, IN P_PARAM_S
 			prNormalScan->u4IELen = 0;
 		}
 		prNormalScan->fgFull2Partial = ucSetChannel;
+		kalMemCopy(&(prNormalScan->rScanRandMacAddr), prScanRandMacAddr,
+			sizeof(struct _PARAM_SCAN_RANDOM_MAC_ADDR_T));
 		cnmTimerStopTimer(prAdapter, &prAisFsmInfo->rScanDoneTimer);
 		DBGLOG(AIS, INFO, "Buffer normal scan while Beacon request measurement\n");
 	} else {

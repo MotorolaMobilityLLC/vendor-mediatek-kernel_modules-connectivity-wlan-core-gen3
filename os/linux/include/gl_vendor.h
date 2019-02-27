@@ -750,6 +750,10 @@ typedef struct _PARAM_PACKET_KEEPALIVE_T {
 	UINT_32 u4PeriodMsec;
 } PARAM_PACKET_KEEPALIVE_T, *P_PARAM_PACKET_KEEPALIVE_T;
 
+struct PARAM_BSS_MAC_OUI {
+	uint8_t ucBssIndex;
+	uint8_t ucMacOui[MAC_OUI_LEN];
+};
 
 /*******************************************************************************
 *                                 M A C R O S
@@ -847,4 +851,7 @@ int mtk_cfg80211_vendor_enable_roaming(struct wiphy *wiphy,
 int mtk_cfg80211_vendor_get_supported_feature_set(
 	struct wiphy *wiphy, struct wireless_dev *wdev,
 	const void *data, int data_len);
+int mtk_cfg80211_vendor_set_scan_mac_oui(struct wiphy *wiphy,
+				struct wireless_dev *wdev, const void *data, int data_len);
+
 #endif /* _GL_VENDOR_H */
