@@ -568,6 +568,10 @@ struct KAL_HALT_CTRL_T {
 /* Zero specific memory block */
 #define kalMemZero(pvAddr, u4Size)                  memset(pvAddr, 0, u4Size)
 
+#if KERNEL_VERSION(4, 0, 0) <= LINUX_VERSION_CODE
+#define strnicmp(s1, s2, n)                         strncasecmp(s1, s2, n)
+#endif
+
 /* string operation */
 #define kalStrCpy(dest, src)                         strcpy(dest, src)
 #define kalStrnCpy(dest, src, n)                      strncpy(dest, src, n)
