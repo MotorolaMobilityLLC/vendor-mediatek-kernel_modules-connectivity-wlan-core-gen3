@@ -1849,7 +1849,7 @@ int mtk_cfg80211_vendor_get_supported_feature_set(struct wiphy *wiphy,
 		goto nla_put_failure;
 	}
 
-	DBGLOG(REQ, INFO, "supported feature set=0x%x\n", u4FeatureSet);
+	DBGLOG(REQ, TRACE, "supported feature set=0x%x\n", u4FeatureSet);
 
 	return cfg80211_vendor_cmd_reply(skb);
 
