@@ -2344,6 +2344,7 @@ VOID aisFsmRunEventAbort(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr)
 	if (ucReasonOfDisconnect == DISCONNECT_REASON_CODE_ROAMING &&
 	    prAisFsmInfo->eCurrentState != AIS_STATE_DISCONNECTING) {
 
+		cnmTimerStopTimer(prAdapter, &prAisFsmInfo->rSecModeChangeTimer);
 		if (prAisFsmInfo->eCurrentState == AIS_STATE_NORMAL_TR) {
 			/* 1. release channel */
 			aisFsmReleaseCh(prAdapter);
@@ -2828,9 +2829,18 @@ enum _ENUM_AIS_STATE_T aisFsmJoinCompleteAction(IN struct _ADAPTER_T *prAdapter,
 #endif /* CFG_SUPPORT_ROAMING */
 					if (prAisBssInfo->prStaRecOfAP)
 						prAisBssInfo->prStaRecOfAP->fgIsTxAllowed = TRUE;
-					if (prConnSettings->eConnectionPolicy == CONNECT_BY_BSSID
-						&& prBssDesc->u2JoinStatus)
-						eNextState = AIS_STATE_JOIN_FAILURE;
+					if (prConnSettings->eConnectionPolicy == CONNECT_BY_BSSID &&
+					    prBssDesc->u2JoinStatus) {
+						UINT_32 u4InfoBufLen = 0;
+
+						/* For framework roaming case, if authentication is rejected,
+						** need to make driver disconnecting because wpa_supplicant
+						** will enter disconnected state in this case, otherwise, connection
+						** state between driver and supplicant will be not synchronized.
+						*/
+						wlanoidSetDisassociate(prAdapter, NULL, 0, &u4InfoBufLen);
+						eNextState = prAisFsmInfo->eCurrentState;
+					}
 #if CFG_SUPPORT_RN
 				} else if (prAisBssInfo->fgDisConnReassoc == TRUE) {
 					eNextState = AIS_STATE_JOIN_FAILURE;
@@ -3726,6 +3736,7 @@ VOID aisFsmDisconnect(IN P_ADAPTER_T prAdapter, IN BOOLEAN fgDelayIndication)
 
 	prAisBssInfo = prAdapter->prAisBssInfo;
 
+	cnmTimerStopTimer(prAdapter, &prAdapter->rWifiVar.rAisFsmInfo.rSecModeChangeTimer);
 	nicPmIndicateBssAbort(prAdapter, prAdapter->prAisBssInfo->ucBssIndex);
 
 #if CFG_SUPPORT_ADHOC
