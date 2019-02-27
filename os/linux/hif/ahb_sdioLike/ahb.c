@@ -1360,12 +1360,26 @@ void kalDumpAhbDebugInfo(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
 	UINT_32 val;
 	UINT_32 u4InfraPseOffset = 0x0394;
 
-	DBGLOG(RX, ERROR,
-	       "HIF_DBGCR02: 0x%08x, HIF_DBGCR08: 0x%08x\n",
-	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
-				CONN_HIF_DBGCR02),
-	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
-				CONN_HIF_DBGCR08));
+	DBGLOG(HAL, ERROR, "HIF_DBGCR00:0x%08X HIF_DBGCR01:0x%08X\n",
+		CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+			CONN_HIF_DBGCR00),
+		CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+			CONN_HIF_DBGCR01));
+	DBGLOG(HAL, ERROR, "HIF_DBGCR02:0x%08X HIF_DBGCR04:0x%08X\n",
+		CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+			CONN_HIF_DBGCR02),
+		CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+			CONN_HIF_DBGCR04));
+	DBGLOG(HAL, ERROR, "HIF_DBGCR08:0x%08X HIF_DBGCR10:0x%08X\n",
+		CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+			CONN_HIF_DBGCR08),
+		CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+			CONN_HIF_DBGCR10));
+	DBGLOG(HAL, ERROR, "HIF_DBGCR11:0x%08X HIF_DBGCR12:0x%08X\n",
+		CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+			CONN_HIF_DBGCR11),
+		CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
+			CONN_HIF_DBGCR12));
 
 	/* SET INFRA AO REMAPPING PSE Client REG according to Chip ID */
 	switch (u2ChipID) {
@@ -1381,7 +1395,7 @@ void kalDumpAhbDebugInfo(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
 		u4InfraPseOffset = 0x0394;
 		break;
 	default:
-		DBGLOG(RX, WARN, "Using default offset 0x%04x for chip id 0x%04x\n",
+		DBGLOG(HAL, WARN, "Using default offset 0x%04x for chip id 0x%04x\n",
 		       u4InfraPseOffset, u2ChipID);
 		break;
 	}
@@ -1398,19 +1412,15 @@ void kalDumpAhbDebugInfo(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
 	val = 0x6;
 	CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
 			  CONN_REMAP_PSE_CLIENT_DBGCR, val);
-	DBGLOG(RX, ERROR,
+	DBGLOG(HAL, ERROR,
 	       "PSE Client debug CR: 0x%08x\n",
 	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
 				CONN_REMAP_PSE_CLIENT_DBGCR));
-	DBGLOG(RX, ERROR,
-	       "CONN_HIF_DBGCR12: 0x%08x\n",
-	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
-				CONN_HIF_DBGCR12));
 
 	val = 0x3;
 	CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
 			  CONN_REMAP_PSE_CLIENT_DBGCR, val);
-	DBGLOG(RX, ERROR,
+	DBGLOG(HAL, ERROR,
 	       "PSE Client debug CR: 0x%08x\n",
 	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
 				CONN_REMAP_PSE_CLIENT_DBGCR));
@@ -1418,7 +1428,7 @@ void kalDumpAhbDebugInfo(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
 	val = 0x4;
 	CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
 			  CONN_REMAP_PSE_CLIENT_DBGCR, val);
-	DBGLOG(RX, ERROR,
+	DBGLOG(HAL, ERROR,
 	       "PSE Client debug CR: 0x%08x\n",
 	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
 				CONN_REMAP_PSE_CLIENT_DBGCR));
@@ -1426,7 +1436,7 @@ void kalDumpAhbDebugInfo(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
 	val = 0x12;
 	CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
 			  CONN_REMAP_PSE_CLIENT_DBGCR, val);
-	DBGLOG(RX, ERROR,
+	DBGLOG(HAL, ERROR,
 	       "PSE Client debug CR: 0x%08x\n",
 	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
 				CONN_REMAP_PSE_CLIENT_DBGCR));
@@ -1434,7 +1444,7 @@ void kalDumpAhbDebugInfo(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
 	val = 0x17;
 	CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
 			  CONN_REMAP_PSE_CLIENT_DBGCR, val);
-	DBGLOG(RX, ERROR,
+	DBGLOG(HAL, ERROR,
 	       "PSE Client debug CR: 0x%08x\n",
 	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.ConnCfgRegBaseAddr,
 				CONN_REMAP_PSE_CLIENT_DBGCR));

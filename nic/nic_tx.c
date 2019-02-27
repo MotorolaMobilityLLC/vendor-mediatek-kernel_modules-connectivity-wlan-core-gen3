@@ -1847,6 +1847,7 @@ WLAN_STATUS nicTxCmd(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN UIN
 	P_TX_CTRL_T prTxCtrl;
 	P_HW_MAC_TX_DESC_T prTxDesc = NULL;
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
+	P_SCAN_INFO_T prScanInfo;
 
 	KAL_SPIN_LOCK_DECLARATION();
 
@@ -1856,6 +1857,7 @@ WLAN_STATUS nicTxCmd(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN UIN
 	prTxCtrl = &prAdapter->rTxCtrl;
 	pucOutputBuf = prTxCtrl->pucTxCoalescingBufPtr;
 	prTxDesc = (P_HW_MAC_TX_DESC_T)&pucOutputBuf[0];
+	prScanInfo = &(prAdapter->rWifiVar.rScanInfo);
 #if (CFG_SUPPORT_TRACE_TC4 == 1)
 	wlanTraceTxCmd(prCmdInfo);
 #endif
@@ -2007,9 +2009,17 @@ WLAN_STATUS nicTxCmd(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN UIN
 		}
 	}
 
-	/* <4> Write frame to data port */
-	HAL_WRITE_TX_PORT(prAdapter,
-			  (UINT_32) u2OverallLength, pucOutputBuf, prAdapter->u4CoalescingBufCachedSize);
+	if (prScanInfo->ucScanDoneTimeoutCnt) {
+		HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
+		/* <4> Write frame to data port */
+		HAL_WRITE_TX_PORT(prAdapter,
+			  (UINT_32) u2OverallLength, pucOutputBuf,
+			  prAdapter->u4CoalescingBufCachedSize);
+		HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
+	} else
+		HAL_WRITE_TX_PORT(prAdapter,
+			  (UINT_32) u2OverallLength, pucOutputBuf,
+			  prAdapter->u4CoalescingBufCachedSize);
 out:
 	return rStatus;
 }				/* end of nicTxCmd() */

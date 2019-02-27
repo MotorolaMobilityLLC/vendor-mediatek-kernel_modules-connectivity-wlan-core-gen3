@@ -63,9 +63,14 @@ extern INT_32 mtk_wcn_consys_hw_wifi_paldo_ctrl(UINT_32 enable);
 #define HIF_DRV_LENGTH               0x1100
 
 /* CONN HIF Debug CR */
+#define CONN_HIF_DBGCR00	     0x0300
+#define CONN_HIF_DBGCR01	     0x0304
 #define CONN_HIF_DBGCR02	     0x0308
+#define CONN_HIF_DBGCR04	     0x0310
 #define CONN_HIF_DBGCR08	     0x0320
-#define CONN_HIF_DBGCR12             0x0330
+#define CONN_HIF_DBGCR10	     0x0328
+#define CONN_HIF_DBGCR11	     0x032C
+#define CONN_HIF_DBGCR12	     0x0330
 
 /* CONN REMAP CFG CR */
 #define CONN_REMAP_CONF_BASE         0x180E0000
