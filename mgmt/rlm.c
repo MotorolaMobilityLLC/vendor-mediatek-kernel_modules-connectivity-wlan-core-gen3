@@ -1674,8 +1674,12 @@ rlmRecBcnInfoForClient(P_ADAPTER_T prAdapter,
 
 	/* Handle change of slot time */
 	prBssInfo->u2CapInfo = ((P_WLAN_BEACON_FRAME_T) (prSwRfb->pvHeader))->u2CapInfo;
-	prBssInfo->fgUseShortSlotTime = ((prBssInfo->u2CapInfo & CAP_INFO_SHORT_SLOT_TIME)
-					 || (prBssInfo->eBand != BAND_2G4)) ? TRUE : FALSE;
+	/*
+	 * Some Access Points don't set short slot time subfield in Beacon's Capability info on 5G band,
+	 * since this bit is no use for 11a devices, so F/W should not check the fgUseShortSlotTime flag
+	 * in driver's RLM param command on 5G band, just use short slot time for transmission directly.
+	 */
+	prBssInfo->fgUseShortSlotTime = (prBssInfo->u2CapInfo & CAP_INFO_SHORT_SLOT_TIME) ? TRUE : FALSE;
 
 	rlmRecIeInfoForClient(prAdapter, prBssInfo, pucIE, u2IELength);
 
@@ -1834,8 +1838,7 @@ VOID rlmProcessAssocRsp(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb, PUINT_8 pucIE
 	 */
 	rlmBssReset(prAdapter, prBssInfo);
 
-	prBssInfo->fgUseShortSlotTime = ((prBssInfo->u2CapInfo & CAP_INFO_SHORT_SLOT_TIME)
-					 || (prBssInfo->eBand != BAND_2G4)) ? TRUE : FALSE;
+	prBssInfo->fgUseShortSlotTime = (prBssInfo->u2CapInfo & CAP_INFO_SHORT_SLOT_TIME) ? TRUE : FALSE;
 	ucPriChannel = rlmRecIeInfoForClient(prAdapter, prBssInfo, pucIE, u2IELength);
 
 	if (prBssInfo->ucPrimaryChannel != ucPriChannel) {

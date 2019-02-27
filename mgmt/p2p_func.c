@@ -1310,8 +1310,17 @@ p2pFuncProcessBeacon(IN P_ADAPTER_T prAdapter,
 		/* Parse Beacon header */
 		COPY_MAC_ADDR(prP2pBssInfo->aucOwnMacAddr, prBcnFrame->aucSrcAddr);
 		COPY_MAC_ADDR(prP2pBssInfo->aucBSSID, prBcnFrame->aucBSSID);
-		prP2pBssInfo->u2BeaconInterval = prBcnFrame->u2BeaconInterval;
-		prP2pBssInfo->u2CapInfo = prBcnFrame->u2CapInfo;
+		if ((prP2pBssInfo->eCurrentOPMode != OP_MODE_ACCESS_POINT) ||
+		    (prP2pBssInfo->eIntendOPMode != OP_MODE_NUM)) {
+			/*
+			 * AP is not started yet.
+			 * Skip to update the Beacon interval and Capability info after AP started,
+			 * in case that they have different value from supplicant setting, just
+			 * keep the value decided by driver when start GO.
+			 */
+			prP2pBssInfo->u2BeaconInterval = prBcnFrame->u2BeaconInterval;
+			prP2pBssInfo->u2CapInfo = prBcnFrame->u2CapInfo;
+		}
 
 		/* Parse Beacon IEs */
 		p2pFuncParseBeaconIEs(prAdapter,
@@ -2829,8 +2838,12 @@ P_MSDU_INFO_T p2pFuncProcessP2pProbeRsp(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBs
 							  prProbeRspFrame->aucDestAddr,
 							  prProbeRspFrame->aucSrcAddr,
 							  prProbeRspFrame->aucBSSID,
-							  prProbeRspFrame->u2BeaconInterval,
-							  prProbeRspFrame->u2CapInfo);
+							  (ucBssIdx == P2P_DEV_BSS_INDEX) ?
+							  prProbeRspFrame->u2BeaconInterval :
+							  prP2pBssInfo->u2BeaconInterval,
+							  (ucBssIdx == P2P_DEV_BSS_INDEX) ?
+							  prProbeRspFrame->u2CapInfo :
+							  prP2pBssInfo->u2CapInfo);
 
 		prRetMsduInfo->u2FrameLength =
 		    (WLAN_MAC_MGMT_HEADER_LEN + TIMESTAMP_FIELD_LEN + BEACON_INTERVAL_FIELD_LEN + CAP_INFO_FIELD_LEN);
