@@ -6207,7 +6207,7 @@ VOID qmDetectArpNoResponse(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo)
 			DBGLOG(INIT, WARN, "IOT Critical issue, arp no resp, check AP!\n");
 			if (prAdapter && prAdapter->prAisBssInfo)
 				prAdapter->prAisBssInfo->u2DeauthReason = BEACON_TIMEOUT_DUE_2_APR_NO_RESPONSE;
-			aisBssBeaconTimeout(prAdapter);
+			kalSetResetConnEvent(prAdapter->prGlueInfo);
 			arpMoniter = 0;
 			kalMemZero(apIp, sizeof(apIp));
 		}

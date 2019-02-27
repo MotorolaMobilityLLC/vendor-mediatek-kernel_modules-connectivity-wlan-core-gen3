@@ -955,6 +955,8 @@ VOID kalTimeoutHandler(unsigned long arg);
 
 VOID kalSetEvent(P_GLUE_INFO_T pr);
 
+VOID kalSetResetConnEvent(P_GLUE_INFO_T pr);
+
 #if CFG_SUPPORT_MULTITHREAD
 VOID kalSetTxEvent2Hif(P_GLUE_INFO_T pr);
 
