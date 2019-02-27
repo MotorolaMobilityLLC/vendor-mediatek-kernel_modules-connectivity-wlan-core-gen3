@@ -489,6 +489,7 @@ int mtk_cfg80211_get_station(struct wiphy *wiphy, struct net_device *ndev, const
 		sinfo->tx_failed = prDevStats->tx_errors;
 	}
 
+	wlanPktStatusDebugDumpInfo(prGlueInfo->prAdapter);
 	return 0;
 }
 
