@@ -973,7 +973,11 @@ VOID glNotifyDrvStatus(enum DRV_STATUS_T eDrvStatus, PVOID pvInfo)
 	}
 	mutex_unlock(&drvStatusLock);
 	/* Wake up all readers if at least one is waiting */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 13, 0))
 	if (!list_empty(&waitqDrvStatus.task_list))
+#else
+	if (!list_empty(&waitqDrvStatus.head))
+#endif
 		wake_up_interruptible(&waitqDrvStatus);
 }
 

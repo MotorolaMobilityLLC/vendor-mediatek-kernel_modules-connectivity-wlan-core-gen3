@@ -935,7 +935,9 @@ WLAN_STATUS kalRxIndicateOnePkt(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPkt)
 #endif
 	StatsEnvRxTime2Host(prGlueInfo->prAdapter, prSkb);
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 11, 0))
 	prNetDev->last_rx = jiffies;
+#endif
 #if CFG_SUPPORT_SNIFFER
 	if (prGlueInfo->fgIsEnableMon) {
 		skb_reset_mac_header(prSkb);
@@ -1002,6 +1004,9 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 	P_BSS_DESC_T prBssDesc = NULL;
 	OS_SYSTIME rCurrentTime;
 	BOOLEAN fgIsNeedUpdateBss = FALSE;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0))
+	struct cfg80211_scan_info rScanInfo = { 0 };
+#endif
 
 	GLUE_SPIN_LOCK_DECLARATION();
 
@@ -1227,10 +1232,8 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 					prGlueInfo->ucAbortScanCnt);
 			}
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0))
-			struct cfg80211_scan_info info = {
-				.aborted = (*pWlanStatus == WLAN_STATUS_ABORT_SCAN),
-			};
-			cfg80211_scan_done(prScanRequest, info);
+			rScanInfo.aborted = (*pWlanStatus == WLAN_STATUS_ABORT_SCAN);
+			cfg80211_scan_done(prScanRequest, &rScanInfo);
 #else
 			cfg80211_scan_done(prScanRequest, (*pWlanStatus == WLAN_STATUS_ABORT_SCAN));
 #endif
@@ -1239,10 +1242,8 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 		/* 2. then CFG80211 Indication */
 		if (prScanRequest) {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0))
-			struct cfg80211_scan_info info = {
-				.aborted = FALSE,
-			};
-			cfg80211_scan_done(prScanRequest, &info);
+			rScanInfo.aborted = FALSE,
+			cfg80211_scan_done(prScanRequest, &rScanInfo);
 #else
 			cfg80211_scan_done(prScanRequest, FALSE);
 #endif
