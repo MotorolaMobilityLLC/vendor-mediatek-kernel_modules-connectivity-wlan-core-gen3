@@ -131,9 +131,10 @@
 
 #define NIC_TX_DEFAULT_WLAN_INDEX               31	/* For Tx packets to peer who has no WLAN table index. */
 
-#define NIC_TX_DESC_PID_RESERVED                0
+#define NIC_TX_DESC_PID_INVALID                 0
 #define NIC_TX_DESC_DRIVER_PID_MIN              1
 #define NIC_TX_DESC_DRIVER_PID_MAX              127
+#define NIC_TX_DESC_PID_RESERVED_FOR_MGMT       10	/* Reserve PID number for MGMT/Security frames */
 
 #if defined(MT6630) || defined(MT6631)
 #define NIC_TX_DATA_DEFAULT_RETRY_COUNT_LIMIT   30
