@@ -399,7 +399,7 @@ COUNTRY_POWER_LIMIT_TABLE_DEFAULT g_rRlmPowerLimitDefault[] = {
 	 , 0}
 	,
 	{{'M', 'M'}
-	 , {40, 46, 46, 60, 63}
+	 , {40, 46, 46, 60, 60}
 	 , 0}
 	,
 	{{'A', 'L'}
