@@ -107,6 +107,10 @@ APPEND_VAR_IE_ENTRY_T txAssocRespIETable[] = {
 	,			/* 45 */
 	{(ELEM_HDR_LEN + ELEM_MAX_LEN_HT_OP), NULL, rlmRspGenerateHtOpIE}
 	,			/* 61 */
+#if CFG_SUPPORT_802_11V
+	{(ELEM_HDR_LEN + ELEM_MAX_LEN_BSS_MAX_IDLE_PERIOD), NULL, rlmRspGenerateBssMaxIdlePeriodIE}
+	,			/* 90 */
+#endif
 #if CFG_ENABLE_WIFI_DIRECT
 	{(ELEM_HDR_LEN + ELEM_MAX_LEN_OBSS_SCAN), NULL, rlmRspGenerateObssScanIE}
 	,			/* 74 */

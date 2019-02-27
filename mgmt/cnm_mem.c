@@ -955,11 +955,11 @@ static VOID cnmStaSendUpdateCmd(P_ADAPTER_T prAdapter, P_STA_RECORD_T prStaRec, 
 	prCmdContent->ucTxBaSize = prAdapter->rWifiVar.ucTxBaSize;
 
 	/* if AP's max idle time is greater than 30s, then we send keep alive packets every 30 sec */
-	prCmdContent->ucKeepAliveDuration = (UINT_8)prStaRec->u2MaxIdlePeriod;
+	prCmdContent->u2KeepAliveDuration = (UINT_16)prStaRec->u2MaxIdlePeriod;
 	prCmdContent->ucKeepAliveOption = prStaRec->ucIdleOption;
 
-	if (prCmdContent->ucKeepAliveDuration > 0)
-		DBGLOG(CNM, INFO, "keep-alive duration is %d\n", prCmdContent->ucKeepAliveDuration);
+	if (prCmdContent->u2KeepAliveDuration > 0)
+		DBGLOG(CNM, INFO, "keep-alive duration is %d\n", prCmdContent->u2KeepAliveDuration);
 	if (prStaRec->ucDesiredPhyTypeSet & PHY_TYPE_SET_802_11AC)
 		prCmdContent->ucRxBaSize = prAdapter->rWifiVar.ucRxVhtBaSize;
 	else
@@ -974,15 +974,16 @@ static VOID cnmStaSendUpdateCmd(P_ADAPTER_T prAdapter, P_STA_RECORD_T prStaRec, 
 	} else
 		prCmdContent->ucRtsPolicy = RTS_POLICY_LEGACY;
 
-	DBGLOG(REQ, TRACE, "Update StaRec[%u] WIDX[%u] State[%u] Type[%u] BssIdx[%u] AID[%u]\n",
+	DBGLOG(CNM, TRACE, "Update StaRec[%u] WIDX[%u] State[%u] Type[%u] BssIdx[%u] AID[%u]\n",
 			   prCmdContent->ucStaIndex,
 			   prCmdContent->ucWlanIndex,
 			   prCmdContent->ucStaState,
 			   prCmdContent->ucStaType, prCmdContent->ucBssIndex, prCmdContent->u2AssocId);
 
-	DBGLOG(REQ, TRACE, "Update StaRec[%u] QoS[%u] UAPSD[%u] BMCWIDX[%u]\n",
+	DBGLOG(CNM, TRACE, "Update StaRec[%u] QoS[%u] UAPSD[%u] BMCWIDX[%u] MaxIdle[%u]\n",
 			   prCmdContent->ucStaIndex,
-			   prCmdContent->ucIsQoS, prCmdContent->ucIsUapsdSupported, prCmdContent->ucBMCWlanIndex);
+			   prCmdContent->ucIsQoS, prCmdContent->ucIsUapsdSupported,
+			   prCmdContent->ucBMCWlanIndex, prCmdContent->u2KeepAliveDuration);
 
 	rStatus = wlanSendSetQueryCmd(prAdapter,	/* prAdapter */
 				      CMD_ID_UPDATE_STA_RECORD,	/* ucCID */
