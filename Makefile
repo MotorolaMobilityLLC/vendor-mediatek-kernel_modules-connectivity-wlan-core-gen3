@@ -1,9 +1,11 @@
 ###############################################################################
 # Necessary Check
 
-ifneq ($(KERNEL_OUT),)
-    ccflags-y += -imacros $(KERNEL_OUT)/include/generated/autoconf.h
+ifeq ($(AUTOCONF_H),)
+    $(error AUTOCONF_H is not defined)
 endif
+
+ccflags-y += -imacros $(AUTOCONF_H)
 
 # Force build fail on modpost warning
 KBUILD_MODPOST_FAIL_ON_WARNINGS := y
@@ -71,12 +73,12 @@ endif
 
 ccflags-y += -DDBG=0
 
-ccflags-y += -I$(KERNEL_DIR)/drivers/misc/mediatek/include
-ccflags-y += -I$(KERNEL_DIR)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include
-ccflags-y += -I$(KERNEL_DIR)/drivers/misc/mediatek/include/mt-plat
-ccflags-y += -I$(KERNEL_DIR)/drivers/misc/mediatek/emi/$(MTK_PLATFORM)
-ccflags-y += -I$(KERNEL_DIR)/drivers/misc/mediatek/emi/submodule
-ccflags-y += -I$(KERNEL_DIR)/drivers/devfreq/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/emi/$(MTK_PLATFORM)
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/emi/submodule
+ccflags-y += -I$(srctree)/drivers/devfreq/
 
 ifeq ($(WLAN_CHIP_ID), MT6631)
 # temp disable emi_mpu on these platforms since it is not ready
@@ -98,13 +100,13 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/base/power/include
 
 WMT_ANDROID_MK := $(TOP)/vendor/mediatek/kernel_modules/connectivity/common/Android.mk
 ifeq (,$(wildcard $(WMT_ANDROID_MK)))
-ccflags-y += -I$(KERNEL_DIR)/drivers/misc/mediatek/connectivity/common/common_main/include
-ccflags-y += -I$(KERNEL_DIR)/drivers/misc/mediatek/connectivity/common/common_main/linux/include
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/include
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common/common_main/linux/include
 else
 ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/common_main/include
 ccflags-y += -I$(TOP)/vendor/mediatek/kernel_modules/connectivity/common/common_main/linux/include
 endif
-ccflags-y += -I$(KERNEL_DIR)/drivers/misc/mediatek/connectivity/common/
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/connectivity/common/
 ccflags-y += -D MTK_WCN_WMT_STP_EXP_SYMBOL_ABSTRACT
 
 MODULE_NAME := wlan_drv_gen3
