@@ -202,7 +202,7 @@ typedef enum _ENUM_TDLS_LINK_OPER {
 typedef struct _TDLS_CMD_LINK_OPER_T {
 
 	UINT_8 aucPeerMac[6];
-	ENUM_TDLS_LINK_OPER oper;
+	enum nl80211_tdls_operation oper;
 } TDLS_CMD_LINK_OPER_T;
 
 typedef struct _TDLS_CMD_LINK_MGT_T {

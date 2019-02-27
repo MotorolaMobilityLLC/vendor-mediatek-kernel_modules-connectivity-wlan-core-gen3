@@ -1699,7 +1699,7 @@ static struct wireless_dev *wlanNetCreate(PVOID pvData)
 
 	/* 4 <3.2> Initialize Glue variables */
 	prGlueInfo->eParamMediaStateIndicated = PARAM_MEDIA_STATE_DISCONNECTED;
-	prGlueInfo->ePowerState = ParamDeviceStateD0;
+	prGlueInfo->ePowerState = (ENUM_ACPI_STATE_T)ParamDeviceStateD0;
 	prGlueInfo->fgIsMacAddrOverride = FALSE;
 	prGlueInfo->fgIsRegistered = FALSE;
 	prGlueInfo->prScanRequest = NULL;
