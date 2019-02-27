@@ -1318,7 +1318,8 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 			} else
 				COPY_MAC_ADDR(arBssid, prGlueInfo->prAdapter->rWifiVar.rConnSettings.aucBSSID);
 
-			if (prBssDesc && prBssDesc->u2JoinStatus != STATUS_CODE_AUTH_TIMEOUT &&
+			if (prBssDesc && prBssDesc->u2JoinStatus != STATUS_CODE_SUCCESSFUL &&
+			    prBssDesc->u2JoinStatus != STATUS_CODE_AUTH_TIMEOUT &&
 			    prBssDesc->u2JoinStatus != STATUS_CODE_ASSOC_TIMEOUT)
 				cfg80211_connect_result(prGlueInfo->prDevHandler,
 						arBssid,
