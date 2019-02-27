@@ -1316,8 +1316,16 @@ int mtk_p2p_cfg80211_del_station(struct wiphy *wiphy, struct net_device *dev, co
 		prDisconnectMsg->rMsgHdr.eMsgId = MID_MNY_P2P_CONNECTION_ABORT;
 		prDisconnectMsg->ucRoleIdx = ucRoleIdx;
 		COPY_MAC_ADDR(prDisconnectMsg->aucTargetID, mac);
-		prDisconnectMsg->u2ReasonCode = REASON_CODE_UNSPECIFIED;
 		prDisconnectMsg->fgSendDeauth = TRUE;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0))
+		if (params->reason_code == 0)
+			prDisconnectMsg->u2ReasonCode = REASON_CODE_UNSPECIFIED;
+		else
+			prDisconnectMsg->u2ReasonCode = params->reason_code;
+		DBGLOG(P2P, INFO, "mtk_p2p_cfg80211_del_station ReasonCode = %u\n", prDisconnectMsg->u2ReasonCode);
+#else
+		prDisconnectMsg->u2ReasonCode = REASON_CODE_UNSPECIFIED;
+#endif
 
 		mboxSendMsg(prGlueInfo->prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prDisconnectMsg, MSG_SEND_METHOD_BUF);
 
