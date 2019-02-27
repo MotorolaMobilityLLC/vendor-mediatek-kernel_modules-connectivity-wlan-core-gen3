@@ -2824,6 +2824,7 @@ enum _ENUM_AIS_STATE_T aisFsmJoinCompleteAction(IN struct _ADAPTER_T *prAdapter,
 					cnmStaRecFree(prAdapter, prStaRec);
 
 				if (prAisBssInfo->eConnectionState == PARAM_MEDIA_STATE_CONNECTED) {
+					PARAM_SSID_T rSsid;
 #if CFG_SUPPORT_ROAMING
 					eNextState = AIS_STATE_WAIT_FOR_NEXT_SCAN;
 #endif /* CFG_SUPPORT_ROAMING */
@@ -2840,7 +2841,17 @@ enum _ENUM_AIS_STATE_T aisFsmJoinCompleteAction(IN struct _ADAPTER_T *prAdapter,
 						*/
 						wlanoidSetDisassociate(prAdapter, NULL, 0, &u4InfoBufLen);
 						eNextState = prAisFsmInfo->eCurrentState;
+						break;
 					}
+					COPY_SSID(rSsid.aucSsid, rSsid.u4SsidLen,
+						  prAisBssInfo->aucSSID, prAisBssInfo->ucSSIDLen);
+					prAisFsmInfo->prTargetBssDesc =
+						scanSearchBssDescByBssidAndSsid(prAdapter,
+						prAisBssInfo->aucBSSID, TRUE, &rSsid);
+					prAisFsmInfo->prTargetStaRec = prAisBssInfo->prStaRecOfAP;
+					ASSERT(prAisFsmInfo->prTargetBssDesc);
+					if (!prAisFsmInfo->prTargetBssDesc)
+						DBGLOG(AIS, ERROR, "Can't retrieve target bss descriptor\n");
 #if CFG_SUPPORT_RN
 				} else if (prAisBssInfo->fgDisConnReassoc == TRUE) {
 					eNextState = AIS_STATE_JOIN_FAILURE;
