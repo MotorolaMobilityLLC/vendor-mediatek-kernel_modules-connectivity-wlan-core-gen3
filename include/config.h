@@ -851,6 +851,8 @@
 
 #define CFG_SUPPORT_DETECT_SECURITY_MODE_CHANGE 1
 
+#define CFG_IGNORE_INVALID_AUTH_TSN		0
+
 /*------------------------------------------------------------------------------
  * Flags of Drop Packet Replay SUPPORT
  *------------------------------------------------------------------------------
