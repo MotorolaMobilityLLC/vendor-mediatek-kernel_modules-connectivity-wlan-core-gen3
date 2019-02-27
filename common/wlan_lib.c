@@ -1639,6 +1639,7 @@ WLAN_STATUS wlanTxCmdMthread(IN P_ADAPTER_T prAdapter)
 #if CFG_DBG_MGT_BUF
 	struct MEM_TRACK *prMemTrack = NULL;
 #endif
+	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 
 	KAL_SPIN_LOCK_DECLARATION();
 
@@ -1668,25 +1669,29 @@ WLAN_STATUS wlanTxCmdMthread(IN P_ADAPTER_T prAdapter)
 #endif
 
 		if (!prCmdInfo->fgDriverDomainMCR) {
-			nicTxCmd(prAdapter, prCmdInfo, TC4_INDEX);
+			rStatus = nicTxCmd(prAdapter, prCmdInfo, TC4_INDEX);
 
-			if ((!prCmdInfo->fgSetQuery) || (prCmdInfo->fgNeedResp)) {
-				KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_CMD_PENDING);
+			if (rStatus == WLAN_STATUS_SUCCESS) {
+				if ((!prCmdInfo->fgSetQuery) || (prCmdInfo->fgNeedResp)) {
+					KAL_ACQUIRE_SPIN_LOCK(prAdapter, SPIN_LOCK_CMD_PENDING);
 #if CFG_DBG_MGT_BUF
-				if (prMemTrack) {
-					prMemTrack->u2CmdIdAndWhere &= 0x00FF;
-					prMemTrack->u2CmdIdAndWhere |= 0x0200;
-				}
+					if (prMemTrack) {
+						prMemTrack->u2CmdIdAndWhere &= 0x00FF;
+						prMemTrack->u2CmdIdAndWhere |= 0x0200;
+					}
 #endif
-				QUEUE_INSERT_TAIL(&(prAdapter->rPendingCmdQueue), (P_QUE_ENTRY_T) prCmdInfo);
-				KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_CMD_PENDING);
+					QUEUE_INSERT_TAIL(&(prAdapter->rPendingCmdQueue), (P_QUE_ENTRY_T) prCmdInfo);
+					KAL_RELEASE_SPIN_LOCK(prAdapter, SPIN_LOCK_CMD_PENDING);
+				} else {
+#if CFG_DBG_MGT_BUF
+					if (prMemTrack) {
+						prMemTrack->u2CmdIdAndWhere &= 0x00FF;
+						prMemTrack->u2CmdIdAndWhere |= 0x0300;
+					}
+#endif
+					QUEUE_INSERT_TAIL(prTempCmdDoneQue, prQueueEntry);
+				}
 			} else {
-#if CFG_DBG_MGT_BUF
-				if (prMemTrack) {
-					prMemTrack->u2CmdIdAndWhere &= 0x00FF;
-					prMemTrack->u2CmdIdAndWhere |= 0x0300;
-				}
-#endif
 				QUEUE_INSERT_TAIL(prTempCmdDoneQue, prQueueEntry);
 			}
 			/*

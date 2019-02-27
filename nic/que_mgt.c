@@ -6363,7 +6363,7 @@ BOOLEAN qmRxPNtoU64(PUINT_8 pucPN, UINT_8 uPNNum, PUINT_64 pu8Rets)
 
 	*pu8Rets = 0;
 	for (; ucCount < uPNNum; ucCount++) {
-		u8Data = pucPN[ucCount] << 8*ucCount;
+		u8Data = ((UINT_64)pucPN[ucCount]) << 8*ucCount;
 		*pu8Rets +=  u8Data;
 	}
 	return TRUE;
