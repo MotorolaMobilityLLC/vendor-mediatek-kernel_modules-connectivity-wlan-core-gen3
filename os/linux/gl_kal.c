@@ -2659,7 +2659,7 @@ int hif_thread(void *data)
 	while (TRUE) {
 
 		if (prGlueInfo->ulFlag & GLUE_FLAG_HALT) {
-			DBGLOG(INIT, INFO, "%s should stop now...\n", KAL_GET_CURRENT_THREAD_NAME());
+			DBGLOG(INIT, TRACE, "%s should stop now...\n", KAL_GET_CURRENT_THREAD_NAME());
 			break;
 		}
 
@@ -2772,7 +2772,7 @@ int rx_thread(void *data)
 	while (TRUE) {
 
 		if (prGlueInfo->ulFlag & GLUE_FLAG_HALT) {
-			DBGLOG(INIT, INFO, "%s should stop now...\n", KAL_GET_CURRENT_THREAD_NAME());
+			DBGLOG(INIT, TRACE, "%s should stop now...\n", KAL_GET_CURRENT_THREAD_NAME());
 			break;
 		}
 
@@ -2873,7 +2873,7 @@ int tx_thread(void *data)
 #endif
 
 		if (prGlueInfo->ulFlag & GLUE_FLAG_HALT) {
-			DBGLOG(INIT, INFO, "%s should stop now...\n", KAL_GET_CURRENT_THREAD_NAME());
+			DBGLOG(INIT, TRACE, "%s should stop now...\n", KAL_GET_CURRENT_THREAD_NAME());
 			break;
 		}
 

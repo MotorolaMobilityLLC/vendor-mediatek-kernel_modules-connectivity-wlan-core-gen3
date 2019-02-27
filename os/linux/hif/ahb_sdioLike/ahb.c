@@ -308,7 +308,7 @@ VOID glSetHifInfo(GLUE_INFO_T *GlueInfo, ULONG ulCookie)
 #endif
 	g_pHifRegBaseAddr = &(HifInfo->HifRegBaseAddr);
 
-	DBGLOG(INIT, INFO, "HifRegBaseAddr = %p, HifRegPhyBase = 0x%lx\n",
+	DBGLOG(INIT, TRACE, "HifRegBaseAddr = %p, HifRegPhyBase = 0x%lx\n",
 	       HifInfo->HifRegBaseAddr, HifInfo->HifRegPhyBase);
 
 	/* default disable DMA */
@@ -1121,7 +1121,7 @@ static int HifAhbProbe(VOID)
 {
 	int ret = 0;
 
-	DBGLOG(INIT, INFO, "HifAhbProbe()\n");
+	DBGLOG(INIT, TRACE, "HifAhbProbe()\n");
 
 	/* power on WiFi TX PA 3.3V and HIF GDMA clock */
 	mtk_wcn_consys_hw_wifi_paldo_ctrl(1);	/* switch to HW mode */
