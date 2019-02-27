@@ -974,7 +974,11 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 	P_CONNECTION_SETTINGS_T prConnSettings;
 	P_BSS_DESC_T prBssDesc;
 	P_MSG_CH_REQ_T prMsgChReq;
+#if defined(MT6631)
 	struct _MSG_SCN_SCAN_REQ_V3_T *prScanReqMsg;
+#else
+	P_MSG_SCN_SCAN_REQ_V2 prScanReqMsg;
+#endif
 	P_AIS_REQ_HDR_T prAisReq;
 	ENUM_BAND_T eBand;
 	UINT_8 ucChannel;
@@ -984,6 +988,7 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 	P_LINK_T prNeighborAPLink = &prAdapter->rWifiVar.rAisSpecificBssInfo.rNeighborApList.rUsingLink;
 	BOOLEAN fgIsTransition = (BOOLEAN) FALSE;
 	BOOLEAN fgAdjChnlScanIssued = FALSE;
+	UINT_32 u4ScnReqMsgLen = 0;
 
 	DEBUGFUNC("aisFsmSteps()");
 
@@ -1364,17 +1369,30 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 				u2ScanIELen = 0;
 #endif
 			}
-
+#if defined(MT6631)
+			u4ScnReqMsgLen = OFFSET_OF(struct _MSG_SCN_SCAN_REQ_V3_T, aucIE) + u2ScanIELen;
 			prScanReqMsg = (struct _MSG_SCN_SCAN_REQ_V3_T *) cnmMemAlloc(prAdapter,
 							   RAM_TYPE_MSG,
-							   OFFSET_OF
-							   (struct _MSG_SCN_SCAN_REQ_V3_T, aucIE) + u2ScanIELen);
+							   u4ScnReqMsgLen);
+
+#else
+			u4ScnReqMsgLen = OFFSET_OF(MSG_SCN_SCAN_REQ_V2, aucIE) + u2ScanIELen;
+			prScanReqMsg = (P_MSG_SCN_SCAN_REQ_V2) cnmMemAlloc(prAdapter,
+							   RAM_TYPE_MSG,
+							   u4ScnReqMsgLen);
+
+#endif
+
 			if (!prScanReqMsg) {
 				ASSERT(0);	/* Can't trigger SCAN FSM */
 				return;
 			}
-			kalMemZero(prScanReqMsg, OFFSET_OF(struct _MSG_SCN_SCAN_REQ_V3_T, aucIE) + u2ScanIELen);
+			kalMemZero(prScanReqMsg, u4ScnReqMsgLen);
+#if defined(MT6631)
 			prScanReqMsg->rMsgHdr.eMsgId = MID_AIS_SCN_SCAN_REQ_V3;
+#else
+			prScanReqMsg->rMsgHdr.eMsgId = MID_AIS_SCN_SCAN_REQ_V2;
+#endif
 			prScanReqMsg->ucSeqNum = ++prAisFsmInfo->ucSeqNumOfScanReq;
 			prScanReqMsg->ucBssIndex = prAdapter->prAisBssInfo->ucBssIndex;
 			if (rlmFillScanMsg(prAdapter, prScanReqMsg)) {
@@ -1414,9 +1432,11 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 					prScanReqMsg->ucSSIDNum = prAisFsmInfo->ucScanSSIDNum;
 					prScanReqMsg->prSsid = prAisFsmInfo->arScanSSID;
 				}
+#if defined(MT6631)
 				kalMemCopy(prScanReqMsg->aucRandomMac, &(prAisFsmInfo->rScanRandMacAddr.aucRandomMac),
 							MAC_ADDR_LEN);
 				prScanReqMsg->ucScnFuncMask = prAisFsmInfo->rScanRandMacAddr.ucScnFuncMask;
+#endif
 			} else {
 				prScanReqMsg->eScanType = SCAN_TYPE_ACTIVE_SCAN;
 

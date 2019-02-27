@@ -1351,8 +1351,10 @@ scnFsmSchedScanRequest(IN P_ADAPTER_T prAdapter,
 #endif
 	/* we set this bit to notify firmware that they should using the new NLO network design */
 	prCmdNloReq->ucEntryNum |= BIT(7);
+#if defined(MT6631)
 	prCmdPscnParam->ucScnFuncMask = prSchedScanRequest->ucScnFuncMask;
 	DBGLOG(SCN, INFO, "Pscanparam: FuncMask %x\n", prCmdPscnParam->ucScnFuncMask);
+#endif
 #if CFG_SUPPORT_SCHED_SCN_SSID_SETS
 	/* ucFlag[7] enable FW's support, similar to gen2 ucReserved */
 	prCmdNloReq->ucFlag |= 0x80;
@@ -1815,9 +1817,11 @@ scnCombineParamsIntoPSCN(IN P_ADAPTER_T prAdapter,
 	ASSERT(prAdapter);
 	prScanInfo = &(prAdapter->rWifiVar.rScanInfo);
 	prCmdPscnParam = (P_CMD_SET_PSCAN_PARAM) prScanInfo->prPscnParam;
-
+#if defined(MT6631)
 	prCmdPscnParam->ucVersion = SUPPORT_RANDOM_PSCN_VERSION;
-
+#else
+	prCmdPscnParam->ucVersion = CURRENT_PSCN_VERSION;
+#endif
 	if (fgRemoveNLOfromPSCN || fgRemoveBatchSCNfromPSCN || fgRemoveGSCNfromPSCN) {
 		scnRemoveFromPSCN(prAdapter,
 				  fgRemoveNLOfromPSCN, fgRemoveBatchSCNfromPSCN, fgRemoveGSCNfromPSCN);

@@ -2280,7 +2280,9 @@ typedef struct _CMD_SET_PSCAN_PARAM {
 	BOOLEAN fgBatchScnEnable;
 	BOOLEAN fgGScnEnable;
 	UINT_32 u4BasePeriod;
+#if defined(MT6631)
 	UINT_8 ucScnFuncMask;
+#endif
 } CMD_SET_PSCAN_PARAM, *P_CMD_SET_PSCAN_PARAM;
 
 typedef struct _CMD_SET_PSCAN_ADD_HOTLIST_BSSID {

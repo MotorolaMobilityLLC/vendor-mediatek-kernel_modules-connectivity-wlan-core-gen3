@@ -891,8 +891,11 @@
  * Flags of driver support scan random mac
  *------------------------------------------------------------------------------
  */
-
+#if defined(MT6631)
 #define CFG_SUPPORT_SCAN_RANDOM_MAC     1
+#else
+#define CFG_SUPPORT_SCAN_RANDOM_MAC     0
+#endif
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
