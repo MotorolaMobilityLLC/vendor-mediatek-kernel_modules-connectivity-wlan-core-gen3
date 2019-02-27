@@ -10270,18 +10270,18 @@ wlanoidSetP2pMode(IN P_ADAPTER_T prAdapter, IN PVOID pvSetBuffer, IN UINT_32 u4S
 		p2pSetMode((prSetP2P->u4Mode == 1) ? TRUE : FALSE);
 		if (p2pLaunch(prAdapter->prGlueInfo))
 			ASSERT(prAdapter->fgIsP2PRegistered);
-			if (prAdapter->rWifiVar.ucApUapsd && prSetP2P->u4Mode == 1) {
-				PARAM_CUSTOM_UAPSD_PARAM_STRUCT_T rUapsdParams;
+		if (prAdapter->rWifiVar.ucApUapsd && prSetP2P->u4Mode == 1) {
+			PARAM_CUSTOM_UAPSD_PARAM_STRUCT_T rUapsdParams;
 
-				DBGLOG(OID, INFO, "wlanoidSetP2pMode Default enable ApUapsd\n");
-				rUapsdParams.fgEnAPSD = 1;
-				rUapsdParams.fgEnAPSD_AcBe = 1;
-				rUapsdParams.fgEnAPSD_AcBk = 1;
-				rUapsdParams.fgEnAPSD_AcVi = 1;
-				rUapsdParams.fgEnAPSD_AcVo = 1;
-				rUapsdParams.ucMaxSpLen = 0; /* default:0, Do not limit delivery pkt num */
-				nicSetUapsdParam(prAdapter, &rUapsdParams, NETWORK_TYPE_P2P);
-			}
+			DBGLOG(OID, INFO, "wlanoidSetP2pMode Default enable ApUapsd\n");
+			rUapsdParams.fgEnAPSD = 1;
+			rUapsdParams.fgEnAPSD_AcBe = 1;
+			rUapsdParams.fgEnAPSD_AcBk = 1;
+			rUapsdParams.fgEnAPSD_AcVi = 1;
+			rUapsdParams.fgEnAPSD_AcVo = 1;
+			rUapsdParams.ucMaxSpLen = 0; /* default:0, Do not limit delivery pkt num */
+			nicSetUapsdParam(prAdapter, &rUapsdParams, NETWORK_TYPE_P2P);
+		}
 	} else {
 		if (prAdapter->fgIsP2PRegistered)
 			p2pRemove(prAdapter->prGlueInfo);
