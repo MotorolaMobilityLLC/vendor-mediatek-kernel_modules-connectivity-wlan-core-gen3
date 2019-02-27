@@ -8,8 +8,17 @@
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See http://www.gnu.org/licenses/gpl-2.0.html for more details.
 */
+#include <linux/version.h>
 
+#if defined(COFNIG_MTK_CPU_CTRL) || \
+	(LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 146))
+
+#ifdef CONFIG_MTK_CPU_CTRL
+#include <cpu_ctrl.h>
+#else
 #include "legacy_controller.h"
+#endif
+
 #include <linux/pm_qos.h>
 
 #ifdef CONFIG_MTK_EMI
@@ -74,4 +83,4 @@ VOID kalSetEmiMpuProtection(phys_addr_t emiPhyBase, UINT_32 size, BOOLEAN enable
 	emi_mpu_set_protection(&region_info);
 }
 #endif
-
+#endif
