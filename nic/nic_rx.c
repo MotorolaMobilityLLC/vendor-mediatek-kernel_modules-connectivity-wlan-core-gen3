@@ -1649,7 +1649,8 @@ VOID nicRxProcessEventPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb
 	    prEvent->ucEID != EVENT_ID_TX_DONE &&
 	    prEvent->ucEID != EVENT_ID_BSS_ABSENCE_PRESENCE &&
 	    prEvent->ucEID != EVENT_ID_STA_STATISTICS &&
-	    prEvent->ucEID != EVENT_ID_DEBUG_MSG)
+	    prEvent->ucEID != EVENT_ID_DEBUG_MSG &&
+	    prEvent->ucEID != EVENT_ID_CHECK_REORDER_BUBBLE)
 		DBGLOG(RX, EVENT, "RX EVENT: ID[0x%02X] SEQ[%u] LEN[%u]\n",
 		prEvent->ucEID, prEvent->ucSeqNum, prEvent->u2PacketLength);
 
