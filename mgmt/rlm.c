@@ -2429,7 +2429,7 @@ VOID rlmProcessSpecMgtAction(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb)
 	P_BSS_INFO_T prBssInfo;
 	UINT_16 u2IELength;
 	UINT_16 u2Offset = 0;
-	P_IE_CHANNEL_SWITCH_T prChannelSwitchIE;
+	P_IE_CHANNEL_SWITCH_T prChannelSwitchIE = NULL;
 	P_IE_SECONDARY_OFFSET_T prScoIE;
 	P_IE_WIDE_BAND_CHANNEL_T prWideBandIE;
 	P_ACTION_CHANNEL_SWITCH_FRAME prRxFrame;
@@ -2559,7 +2559,7 @@ VOID rlmProcessSpecMgtAction(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb)
 			/* Reset the CSA params for next Channel Switch */
 			kalMemZero(prCsaParam, sizeof(*prCsaParam));
 
-			if (prChannelSwitchIE->ucChannelSwitchMode == 1) {
+			if (prChannelSwitchIE && prChannelSwitchIE->ucChannelSwitchMode == 1) {
 				/* STA recovers to transmit frame */
 				qmSetStaRecTxAllowed(prAdapter, prStaRec, TRUE);
 				DBGLOG(RLM, INFO, "After switching, TxAllowed=%d\n", prStaRec->fgIsTxAllowed);
