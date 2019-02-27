@@ -264,7 +264,6 @@ typedef struct _GL_WPA_INFO_T {
 struct GL_REPLEY_PN_INFO {
 	UINT_8 auPN[16];
 	BOOLEAN fgRekey;
-	BOOLEAN fgFirstPkt;
 };
 struct GL_DETECT_REPLAY_INFO {
 	UINT_8 ucCurKeyId;
