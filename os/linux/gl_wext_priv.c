@@ -2298,6 +2298,7 @@ reqExtSetAcpiDevicePowerState(IN P_GLUE_INFO_T prGlueInfo,
 #define CMD_RM_IT		"RM-IT"
 #define CMD_DUMP_UAPSD		"dumpuapsd"
 #define CMD_FW_EVENT		"FW-EVENT "
+#define CMD_O_SAR		"O-SAR-EANBLE"
 #define CMD_FW_PARAM            "set_fw_param "
 #define PRIV_CMD_SIZE 512
 
@@ -3487,7 +3488,18 @@ INT_32 priv_driver_cmds(IN struct net_device *prNetDev, IN PCHAR pcCommand, IN I
 		} else if (!strncasecmp(pcCommand, CMD_DUMP_UAPSD, strlen(CMD_DUMP_UAPSD)))
 			kalIoctl(prGlueInfo, wlanoidDumpUapsdSetting, (PVOID)pcCommand,
 				 i4TotalLen, FALSE, FALSE, FALSE, &i4BytesWritten);
-		else if (!strncasecmp(pcCommand, CMD_FW_PARAM, strlen(CMD_FW_PARAM))) {
+		else if (!strncasecmp(pcCommand, CMD_O_SAR, strlen(CMD_O_SAR))) {
+			UINT_8 isEnable = 0;
+
+			DBGLOG(REQ, INFO, "cmd=%s\n", pcCommand);
+			if (strlen(pcCommand) > strlen(CMD_O_SAR) &&
+			    (strncasecmp(pcCommand + strlen(CMD_O_SAR) + 1, "1", 1) == 0))
+				isEnable = 0x01;
+
+			kalIoctl(prGlueInfo,
+				 wlanoidSendSarEnable,
+				 (PVOID)&isEnable, 1, FALSE, FALSE, TRUE, &i4BytesWritten);
+		} else if (!strncasecmp(pcCommand, CMD_FW_PARAM, strlen(CMD_FW_PARAM))) {
 			kalIoctl(prGlueInfo, wlanoidSetFwParam, (PVOID)(pcCommand + 13),
 				 i4TotalLen - 13, FALSE, FALSE, FALSE, &i4BytesWritten);
 		} else

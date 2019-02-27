@@ -11849,6 +11849,25 @@ wlanoidSendBTMQuery(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBuffe
 	return WLAN_STATUS_SUCCESS;
 }
 
+WLAN_STATUS
+wlanoidSendSarEnable(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBufferLen,
+		     PUINT_32 pu4SetInfoLen)
+{
+	struct CMD_SET_SAR_ENABLE rCmdSarEnable;
+
+	kalMemZero(&rCmdSarEnable, sizeof(rCmdSarEnable));
+	rCmdSarEnable.ucSarEnable = *(PUINT_8)pvSetBuffer;
+	return wlanSendSetQueryCmd(prAdapter,
+				   CMD_ID_SET_SAR_ENABLE,
+				   TRUE,
+				   FALSE,
+				   TRUE,
+				   nicCmdEventSetCommon,
+				   nicOidCmdTimeoutCommon,
+				   sizeof(struct CMD_SET_SAR_ENABLE),
+				   (PUINT_8)&rCmdSarEnable, pvSetBuffer, u4SetBufferLen);
+}
+
 /*
  * This func is mainly from bionic's strtok.c
  */
