@@ -2647,7 +2647,7 @@ int hif_thread(void *data)
 	int ret = 0;
 	KAL_WAKE_LOCK_T *prHifThreadWakeLock;
 
-	prHifThreadWakeLock = kalMemAlloc(sizeof(KAL_WAKE_LOCK_T), PHY_MEM_TYPE);
+	prHifThreadWakeLock = kalMemAlloc(sizeof(KAL_WAKE_LOCK_T), VIR_MEM_TYPE);
 	if (!prHifThreadWakeLock) {
 		DBGLOG(INIT, ERROR, "%s MemAlloc Fail\n", KAL_GET_CURRENT_THREAD_NAME());
 		return FALSE;
@@ -2765,7 +2765,7 @@ int rx_thread(void *data)
 
 	/* for spin lock acquire and release */
 	KAL_SPIN_LOCK_DECLARATION();
-	prRxThreadWakeLock = kalMemAlloc(sizeof(KAL_WAKE_LOCK_T), PHY_MEM_TYPE);
+	prRxThreadWakeLock = kalMemAlloc(sizeof(KAL_WAKE_LOCK_T), VIR_MEM_TYPE);
 	if (!prRxThreadWakeLock) {
 		DBGLOG(INIT, ERROR, "%s MemAlloc Fail\n", KAL_GET_CURRENT_THREAD_NAME());
 		return FALSE;
@@ -2861,7 +2861,7 @@ int tx_thread(void *data)
 	BOOLEAN fgNeedHwAccess = FALSE;
 	KAL_WAKE_LOCK_T *prTxThreadWakeLock;
 
-	prTxThreadWakeLock = kalMemAlloc(sizeof(KAL_WAKE_LOCK_T), PHY_MEM_TYPE);
+	prTxThreadWakeLock = kalMemAlloc(sizeof(KAL_WAKE_LOCK_T), VIR_MEM_TYPE);
 	if (!prTxThreadWakeLock) {
 		DBGLOG(INIT, ERROR, "%s MemAlloc Fail\n", KAL_GET_CURRENT_THREAD_NAME());
 		return FALSE;
