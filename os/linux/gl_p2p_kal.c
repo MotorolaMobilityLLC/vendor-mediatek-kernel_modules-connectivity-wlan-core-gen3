@@ -1099,6 +1099,11 @@ kalP2PGCIndicateConnectionStatus(IN P_GLUE_INFO_T prGlueInfo,
 		prGlueP2pInfo = prGlueInfo->prP2PInfo;
 
 		if (prP2pConnInfo) {
+			if (eStatus == WLAN_STATUS_MEDIA_CONNECT) {
+				/* switch carrier on */
+				netif_carrier_on(prGlueP2pInfo->prDevHandler);
+			}
+
 			cfg80211_connect_result(prGlueP2pInfo->aprRoleHandler[ucRoleIndex],
 						/* struct net_device * dev, */
 						prP2pConnInfo->aucBssid,
@@ -1111,6 +1116,10 @@ kalP2PGCIndicateConnectionStatus(IN P_GLUE_INFO_T prGlueInfo,
 
 			prP2pConnInfo->eConnRequest = P2P_CONNECTION_TYPE_IDLE;
 		} else {
+			/* switch carrier off */
+			if (netif_carrier_ok(prGlueP2pInfo->prDevHandler))
+				netif_carrier_off(prGlueP2pInfo->prDevHandler);
+
 			/* Disconnect, what if u2StatusReason == 0? */
 			cfg80211_disconnected(prGlueP2pInfo->aprRoleHandler[ucRoleIndex],
 						/* struct net_device * dev, */
@@ -1124,6 +1133,30 @@ kalP2PGCIndicateConnectionStatus(IN P_GLUE_INFO_T prGlueInfo,
 	} while (FALSE);
 
 }				/* kalP2PGCIndicateConnectionStatus */
+
+VOID kalP2PGOIndicateStatus(IN P_GLUE_INFO_T prGlueInfo, IN BOOLEAN fgReady)
+{
+	P_GL_P2P_INFO_T prP2pGlueInfo = (P_GL_P2P_INFO_T) NULL;
+
+	do {
+		if (prGlueInfo == NULL) {
+			ASSERT(FALSE);
+			break;
+		}
+
+		prP2pGlueInfo = prGlueInfo->prP2PInfo;
+
+		if (fgReady) {
+			/* switch carrier on */
+			netif_carrier_on(prP2pGlueInfo->prDevHandler);
+		} else {
+			/* switch carrier off */
+			if (netif_carrier_ok(prP2pGlueInfo->prDevHandler))
+				netif_carrier_off(prP2pGlueInfo->prDevHandler);
+		}
+
+	} while (FALSE);
+}
 
 VOID
 kalP2PGOStationUpdate(IN P_GLUE_INFO_T prGlueInfo,
