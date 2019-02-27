@@ -1775,7 +1775,13 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 					    prAisBssInfo,
 					    prAisBssInfo->prStaRecOfAP,
 					    (P_SW_RFB_T) NULL, REASON_CODE_DEAUTH_LEAVING_BSS, aisDeauthXmitComplete);
-			cnmTimerStartTimer(prAdapter, &prAisFsmInfo->rDeauthDoneTimer, 100);
+			/* If it is scanning or BSS absent, HW may go away from serving channel, which may cause driver
+			** be not able to TX mgmt frame. So we need to start a longer timer to wait HW return to serving
+			** channel. We set the time out value to 1 second because it is long enough to return to serving
+			** channel in most cases, and disconnection delay is seamless to end-user even time out.
+			*/
+			cnmTimerStartTimer(prAdapter, &prAisFsmInfo->rDeauthDoneTimer,
+					   (prAisFsmInfo->fgIsScanning || prAisBssInfo->fgIsNetAbsent) ? 1000 : 100);
 			break;
 
 		case AIS_STATE_REQ_REMAIN_ON_CHANNEL:
