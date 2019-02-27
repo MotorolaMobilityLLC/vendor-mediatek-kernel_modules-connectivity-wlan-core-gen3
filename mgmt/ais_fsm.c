@@ -3240,6 +3240,11 @@ aisIndicationOfMediaStateToHost(IN P_ADAPTER_T prAdapter,
 		nicMediaStateChange(prAdapter, prAdapter->prAisBssInfo->ucBssIndex, &rEventConnStatus);
 		prAisBssInfo->eConnectionStateIndicated = eConnectionState;
 		if (eConnectionState == PARAM_MEDIA_STATE_DISCONNECTED) {
+			if (prAisBssInfo->eConnectionState == PARAM_MEDIA_STATE_CONNECTED) {
+				aisChangeMediaState(prAdapter, PARAM_MEDIA_STATE_DISCONNECTED);
+				/* 4 <4.1> sync. with firmware */
+				nicUpdateBss(prAdapter, prAdapter->prAisBssInfo->ucBssIndex);
+			}
 			prAisFsmInfo->prTargetBssDesc = NULL;
 			prAisFsmInfo->prTargetStaRec = NULL;
 		}
