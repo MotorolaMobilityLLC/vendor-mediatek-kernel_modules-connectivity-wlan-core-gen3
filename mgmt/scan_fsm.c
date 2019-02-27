@@ -126,8 +126,7 @@ VOID scnFsmSteps(IN P_ADAPTER_T prAdapter, IN ENUM_SCAN_STATE_T eNextState)
 
 				if (prMsgHdr->eMsgId == MID_AIS_SCN_SCAN_REQ
 				    || prMsgHdr->eMsgId == MID_BOW_SCN_SCAN_REQ
-				    || prMsgHdr->eMsgId == MID_P2P_SCN_SCAN_REQ
-				    || prMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ) {
+				    || prMsgHdr->eMsgId == MID_P2P_SCN_SCAN_REQ) {
 					scnFsmHandleScanMsg(prAdapter, (P_MSG_SCN_SCAN_REQ) prMsgHdr);
 
 					eNextState = SCAN_STATE_SCANNING;
@@ -135,7 +134,8 @@ VOID scnFsmSteps(IN P_ADAPTER_T prAdapter, IN ENUM_SCAN_STATE_T eNextState)
 				} else if (prMsgHdr->eMsgId == MID_AIS_SCN_SCAN_REQ_V2
 					   || prMsgHdr->eMsgId == MID_BOW_SCN_SCAN_REQ_V2
 					   || prMsgHdr->eMsgId == MID_P2P_SCN_SCAN_REQ_V2
-					   || prMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ_V2) {
+					   || prMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ_V2
+					   || prMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ) {
 					scnFsmHandleScanMsgV2(prAdapter, (P_MSG_SCN_SCAN_REQ_V2) prMsgHdr);
 
 					eNextState = SCAN_STATE_SCANNING;
@@ -705,8 +705,7 @@ VOID scnFsmRemovePendingMsg(IN P_ADAPTER_T prAdapter, IN UINT_8 ucSeqNum, IN UIN
 				 prPendingMsgHdrNext, &(prScanInfo->rPendingMsgList), rLinkEntry, MSG_HDR_T) {
 		if (prPendingMsgHdr->eMsgId == MID_AIS_SCN_SCAN_REQ
 		    || prPendingMsgHdr->eMsgId == MID_BOW_SCN_SCAN_REQ
-		    || prPendingMsgHdr->eMsgId == MID_P2P_SCN_SCAN_REQ
-		    || prPendingMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ) {
+		    || prPendingMsgHdr->eMsgId == MID_P2P_SCN_SCAN_REQ) {
 			P_MSG_SCN_SCAN_REQ prScanReqMsg = (P_MSG_SCN_SCAN_REQ) prPendingMsgHdr;
 
 			if (ucSeqNum == prScanReqMsg->ucSeqNum && ucBssIndex == prScanReqMsg->ucBssIndex) {
@@ -717,7 +716,8 @@ VOID scnFsmRemovePendingMsg(IN P_ADAPTER_T prAdapter, IN UINT_8 ucSeqNum, IN UIN
 		} else if (prPendingMsgHdr->eMsgId == MID_AIS_SCN_SCAN_REQ_V2
 			   || prPendingMsgHdr->eMsgId == MID_BOW_SCN_SCAN_REQ_V2
 			   || prPendingMsgHdr->eMsgId == MID_P2P_SCN_SCAN_REQ_V2
-			   || prPendingMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ_V2) {
+			   || prPendingMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ_V2
+			   || prPendingMsgHdr->eMsgId == MID_RLM_SCN_SCAN_REQ) {
 			P_MSG_SCN_SCAN_REQ_V2 prScanReqMsgV2 = (P_MSG_SCN_SCAN_REQ_V2) prPendingMsgHdr;
 
 			if (ucSeqNum == prScanReqMsgV2->ucSeqNum && ucBssIndex == prScanReqMsgV2->ucBssIndex) {
