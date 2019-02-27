@@ -1053,12 +1053,12 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 				prChannel =
 				    ieee80211_get_channel(priv_to_wiphy(prGlueInfo),
 							  ieee80211_channel_to_frequency
-							  (ucChannelNum, NL80211_BAND_2GHZ));
+							  (ucChannelNum, KAL_BAND_2GHZ));
 			} else {
 				prChannel =
 				    ieee80211_get_channel(priv_to_wiphy(prGlueInfo),
 							  ieee80211_channel_to_frequency
-							  (ucChannelNum, NL80211_BAND_5GHZ));
+							  (ucChannelNum, KAL_BAND_5GHZ));
 			}
 
 			if (prChannel) {
@@ -4162,10 +4162,10 @@ kalIndicateBssInfo(IN P_GLUE_INFO_T prGlueInfo,
 	/* search through channel entries */
 	if (ucChannelNum <= 14) {
 		prChannel =
-		    ieee80211_get_channel(wiphy, ieee80211_channel_to_frequency(ucChannelNum, NL80211_BAND_2GHZ));
+		    ieee80211_get_channel(wiphy, ieee80211_channel_to_frequency(ucChannelNum, KAL_BAND_2GHZ));
 	} else {
 		prChannel =
-		    ieee80211_get_channel(wiphy, ieee80211_channel_to_frequency(ucChannelNum, NL80211_BAND_5GHZ));
+		    ieee80211_get_channel(wiphy, ieee80211_channel_to_frequency(ucChannelNum, KAL_BAND_5GHZ));
 	}
 
 	if (prChannel != NULL && prGlueInfo->fgIsRegistered == TRUE) {
@@ -4216,11 +4216,11 @@ kalReadyOnChannel(IN P_GLUE_INFO_T prGlueInfo,
 		if (ucChannelNum <= 14) {
 			prChannel =
 			    ieee80211_get_channel(priv_to_wiphy(prGlueInfo),
-						  ieee80211_channel_to_frequency(ucChannelNum, NL80211_BAND_2GHZ));
+						  ieee80211_channel_to_frequency(ucChannelNum, KAL_BAND_2GHZ));
 		} else {
 			prChannel =
 			    ieee80211_get_channel(priv_to_wiphy(prGlueInfo),
-						  ieee80211_channel_to_frequency(ucChannelNum, NL80211_BAND_5GHZ));
+						  ieee80211_channel_to_frequency(ucChannelNum, KAL_BAND_5GHZ));
 		}
 
 		switch (eSco) {
@@ -4275,11 +4275,11 @@ kalRemainOnChannelExpired(IN P_GLUE_INFO_T prGlueInfo,
 		if (ucChannelNum <= 14) {
 			prChannel =
 			    ieee80211_get_channel(priv_to_wiphy(prGlueInfo),
-						  ieee80211_channel_to_frequency(ucChannelNum, NL80211_BAND_2GHZ));
+						  ieee80211_channel_to_frequency(ucChannelNum, KAL_BAND_2GHZ));
 		} else {
 			prChannel =
 			    ieee80211_get_channel(priv_to_wiphy(prGlueInfo),
-						  ieee80211_channel_to_frequency(ucChannelNum, NL80211_BAND_5GHZ));
+						  ieee80211_channel_to_frequency(ucChannelNum, KAL_BAND_5GHZ));
 		}
 
 		switch (eSco) {
