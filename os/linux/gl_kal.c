@@ -1101,7 +1101,7 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 									CFG80211_BSS_FTYPE_PRESP,
 									arBssid,
 									0, /* TSF */
-									WLAN_CAPABILITY_ESS,
+									prBssDesc->u2CapInfo,
 									prBssDesc->u2BeaconInterval,
 									prBssDesc->aucIEBuf,
 									prBssDesc->u2IELength,
