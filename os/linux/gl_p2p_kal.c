@@ -1244,20 +1244,20 @@ struct ieee80211_channel *kalP2pFuncGetChannelEntry(IN P_GL_P2P_INFO_T prP2pInfo
 			break;
 
 		wiphy = prP2pInfo->prWdev->wiphy;
-		bands = &prP2pInfo->prWdev->wiphy->bands[0];
+		bands = &wiphy->bands[0];
 
 		switch (prChannelInfo->eBand) {
 		case BAND_2G4:
-			if (bands[IEEE80211_BAND_2GHZ]) {
-				prTargetChannelEntry = wiphy->bands[NL80211_BAND_2GHZ]->channels;
-				u4TblSize = wiphy->bands[NL80211_BAND_2GHZ]->n_channels;
+			if (bands[NL80211_BAND_2GHZ]) {
+				prTargetChannelEntry = bands[NL80211_BAND_2GHZ]->channels;
+				u4TblSize = bands[NL80211_BAND_2GHZ]->n_channels;
 			} else
 				DBGLOG(P2P, ERROR, "2.4G band entry is NULL!\n");
 			break;
 		case BAND_5G:
-			if (bands[IEEE80211_BAND_2GHZ]) {
-				prTargetChannelEntry = wiphy->bands[NL80211_BAND_5GHZ]->channels;
-				u4TblSize = wiphy->bands[NL80211_BAND_5GHZ]->n_channels;
+			if (bands[NL80211_BAND_5GHZ]) {
+				prTargetChannelEntry = bands[NL80211_BAND_5GHZ]->channels;
+				u4TblSize = bands[NL80211_BAND_5GHZ]->n_channels;
 			} else
 				DBGLOG(P2P, ERROR, "5G band entry is NULL!\n");
 			break;
