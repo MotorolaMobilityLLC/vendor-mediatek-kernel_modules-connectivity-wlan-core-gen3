@@ -48,6 +48,11 @@
 #ifndef MTK_WCN_BUILT_IN_DRIVER
 #include "connectivity_build_in_adapter.h"
 #endif
+
+#if defined(CONFIG_MTK_QOS_SUPPORT)
+#include <linux/pm_qos.h>
+#include <helio-dvfsrc-opp.h>
+#endif
 /*******************************************************************************
  *                              C O N S T A N T S
  ********************************************************************************
@@ -90,6 +95,13 @@ BOOLEAN wlan_fb_power_down = FALSE;
 BOOLEAN wlan_perf_monitor_force_enable = TRUE;
 #else
 BOOLEAN wlan_perf_monitor_force_enable = FALSE;
+#endif
+
+#if defined(CONFIG_MTK_QOS_SUPPORT)
+static struct pm_qos_request vcore_req;
+static atomic_t vcore_change_ref;
+static atomic_t vcore_tx_ref;
+static struct mutex vcore_mutex;
 #endif
 /*******************************************************************************
 *                                 M A C R O S
@@ -5534,6 +5546,66 @@ VOID __weak kalSetEmiMpuProtection(phys_addr_t emiPhyBase, UINT_32 size, BOOLEAN
 {
 	DBGLOG(SW4, WARN, "EMI MPU function is not defined\n");
 }
+
+VOID kalVcoreInitUninit(BOOLEAN fgInit)
+{
+	if (fgInit) {
+		atomic_set(&vcore_change_ref, 0);
+		atomic_set(&vcore_tx_ref, 0);
+		mutex_init(&vcore_mutex);
+		pm_qos_add_request(&vcore_req, PM_QOS_VCORE_OPP, PM_QOS_VCORE_OPP_DEFAULT_VALUE);
+	} else {
+		pm_qos_update_request(&vcore_req, VCORE_OPP_UNREQ);
+		pm_qos_remove_request(&vcore_req);
+	}
+}
+
+inline VOID kalMayChangeVcore(VOID)
+{
+	if (unlikely(!atomic_read(&vcore_tx_ref))) {
+		atomic_inc(&vcore_tx_ref);
+		kalChangeVcore(VCORE_RESUME);
+	}
+}
+
+VOID kalChangeVcore(UINT_8 ucAction)
+{
+#if defined(CONFIG_MTK_QOS_SUPPORT)
+	mutex_lock(&vcore_mutex);
+	switch (ucAction) {
+	case VCORE_SET_HIGHER:
+		if (atomic_inc_return(&vcore_change_ref) == 1) {
+			DBGLOG(SW4, INFO, "Set higher, request to 0.8v\n");
+			pm_qos_update_request(&vcore_req, VCORE_OPP_0); /* OPP_0 represents 0.8v */
+		}
+		break;
+	case VCORE_SET_DEFAULT:
+		if (atomic_read(&vcore_change_ref) > 0 && atomic_dec_return(&vcore_change_ref) == 0) {
+			DBGLOG(SW4, INFO, "Set default, request to 0.725v\n");
+			pm_qos_update_request(&vcore_req, PM_QOS_VCORE_OPP_DEFAULT_VALUE); /* default is 0.725v */
+		}
+		break;
+	case VCORE_SUSPEND:
+		if (atomic_read(&vcore_tx_ref) > 0 && atomic_read(&vcore_change_ref) > 0) {
+			DBGLOG(SW4, INFO, "Connsys sleep, request to 0.725v\n");
+			atomic_set(&vcore_tx_ref, 0);
+			pm_qos_update_request(&vcore_req, PM_QOS_VCORE_OPP_DEFAULT_VALUE); /* default is 0.725v */
+		}
+		break;
+	case VCORE_RESUME:
+		if (atomic_read(&vcore_change_ref) > 0) {
+			DBGLOG(SW4, INFO, "Start Txing data, request to 0.8v\n");
+			pm_qos_update_request(&vcore_req, VCORE_OPP_0); /* OPP_0 represents 0.8v */
+		}
+		break;
+	default:
+		DBGLOG(SW4, ERROR, "Unknown vcore action %d\n", ucAction);
+		break;
+	}
+	mutex_unlock(&vcore_mutex);
+#endif
+}
+
 BOOLEAN kalIsOuiMask(IN uint8_t pucMacAddrMask[MAC_ADDR_LEN])
 {
 	return (pucMacAddrMask[0] == 0xFF &&

@@ -687,6 +687,7 @@ VOID nicCmdEventEnterRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo,
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
 
+	kalChangeVcore(VCORE_SET_HIGHER);
 	/* [driver-land] */
 	/* prAdapter->fgTestMode = TRUE; */
 	if (prAdapter->fgTestMode)
@@ -775,6 +776,7 @@ VOID nicCmdEventLeaveRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo,
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
 
+	kalChangeVcore(VCORE_SET_DEFAULT);
 	/* 1. Disable Interrupt */
 	HAL_INTR_DISABLE(prAdapter);
 

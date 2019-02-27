@@ -355,6 +355,14 @@ struct KAL_HALT_CTRL_T {
 	BOOLEAN fgHeldByKalIoctl;
 	OS_SYSTIME u4HoldStart;
 };
+
+enum VCORE_ACTION_T {
+	VCORE_SET_HIGHER,
+	VCORE_SET_DEFAULT,
+	VCORE_SUSPEND,
+	VCORE_RESUME,
+	VCORE_MAX_NUM
+};
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -1132,4 +1140,9 @@ BOOLEAN kalSchedScanParseRandomMac(
 	const struct net_device *ndev,
 	IN struct cfg80211_sched_scan_request *request);
 
+VOID kalChangeVcore(UINT_8 ucAction);
+
+VOID kalVcoreInitUninit(BOOLEAN fgInit);
+
+VOID kalMayChangeVcore(VOID);
 #endif /* _GL_KAL_H */

@@ -2745,6 +2745,7 @@ static int initWlan(void)
 	/* Set WIFI EMI protection to consys permitted on system boot up */
 	kalSetEmiMpuProtection(gConEmiPhyBase, WIFI_EMI_MEM_SIZE, TRUE);
 #endif
+	kalVcoreInitUninit(TRUE);
 	return ret;
 }				/* end of initWlan() */
 
@@ -2773,6 +2774,7 @@ static VOID exitWlan(void)
 	destroyWirelessDevice();
 	glP2pDestroyWirelessDevice();
 	procUninitProcFs();
+	kalVcoreInitUninit(FALSE);
 
 	DBGLOG(INIT, INFO, "exitWlan\n");
 
