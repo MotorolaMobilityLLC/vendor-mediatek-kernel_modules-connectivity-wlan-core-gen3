@@ -3087,15 +3087,19 @@ INT_32 mtk_cfg80211_process_str_cmd(P_GLUE_INFO_T prGlueInfo, PUINT_8 cmd, INT_3
 				   wlanoidSendBTMQuery,
 				   (PVOID)pucReason, 1, FALSE, FALSE, TRUE, &u4SetInfoLen);
 	} else if (strncasecmp(cmd, "O-SAR-ENABLE", 12) == 0) {
-		UINT_8 isEnable = 0;
+		UINT_8 u2SarMode = 0;
 
 		DBGLOG(REQ, INFO, "cmd=%s\n", cmd);
-		if (len > 13 && (strncasecmp(cmd+13, "1", 1) == 0))
-			isEnable = 0x01;
+		if (len > 13) {
+			if (strncasecmp(cmd+13, "1", 1) == 0)
+				u2SarMode = 0x01;
+			else if (strncasecmp(cmd+13, "2", 1) == 0)
+				u2SarMode = 0x02;
+		}
 
 		rStatus = kalIoctl(prGlueInfo,
 				   wlanoidSendSarEnable,
-				   (PVOID)&isEnable, 1, FALSE, FALSE, TRUE, &u4SetInfoLen);
+				   (PVOID)&u2SarMode, 1, FALSE, FALSE, TRUE, &u4SetInfoLen);
 	} else if (kalStrniCmp(cmd, "OSHAREMOD ", 10) == 0) {
 #if CFG_SUPPORT_OSHARE
 		struct OSHARE_MODE_T cmdBuf;

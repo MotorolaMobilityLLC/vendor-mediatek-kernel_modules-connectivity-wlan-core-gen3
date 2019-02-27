@@ -3489,16 +3489,18 @@ INT_32 priv_driver_cmds(IN struct net_device *prNetDev, IN PCHAR pcCommand, IN I
 			kalIoctl(prGlueInfo, wlanoidDumpUapsdSetting, (PVOID)pcCommand,
 				 i4TotalLen, FALSE, FALSE, FALSE, &i4BytesWritten);
 		else if (!strncasecmp(pcCommand, CMD_O_SAR, strlen(CMD_O_SAR))) {
-			UINT_8 isEnable = 0;
+			UINT_8 u2SarMode = 0;
 
 			DBGLOG(REQ, INFO, "cmd=%s\n", pcCommand);
-			if (strlen(pcCommand) > strlen(CMD_O_SAR) &&
-			    (strncasecmp(pcCommand + strlen(CMD_O_SAR) + 1, "1", 1) == 0))
-				isEnable = 0x01;
-
+			if (strlen(pcCommand) > strlen(CMD_O_SAR)) {
+				if (strncasecmp(pcCommand + strlen(CMD_O_SAR) + 1, "1", 1) == 0)
+					u2SarMode = 0x01;
+				else if (strncasecmp(pcCommand + strlen(CMD_O_SAR) + 1, "2", 1) == 0)
+					u2SarMode = 0x02;
+			}
 			kalIoctl(prGlueInfo,
 				 wlanoidSendSarEnable,
-				 (PVOID)&isEnable, 1, FALSE, FALSE, TRUE, &i4BytesWritten);
+				 (PVOID)&u2SarMode, 1, FALSE, FALSE, TRUE, &i4BytesWritten);
 		} else if (!strncasecmp(pcCommand, CMD_FW_PARAM, strlen(CMD_FW_PARAM))) {
 			kalIoctl(prGlueInfo, wlanoidSetFwParam, (PVOID)(pcCommand + 13),
 				 i4TotalLen - 13, FALSE, FALSE, FALSE, &i4BytesWritten);
