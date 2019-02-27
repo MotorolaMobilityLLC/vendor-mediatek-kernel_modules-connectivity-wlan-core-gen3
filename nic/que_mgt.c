@@ -2811,59 +2811,67 @@ VOID qmProcessPktWithReordering(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb,
 	u4WinEnd = (UINT_32) (prReorderQueParm->u2WinEnd);
 #if CFG_RX_BA_REORDERING_ENHANCEMENT
 	if (prAdapter->rWifiVar.fgEnableReportIndependentPkt) {
-#define RECENT_SSN_CACHE_NUM 10
-#define INVALID_SSN 65535
-		static UINT_16 au2RecentSsn[RECENT_SSN_CACHE_NUM];
+		PUINT_16 pu2RecentSsn = &prReorderQueParm->au2RecentSsn[0];
 		UINT_8 i = 0;
-		UINT_8 j = RECENT_SSN_CACHE_NUM;
+		/* Cache index for this packet */
+		UINT_8 ucNewSlot = (prReorderQueParm->ucLastSlot + 1) % QM_RECENT_SSN_CACHE_NUM;
 		PUINT_8 pucEth = (PUINT_8)prSwRfb->pvHeader;
-		PUINT_8 pucEthBody = &pucEth[ETH_HLEN];
+		PUINT_8 pucEthBody = NULL;
 		UINT_16 u2EthType = 0;
 
-		if (prReorderQueParm->fgIsWaitingForPktWithSsn) {
-			DBGLOG(QM, TRACE, "Clear SSN cache due to new BA\n");
-			for (i = 0; i < RECENT_SSN_CACHE_NUM; i++)
-				au2RecentSsn[i] = INVALID_SSN;
+		/* Clear SSN cache while window end was updated last time */
+		for (i = 0; i < QM_RECENT_SSN_CACHE_NUM; i++) {
+			if (pu2RecentSsn[i] == QM_INVALID_SSN)
+				continue;
+			if (pu2RecentSsn[i] <= u4WinEnd) {
+				if (pu2RecentSsn[i] + HALF_SEQ_NO_COUNT < u4WinEnd)
+					pu2RecentSsn[i] = QM_INVALID_SSN;
+			} else if (pu2RecentSsn[i] < u4WinEnd + HALF_SEQ_NO_COUNT)
+				pu2RecentSsn[i] = QM_INVALID_SSN;
 		}
-		for (i = 0; i < RECENT_SSN_CACHE_NUM; i++) {
-			if (u4SeqNo > HALF_SEQ_NO_COUNT) {
-				if (au2RecentSsn[i] <= HALF_SEQ_NO_COUNT)
-					au2RecentSsn[i] = INVALID_SSN;
-			} else if (au2RecentSsn[i] > HALF_SEQ_NO_COUNT)
-				au2RecentSsn[i] = INVALID_SSN;
-		}
+
 		if (qmIsIndependentPkt(prSwRfb)) {
+			/* If the sequence number equals last value, just drop it. */
+			if (u4SeqNo == pu2RecentSsn[prReorderQueParm->ucLastSlot])
+				i = prReorderQueParm->ucLastSlot;
+			else
+				i = 0;
+			if (prSwRfb->u2PacketLen > ETH_HLEN) {
+				pucEthBody = &pucEth[ETH_HLEN];
+				u2EthType = (pucEth[ETH_TYPE_LEN_OFFSET] << 8) | pucEth[ETH_TYPE_LEN_OFFSET + 1];
+			}
 			DBGLOG(QM, TRACE, "Cur: %d, SsnCache: %d %d %d %d %d %d %d %d %d %d\n",
 				u4SeqNo,
-				au2RecentSsn[0], au2RecentSsn[1], au2RecentSsn[2], au2RecentSsn[3],
-				au2RecentSsn[4], au2RecentSsn[5], au2RecentSsn[6], au2RecentSsn[7],
-				au2RecentSsn[8], au2RecentSsn[9]);
-			for (i = 0; i < RECENT_SSN_CACHE_NUM; i++) {
-				if (j == RECENT_SSN_CACHE_NUM && au2RecentSsn[i] == INVALID_SSN) {
-					DBGLOG(QM, TRACE, "empty slot %d, value %d\n", i, au2RecentSsn[i]);
-					j = i;
+				pu2RecentSsn[0], pu2RecentSsn[1], pu2RecentSsn[2], pu2RecentSsn[3],
+				pu2RecentSsn[4], pu2RecentSsn[5], pu2RecentSsn[6], pu2RecentSsn[7],
+				pu2RecentSsn[8], pu2RecentSsn[9]);
+			for (; i < QM_RECENT_SSN_CACHE_NUM; i++) {
+				if (pu2RecentSsn[i] == u4SeqNo) {
+					switch (u2EthType) {
+					case ETH_P_ARP:
+						DBGLOG(QM, WARN, "Drop dup arp, op %d from %pi4, Seq %u\n",
+							(pucEthBody[6] << 8) | pucEthBody[7], &pucEthBody[14], u4SeqNo);
+						break;
+					case ETH_P_IP:
+						DBGLOG(QM, WARN, "Drop dup IP, Id 0x%02x Proto %d from %pi4, Seq %u\n",
+							*(UINT_16 *)&pucEthBody[4], pucEthBody[9], &pucEthBody[12],
+							u4SeqNo);
+						break;
+					default:
+						DBGLOG(QM, WARN, "Drop pkt with Eth type %d, Seq %u\n",
+						       u2EthType, u4SeqNo);
+					}
+					prSwRfb->eDst = RX_PKT_DESTINATION_NULL;
+					QUEUE_INSERT_TAIL(prReturnedQue, (P_QUE_ENTRY_T) prSwRfb);
+					return;
 				}
-				if (au2RecentSsn[i] != u4SeqNo)
-					continue;
-				u2EthType = (pucEth[ETH_TYPE_LEN_OFFSET] << 8) | pucEth[ETH_TYPE_LEN_OFFSET + 1];
-				switch (u2EthType) {
-				case ETH_P_ARP:
-					DBGLOG(QM, WARN, "Drop dup arp, op %d from %pi4, Seq %u\n",
-						(pucEthBody[6] << 8) | pucEthBody[7], &pucEthBody[14], u4SeqNo);
-					break;
-				case ETH_P_IP:
-					DBGLOG(QM, WARN, "Drop dup IP, Id 0x%02x Proto %d from %pi4, Seq %u\n",
-						*(UINT_16 *)&pucEthBody[4], pucEthBody[9], &pucEthBody[12],
-						u4SeqNo);
-					break;
-				default:
-					DBGLOG(QM, WARN, "Drop pkt with Eth type %d, Seq %u\n", u2EthType, u4SeqNo);
+				if (pu2RecentSsn[ucNewSlot] != QM_INVALID_SSN && pu2RecentSsn[i] == QM_INVALID_SSN) {
+					DBGLOG(QM, TRACE, "empty slot %d, value %d\n", i, pu2RecentSsn[i]);
+					ucNewSlot = i;
 				}
-				prSwRfb->eDst = RX_PKT_DESTINATION_NULL;
-				QUEUE_INSERT_TAIL(prReturnedQue, (P_QUE_ENTRY_T) prSwRfb);
-				return;
 			}
-			au2RecentSsn[j % RECENT_SSN_CACHE_NUM] = u4SeqNo;
+			pu2RecentSsn[ucNewSlot] = u4SeqNo;
+			prReorderQueParm->ucLastSlot = ucNewSlot;
 			DBGLOG(QM, TRACE, "Insert independentPkt to returnedQue directly\n");
 			QUEUE_INSERT_TAIL(prReturnedQue, (P_QUE_ENTRY_T) prSwRfb);
 			qmInsertNoNeedWaitPkt(prSwRfb, PACKET_DROP_BY_INDEPENDENT_PKT);
@@ -3676,6 +3684,9 @@ qmAddRxBaEntry(IN P_ADAPTER_T prAdapter,
 		prRxBaEntry->fgIsValid = TRUE;
 		prRxBaEntry->fgIsWaitingForPktWithSsn = TRUE;
 		prRxBaEntry->fgHasBubble = FALSE;
+		prRxBaEntry->ucLastSlot = QM_RECENT_SSN_CACHE_NUM - 1;
+		for (i = 0; i < QM_RECENT_SSN_CACHE_NUM; i++)
+			prRxBaEntry->au2RecentSsn[i] = QM_INVALID_SSN;
 
 		g_arMissTimeout[ucStaRecIdx][ucTid] = 0;
 
