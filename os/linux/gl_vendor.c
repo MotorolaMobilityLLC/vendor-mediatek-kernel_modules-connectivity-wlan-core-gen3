@@ -308,11 +308,7 @@ int mtk_cfg80211_vendor_config_roaming(struct wiphy *wiphy,
 				 struct wireless_dev *wdev, const void *data, int data_len)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
-	struct nlattr *attrlist;
-	struct AIS_BLACKLIST_ITEM *prBlackList;
-	UINT_32 len_shift = 0;
-	UINT_32 numOfList[2] = { 0 };
-	int i;
+	UINT_32 u4ResultLen = 0;
 
 	DBGLOG(REQ, TRACE, "Receives roaming blacklist & whitelist with data_len=%d\n", data_len);
 	if ((wiphy == NULL) || (wdev == NULL)) {
@@ -334,30 +330,7 @@ int mtk_cfg80211_vendor_config_roaming(struct wiphy *wiphy,
 		DBGLOG(REQ, INFO, "FWRoaming is disabled (FWRoamingEnable=%d)\n", prGlueInfo->u4FWRoamingEnable);
 		return WLAN_STATUS_SUCCESS;
 	}
-
-	attrlist = (struct nlattr *)data;
-
-	/* get the number of blacklist and copy those mac addresses from HAL */
-	if (attrlist->nla_type == WIFI_ATTRIBUTE_ROAMING_BLACKLIST_NUM) {
-		numOfList[0] = nla_get_u32(attrlist);
-		len_shift += NLA_ALIGN(attrlist->nla_len);
-	}
-	DBGLOG(REQ, TRACE, "Get the number of blacklist=%d\n", numOfList[0]);
-
-	if (numOfList[0] >= 0 && numOfList[0] <= MAX_FW_ROAMING_BLACKLIST_SIZE) {
-		/*Refresh all the FWKBlacklist */
-		aisRemoveBlacklistBySource(prGlueInfo->prAdapter, AIS_BLACK_LIST_FROM_FWK);
-
-		/* Start to receive blacklist mac addresses and set to FWK blacklist */
-		attrlist = (struct nlattr *)((UINT_8 *) data + len_shift);
-		for (i = 0; i < numOfList[0]; i++) {
-			if (attrlist->nla_type == WIFI_ATTRIBUTE_ROAMING_BLACKLIST_BSSID)
-				prBlackList = aisAddBlacklistByBssid(prGlueInfo->prAdapter, nla_data(attrlist),
-									AIS_BLACK_LIST_FROM_FWK);
-			len_shift += NLA_ALIGN(attrlist->nla_len);
-			attrlist = (struct nlattr *)((UINT_8 *) data + len_shift);
-		}
-	}
+	kalIoctl(prGlueInfo, wlanoidConfigRoaming, (PVOID)data, data_len, FALSE, FALSE, FALSE, &u4ResultLen);
 
 	return WLAN_STATUS_SUCCESS;
 }
@@ -366,6 +339,7 @@ int mtk_cfg80211_vendor_enable_roaming(struct wiphy *wiphy,
 				       struct wireless_dev *wdev, const void *data, int data_len)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
+	UINT_32 u4ResultLen = 0;
 	struct nlattr *attr;
 
 	if ((wiphy == NULL) || (wdev == NULL)) {
@@ -382,7 +356,7 @@ int mtk_cfg80211_vendor_enable_roaming(struct wiphy *wiphy,
 		prGlueInfo->u4FWRoamingEnable = nla_get_u32(attr);
 
 	if (prGlueInfo->u4FWRoamingEnable == 0)
-		aisRemoveBlacklistBySource(prGlueInfo->prAdapter, AIS_BLACK_LIST_FROM_FWK);
+		kalIoctl(prGlueInfo, wlanoidEnableRoaming, NULL, 0, FALSE, FALSE, FALSE, &u4ResultLen);
 
 	DBGLOG(REQ, INFO, "FWK set FWRoamingEnable = %d\n", prGlueInfo->u4FWRoamingEnable);
 
