@@ -90,9 +90,15 @@
  *         others:  failure
  */
 /*----------------------------------------------------------------------------*/
+#if (KERNEL_VERSION(4, 12, 0) <= LINUX_VERSION_CODE)
+int
+mtk_cfg80211_change_iface(struct wiphy *wiphy,
+			  struct net_device *ndev, enum nl80211_iftype type, struct vif_params *params)
+#else
 int
 mtk_cfg80211_change_iface(struct wiphy *wiphy,
 			  struct net_device *ndev, enum nl80211_iftype type, u32 *flags, struct vif_params *params)
+#endif
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
