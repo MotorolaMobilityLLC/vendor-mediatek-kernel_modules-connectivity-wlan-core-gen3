@@ -111,6 +111,7 @@ struct MTK_WCN_WMT_WLAN_CB_INFO {
 		INT_32(*wlan_remove_cb) (VOID);
 		INT_32(*wlan_bus_cnt_get_cb) (VOID);
 		INT_32(*wlan_bus_cnt_clr_cb) (VOID);
+		INT_32(*wlan_is_wifi_drv_own_cb) (VOID);
 		INT_32(*wlan_emi_mpu_set_protection_cb) (BOOLEAN);
 };
 

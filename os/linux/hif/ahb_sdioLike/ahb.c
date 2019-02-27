@@ -1267,6 +1267,7 @@ static int HifAhbPltmProbe(IN struct platform_device *pDev)
 	rWmtCb.wlan_bus_cnt_get_cb = HifAhbBusCntGet;
 	rWmtCb.wlan_bus_cnt_clr_cb = HifAhbBusCntClr;
 	rWmtCb.wlan_emi_mpu_set_protection_cb = hifAhbSetMpuProtect;
+	rWmtCb.wlan_is_wifi_drv_own_cb = NULL;
 	mtk_wcn_wmt_wlan_reg(&rWmtCb);
 
 	return 0;
