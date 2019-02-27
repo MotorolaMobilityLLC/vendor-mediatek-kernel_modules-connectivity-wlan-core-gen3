@@ -165,7 +165,7 @@ static ssize_t procDbgLevelWrite(struct file *file, const char __user *buffer, s
 	UINT_32 u4CopySize = sizeof(aucProcBuf);
 
 	kalMemSet(aucProcBuf, 0, u4CopySize);
-	if (u4CopySize >= count+1)
+	if (u4CopySize > count)
 		u4CopySize = count;
 	else
 		u4CopySize = u4CopySize - 1;
@@ -282,7 +282,7 @@ static ssize_t procPktDelayDbgCfgWrite(struct file *file, const char __user *buf
 	UINT_8 ucTxOrRx = 0;
 
 	kalMemSet(aucProcBuf, 0, u4CopySize);
-	if (u4CopySize >= count + 1)
+	if (u4CopySize > count)
 		u4CopySize = count;
 	else
 		u4CopySize = u4CopySize - 1;
@@ -341,7 +341,7 @@ static ssize_t procSetCamCfgWrite(struct file *file, const char __user *buffer, 
 	BOOLEAN fgParamValue = TRUE;
 
 	kalMemSet(aucProcBuf, 0, u4CopySize);
-	if (u4CopySize >= count + 1)
+	if (u4CopySize > count)
 		u4CopySize = count;
 	else
 		u4CopySize = u4CopySize - 1;
@@ -1525,7 +1525,7 @@ static ssize_t cfgWrite(struct file *filp, const char __user *buf, size_t count,
 
 	kalMemSet(aucCfgBuf, 0, u4CopySize);
 
-	if (u4CopySize >= (count + 1))
+	if (u4CopySize > count)
 		u4CopySize = count;
 	else
 		u4CopySize = u4CopySize - 1;

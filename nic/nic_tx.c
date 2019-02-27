@@ -178,6 +178,8 @@ VOID nicTxInitialize(IN P_ADAPTER_T prAdapter)
 	/* Tx sequence number */
 	prAdapter->ucTxSeqNum = 0;
 	/* PID pool */
+	DBGLOG(TX, INFO, "Init PID pool mach:%d size:%d",
+		__BITS_PER_LONG, sizeof(prAdapter->au8PidPool));
 	kalMemZero(prAdapter->au8PidPool, sizeof(prAdapter->au8PidPool));
 
 	prTxCtrl->u4PageSize = NIC_TX_PAGE_SIZE;
@@ -3252,11 +3254,8 @@ UINT_8 nicTxAssignPID(IN P_ADAPTER_T prAdapter, IN UINT_8 ucWlanIndex)
 {
 	UINT_8 ucRetval = 0;
 	UINT_8 ucZeroBits = 0;
-#if CONFIG_ARM64
 	PULONG pu8PidPool;
-#else
-	PUINT_64 pu8PidPool;
-#endif
+
 	/* Bit 7 represents data frame, don't assign PID directly */
 	BOOLEAN fgCanAssign = !(ucWlanIndex & BIT(7));
 
@@ -3275,7 +3274,10 @@ UINT_8 nicTxAssignPID(IN P_ADAPTER_T prAdapter, IN UINT_8 ucWlanIndex)
 		** means left PIDs are enough for data frame; otherwise, need to count left PID number in slow path.
 		** The reserved number of PIDs is defined by CFG_TX_DONE_SLOTS_RESERVED_FOR_MGMT.
 		*/
-		if (pu8PidPool[1] & BITS(63 - NIC_TX_DESC_PID_RESERVED_FOR_MGMT, 63)) {
+		if (pu8PidPool[NIC_TX_DESC_DRIVER_PID_MAX/__BITS_PER_LONG]
+			& BITS(
+			__BITS_PER_LONG - 1 - NIC_TX_DESC_PID_RESERVED_FOR_MGMT,
+			__BITS_PER_LONG - 1)) {
 			/* Slow path to count left number of PIDs */
 			for (ucRetval = NIC_TX_DESC_DRIVER_PID_MIN;
 			     ucRetval <= NIC_TX_DESC_DRIVER_PID_MAX &&
