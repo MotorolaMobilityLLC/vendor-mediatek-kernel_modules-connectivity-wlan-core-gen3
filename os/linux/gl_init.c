@@ -2195,6 +2195,7 @@ static INT_32 wlanProbe(PVOID pvData)
 		 *      initialized by glBusInit().
 		 * _HIF_SDIO: bus driver handle
 		 */
+		kalTakeVcoreAction(VCORE_CLEAR_ALL_REQ);
 		bRet = glBusInit(pvData);
 		wlanDebugTC4AndPktInit();
 
@@ -2530,6 +2531,7 @@ static VOID wlanRemove(VOID)
 
 	DBGLOG(INIT, INFO, "Remove wlan!\n");
 
+	kalTakeVcoreAction(VCORE_CLEAR_ALL_REQ);
 	/* 4 <0> Sanity check */
 	ASSERT(u4WlanDevNum <= CFG_MAX_WLAN_DEVICES);
 	if (u4WlanDevNum == 0) {

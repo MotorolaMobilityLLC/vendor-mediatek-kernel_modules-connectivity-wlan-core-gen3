@@ -1669,6 +1669,8 @@ WLAN_STATUS nicTxMsduQueue(IN P_ADAPTER_T prAdapter, UINT_8 ucPortIdx, P_QUE_T p
 	pucOutputBuf = prTxCtrl->pucTxCoalescingBufPtr;
 	u4TotalLength = 0;
 
+	kalMayChangeVcore();
+
 	while (prMsduInfo) {
 
 		prNativePacket = prMsduInfo->prPacket;
@@ -1858,6 +1860,7 @@ WLAN_STATUS nicTxCmd(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN UIN
 	wlanTraceTxCmd(prCmdInfo);
 #endif
 	if (prCmdInfo->eCmdType == COMMAND_TYPE_SECURITY_FRAME) {
+		kalMayChangeVcore();
 		prMsduInfo = prCmdInfo->prMsduInfo;
 
 #if CFG_SUPPORT_MULTITHREAD

@@ -121,7 +121,7 @@ VOID nicpmSetFWOwn(IN P_ADAPTER_T prAdapter, IN BOOLEAN fgEnableGlobalInt)
 		DBGLOG(NIC, INFO, "FW OWN fail\n");
 		return;
 	}
-
+	kalTakeVcoreAction(VCORE_RESTORE_DEF);
 	prAdapter->fgIsFwOwn = TRUE;
 	DBGLOG(NIC, TRACE, "FW OWN\n");
 }
