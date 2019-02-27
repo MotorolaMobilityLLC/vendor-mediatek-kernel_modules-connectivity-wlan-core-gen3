@@ -2613,6 +2613,7 @@ P_SW_RFB_T qmHandleRxPackets(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfbList
 
 				if (prCurrSwRfb->prStaRec != NULL) {
 					UINT_16 u2MACLen = 0;
+					PUINT_16 pu2PktLen = &prCurrSwRfb->u2PacketLen;
 
 					if (RXM_IS_QOS_DATA_FRAME(u2FrameCtrl)) /* QoS data, VHT */
 						u2MACLen = sizeof(WLAN_MAC_HEADER_QOS_T);
@@ -2621,17 +2622,24 @@ P_SW_RFB_T qmHandleRxPackets(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfbList
 					u2MACLen += ETH_LLC_LEN + ETH_SNAP_OUI_LEN;
 					u2MACLen -= ETHER_TYPE_LEN_OFFSET;
 
+					if (*pu2PktLen <= u2MACLen) {
+						DBGLOG_MEM8(QM, WARN, (PUINT_8) prCurrSwRfb->pvHeader,
+							(*pu2PktLen > 64) ? 64 : *pu2PktLen);
+						prCurrSwRfb->eDst = RX_PKT_DESTINATION_NULL;
+						QUEUE_INSERT_TAIL(prReturnedQue, (P_QUE_ENTRY_T) prCurrSwRfb);
+						continue;
+					}
 					prCurrSwRfb->pvHeader += u2MACLen; /* use prWlanHeader think deeply */
 					kalMemCopy(prCurrSwRfb->pvHeader, prWlanHeader->aucAddr1, MAC_ADDR_LEN);
 					kalMemCopy(prCurrSwRfb->pvHeader + MAC_ADDR_LEN, prWlanHeader->aucAddr3,
 						MAC_ADDR_LEN);
-					prCurrSwRfb->u2PacketLen -= u2MACLen;
+					*pu2PktLen -= u2MACLen;
 
 					prCurrSwRfb->ucWlanIdx = prCurrSwRfb->prStaRec->ucWlanIndex;
 					GLUE_SET_PKT_BSS_IDX(prCurrSwRfb->pvPacket,
 						     secGetBssIdxByWlanIdx(prAdapter, prCurrSwRfb->ucWlanIdx));
 					DBGLOG_MEM8(QM, WARN, (PUINT_8) prCurrSwRfb->pvHeader,
-						(prCurrSwRfb->u2PacketLen > 64) ? 64 : prCurrSwRfb->u2PacketLen);
+						(*pu2PktLen > 64) ? 64 : *pu2PktLen);
 				}
 			}
 		}
