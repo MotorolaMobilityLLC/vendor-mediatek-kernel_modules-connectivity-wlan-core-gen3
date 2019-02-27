@@ -166,7 +166,7 @@ VOID rlmFsmEventUninit(P_ADAPTER_T prAdapter)
 		 */
 		rlmBssReset(prAdapter, prBssInfo);
 	}
-	rlmFreeMeasurementResources(prAdapter);
+	rlmCancelRadioMeasurement(prAdapter);
 }
 
 /*----------------------------------------------------------------------------*/
@@ -3222,7 +3222,7 @@ VOID rlmProcessRadioMeasurementRequest(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb
 		DBGLOG(RLM, INFO, "Old RM is on-going, cancel it first\n");
 		rlmTxRadioMeasurementReport(prAdapter);
 		wmmRemoveAllTsmMeasurement(prAdapter, FALSE);
-		rlmFreeMeasurementResources(prAdapter);
+		rlmCancelRadioMeasurement(prAdapter);
 	}
 	prRmReqParam->fgRmIsOngoing = TRUE;
 	/* Step1: Save Measurement Request Params */
