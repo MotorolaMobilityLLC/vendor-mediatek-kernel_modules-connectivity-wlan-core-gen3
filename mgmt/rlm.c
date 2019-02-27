@@ -1449,7 +1449,12 @@ static UINT_8 rlmRecIeInfoForClient(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInf
 	rlmReviseMaxBw(prAdapter, prBssInfo->ucBssIndex, &prBssInfo->eBssSCO, &prBssInfo->ucVhtChannelWidth,
 		&prBssInfo->ucVhtChannelFrequencyS1, prBssInfo->ucPrimaryChannel);
 
-	if (!rlmDomainIsValidRfSetting(prAdapter, prBssInfo->eBand,
+	/* If prBssInfo->ucPrimaryChannel != ucPrimaryChannel, that means AP had changed channel but */
+	/* we didn't disconnect and update primary channel information. We will update primary channel */
+	/* while request channel to join. So we handle this as invalid information and using default */
+	/* capability to sync with firmware. */
+	if (prBssInfo->ucPrimaryChannel != ucPrimaryChannel ||
+	    !rlmDomainIsValidRfSetting(prAdapter, prBssInfo->eBand,
 				       prBssInfo->ucPrimaryChannel, prBssInfo->eBssSCO,
 				       prBssInfo->ucVhtChannelWidth, prBssInfo->ucVhtChannelFrequencyS1,
 				       prBssInfo->ucVhtChannelFrequencyS2)) {
