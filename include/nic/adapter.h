@@ -661,6 +661,11 @@ typedef struct _WIFI_VAR_T {
 	/* Feature Options */
 	UINT_8 ucQoS;
 
+	UINT_8 aucAifsN[WMM_AC_INDEX_NUM];
+	UINT_8 aucCwMin[WMM_AC_INDEX_NUM];
+	UINT_16 au2CwMax[WMM_AC_INDEX_NUM];
+	UINT_16 au2TxOp[WMM_AC_INDEX_NUM];
+
 	UINT_8 ucStaHt;
 	UINT_8 ucStaVht;
 	UINT_8 ucApHt;
