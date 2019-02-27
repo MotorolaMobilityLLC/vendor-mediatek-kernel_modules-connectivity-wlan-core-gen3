@@ -6194,6 +6194,9 @@ VOID qmDetectArpNoResponse(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo)
 	UINT_16 u2EtherType = 0;
 	int arpOpCode = 0;
 
+	ASSERT(prAdapter);
+	ASSERT(prMsduInfo);
+
 	prSkb = (struct sk_buff *)prMsduInfo->prPacket;
 
 	if (!prSkb || (prSkb->len <= ETHER_HEADER_LEN))
@@ -6216,7 +6219,7 @@ VOID qmDetectArpNoResponse(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo)
 		arpMoniter++;
 		if (arpMoniter > 20) {
 			DBGLOG(INIT, WARN, "IOT Critical issue, arp no resp, check AP!\n");
-			if (prAdapter && prAdapter->prAisBssInfo)
+			if (prAdapter->prAisBssInfo)
 				prAdapter->prAisBssInfo->u2DeauthReason = BEACON_TIMEOUT_DUE_2_APR_NO_RESPONSE;
 			kalSetResetConnEvent(prAdapter->prGlueInfo);
 			arpMoniter = 0;
