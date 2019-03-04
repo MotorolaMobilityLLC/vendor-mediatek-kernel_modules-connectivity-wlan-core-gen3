@@ -205,10 +205,10 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_LOW_36_48 */
 	  {118, BAND_5G, CHNL_SPAN_20, 52, 4, TRUE}
 	  ,			/* CH_SET_UNII_MID_52_64 */
-	  {121, BAND_5G, CHNL_SPAN_20, 100, 11, TRUE}
+	  {121, BAND_5G, CHNL_SPAN_20, 100, 12, TRUE}
 	  ,			/* CH_SET_UNII_WW_100_144 */
-	  {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,		    /* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -223,10 +223,10 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_LOW_36_48 */
 	  {118, BAND_5G, CHNL_SPAN_20, 52, 4, TRUE}
 	  ,			/* CH_SET_UNII_MID_52_64 */
-	  {121, BAND_5G, CHNL_SPAN_20, 100, 11, TRUE}
+	  {121, BAND_5G, CHNL_SPAN_20, 100, 12, TRUE}
 	  ,			/* CH_SET_UNII_WW_100_144 */
-	  {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,		    /* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 4, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_161 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -243,8 +243,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_MID_52_64 */
 	  {121, BAND_5G, CHNL_SPAN_20, 100, 11, TRUE}
 	  ,			/* CH_SET_UNII_WW_100_140 */
-	  {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,		    /* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -281,8 +281,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_WW_100_116 */
 	  {121, BAND_5G, CHNL_SPAN_20, 132, 3, TRUE}
 	  ,			/* CH_SET_UNII_WW_132_140 */
-	  {125, BAND_NULL, 0, 0, 0, FALSE}
-				/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+				/* CH_SET_UNII_UPPER_149_165 */
 	 }
 	}
 	,
@@ -298,8 +298,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_MID_52_64 */
 	  {121, BAND_5G, CHNL_SPAN_20, 132, 3, TRUE}
 	  ,			/* CH_SET_UNII_WW_132_140 */
-	  {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -316,8 +316,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_MID_52_64 */
 	  {121, BAND_NULL, 0, 0, 0, FALSE}
 	  ,			/* CH_SET_UNII_WW_NA */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -334,8 +334,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_MID_52_64 */
 	  {121, BAND_5G, CHNL_SPAN_20, 100, 8, TRUE}
 	  ,			/* CH_SET_UNII_WW_100_128 */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -352,8 +352,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_MID_52_64 */
 	  {121, BAND_NULL, 0, 0, 0, FALSE}
 	  ,			/* CH_SET_UNII_WW_NA */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 4, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_161 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -388,8 +388,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_MID_NA */
 	  {121, BAND_NULL, 0, 0, 0, FALSE}
 	  ,			/* CH_SET_UNII_WW_NA */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -424,8 +424,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_MID_52_64 */
 	  {121, BAND_5G, CHNL_SPAN_20, 100, 11, TRUE}
 	  ,			/* CH_SET_UNII_WW_100_140 */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -442,8 +442,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_MID_NA */
 	  {121, BAND_NULL, 0, 0, 0, FALSE}
 	  ,			/* CH_SET_UNII_WW_NA */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -460,8 +460,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_MID_NA */
 	  {121, BAND_NULL, 0, 0, 0, FALSE}
 	  ,			/* CH_SET_UNII_WW_NA */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 4, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_161 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -494,10 +494,10 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_LOW_36_48 */
 	  {118, BAND_5G, CHNL_SPAN_20, 52, 4, TRUE}
 	  ,			/* CH_SET_UNII_MID_52_64 */
-	  {121, BAND_5G, CHNL_SPAN_20, 100, 11, TRUE}
+	  {121, BAND_5G, CHNL_SPAN_20, 100, 12, TRUE}
 	  ,			/* CH_SET_UNII_WW_100_144 */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -516,8 +516,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_WW_100_116 */
 	  {121, BAND_5G, CHNL_SPAN_20, 132, 3, TRUE}
 	  ,			/* CH_SET_UNII_WW_132_140 */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+				/* CH_SET_UNII_UPPER_149_165 */
 	 }
 	}
 	,
@@ -533,8 +533,8 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_MID_52_64 */
 	  {121, BAND_NULL, 0, 0, 0, FALSE}
 	  ,			/* CH_SET_UNII_WW_NA */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -549,10 +549,10 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_LOW_36_48 */
 	  {118, BAND_5G, CHNL_SPAN_20, 52, 4, TRUE}
 	  ,			/* CH_SET_UNII_MID_52_64 */
-	  {121, BAND_5G, CHNL_SPAN_20, 100, 11, TRUE}
+	  {121, BAND_5G, CHNL_SPAN_20, 100, 12, TRUE}
 	  ,			/* CH_SET_UNII_WW_100_144 */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -568,10 +568,10 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  ,			/* CH_SET_UNII_LOW_36_48 */
 	  {118, BAND_5G, CHNL_SPAN_20, 52, 4, TRUE}
 	  ,			/* CH_SET_UNII_MID_52_64 */
-	  {121, BAND_5G, CHNL_SPAN_20, 100, 11, TRUE}
+	  {121, BAND_5G, CHNL_SPAN_20, 100, 12, TRUE}
 	  ,			/* CH_SET_UNII_WW_100_144 */
-	   {125, BAND_NULL, 0, 0, 0, FALSE}
-	  ,	    	/* CH_SET_UNII_UPPER_NA */
+	  {125, BAND_5G, CHNL_SPAN_20, 149, 5, FALSE}
+	  ,			/* CH_SET_UNII_UPPER_149_165 */
 	  {0, BAND_NULL, 0, 0, 0, FALSE}
 	 }
 	}
@@ -593,7 +593,7 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains_Passive[] = {
 	  ,			/* CH_SET_UNII_LOW_NA */
 	  {118, BAND_5G, CHNL_SPAN_20, 52, 4, TRUE}
 	  ,			/* CH_SET_UNII_MID_52_64 */
-	  {121, BAND_5G, CHNL_SPAN_20, 100, 11, TRUE}
+	  {121, BAND_5G, CHNL_SPAN_20, 100, 12, TRUE}
 	  ,			/* CH_SET_UNII_WW_100_144 */
 	  {125, BAND_5G, CHNL_SPAN_20, 149, 0, FALSE}
 	  ,			/* CH_SET_UNII_UPPER_NA */
