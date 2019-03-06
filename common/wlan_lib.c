@@ -34,6 +34,32 @@
  *                              C O N S T A N T S
  ********************************************************************************
  */
+
+
+const struct TXPWR_LIMIT_SAR_T g_aucSarTable[CFG_MAX_SAR_TABLE_SIZE] = {
+/*change the parameters as you want.*/
+	{0x01,	{0x01, 0x01, 0x01, 0x01}	},
+	{0x02,	{0x02, 0x03, 0x04, 0x05}	},
+	{0x03,	{0x02, 0x03, 0x04, 0x05}	},
+	{0x04,	{0x02, 0x03, 0x04, 0x05}	},
+
+	{0x05,	{0x02, 0x03, 0x04, 0x05}	},
+	{0x06,	{0x02, 0x03, 0x04, 0x05}	},
+	{0x07,	{0x02, 0x03, 0x04, 0x05}	},
+	{0x08,	{0x02, 0x03, 0x04, 0x05}	},
+
+	{0x09,	{0x03, 0x03, 0x03, 0x03}	},
+	{0x0a,	{0x02, 0x03, 0x04, 0x05}	},
+	{0x0b,	{0x02, 0x03, 0x04, 0x05}	},
+	{0x0c,	{0x02, 0x03, 0x04, 0x05}	},
+
+	{0x0d,	{0x02, 0x03, 0x04, 0x05}	},
+	{0x0e,	{0x02, 0x03, 0x04, 0x05}	},
+	{0x0f,	{0x02, 0x03, 0x04, 0x05}	},
+	{0x00,	{0x06, 0x06, 0x06, 0x06}	}
+
+};
+
 /* 6.1.1.2 Interpretation of priority parameter in MAC service primitives */
 /* Static convert the Priority Parameter/TID(User Priority/TS Identifier) to Traffic Class */
 const UINT_8 aucPriorityParam2TC[] = {
@@ -5794,6 +5820,10 @@ VOID wlanInitFeatureOption(IN P_ADAPTER_T prAdapter)
 	prWifiVar->ePowerMode = (PARAM_POWER_MODE) wlanCfgGetUint32(prAdapter, "PowerSave", Param_PowerModeMax);
 	prWifiVar->rScanInfo.rScanParam.u2DefaultDwellTime =
 	    (UINT_16)wlanCfgGetUint32(prAdapter, "DefaultDwellTime", 0);
+
+	kalMemZero(prWifiVar->aucSarTable, sizeof(prWifiVar->aucSarTable));
+	kalMemCopy(prWifiVar->aucSarTable, g_aucSarTable, sizeof(prWifiVar->aucSarTable));
+
 }
 
 VOID wlanCfgSetSwCtrl(IN P_ADAPTER_T prAdapter)

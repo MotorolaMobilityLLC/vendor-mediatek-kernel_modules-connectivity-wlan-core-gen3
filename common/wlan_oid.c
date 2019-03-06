@@ -11848,6 +11848,68 @@ wlanoidSendBTMQuery(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBuffe
 	return WLAN_STATUS_SUCCESS;
 }
 
+WLAN_STATUS
+wlanoidSendSarEnable(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBufferLen,
+		     PUINT_32 pu4SetInfoLen)
+{
+	struct CMD_SAR_ENABLE_T rCmdSarMode;
+	UINT_32 u4Para = 0;
+
+	u4Para = *((PUINT_32)pvSetBuffer);
+
+	DBGLOG(OID, INFO, "wlanoidSendSarEnable %u\n", u4Para);
+
+	if (u4Para > CFG_MAX_SAR_TABLE_SIZE) {
+		DBGLOG(OID, ERROR,
+			"u4Para > CFG_MAX_SAR_TABLE_SIZE(%u).\n",
+			CFG_MAX_SAR_TABLE_SIZE);
+		return WLAN_STATUS_FAILURE;
+	}
+
+	if (prAdapter == NULL) {
+		DBGLOG(OID, ERROR, "prAdapter == NULL.\n");
+		return WLAN_STATUS_FAILURE;
+	}
+
+	kalMemZero(&rCmdSarMode, sizeof(struct CMD_SAR_ENABLE_T));
+
+	rCmdSarMode.u1SAREnable = (u4Para == 0) ? 0 : 1;
+	rCmdSarMode.u1CmdVersion = 2;
+
+	if (u4Para != 0) {
+		rCmdSarMode.rTxPwrLmtSar.acTxPwrLimit2G =
+			prAdapter->rWifiVar.aucSarTable[u4Para-1].acTxPwrLimit2G;
+		rCmdSarMode.rTxPwrLmtSar.acTxPwrLimit5G[0] =
+			prAdapter->rWifiVar.aucSarTable[u4Para-1].acTxPwrLimit5G[0];
+		rCmdSarMode.rTxPwrLmtSar.acTxPwrLimit5G[1] =
+			prAdapter->rWifiVar.aucSarTable[u4Para-1].acTxPwrLimit5G[1];
+		rCmdSarMode.rTxPwrLmtSar.acTxPwrLimit5G[2] =
+			prAdapter->rWifiVar.aucSarTable[u4Para-1].acTxPwrLimit5G[2];
+		rCmdSarMode.rTxPwrLmtSar.acTxPwrLimit5G[3] =
+			prAdapter->rWifiVar.aucSarTable[u4Para-1].acTxPwrLimit5G[3];
+	}
+
+	DBGLOG(OID, INFO, "SAR-E(%u)-V(%u)-2G( %u)-5G(%u,%u,%u,%u)\n",
+		rCmdSarMode.u1SAREnable,
+		rCmdSarMode.u1CmdVersion,
+		rCmdSarMode.rTxPwrLmtSar.acTxPwrLimit2G,
+		rCmdSarMode.rTxPwrLmtSar.acTxPwrLimit5G[0],
+		rCmdSarMode.rTxPwrLmtSar.acTxPwrLimit5G[1],
+		rCmdSarMode.rTxPwrLmtSar.acTxPwrLimit5G[2],
+		rCmdSarMode.rTxPwrLmtSar.acTxPwrLimit5G[3]);
+
+	return wlanSendSetQueryCmd(prAdapter,
+				   CMD_ID_SET_SAR_ENABLE,
+				   TRUE,
+				   FALSE,
+				   TRUE,
+				   nicCmdEventSetCommon,
+				   nicOidCmdTimeoutCommon,
+				   sizeof(struct CMD_SAR_ENABLE_T),
+				   (PUINT_8)&rCmdSarMode, pvSetBuffer, u4SetBufferLen);
+
+}
+
 /*
  * This func is mainly from bionic's strtok.c
  */

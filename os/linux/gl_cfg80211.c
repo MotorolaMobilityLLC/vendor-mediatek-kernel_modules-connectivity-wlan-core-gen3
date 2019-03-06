@@ -3086,6 +3086,36 @@ INT_32 mtk_cfg80211_process_str_cmd(P_GLUE_INFO_T prGlueInfo, PUINT_8 cmd, INT_3
 		rStatus = kalIoctl(prGlueInfo,
 				   wlanoidSendBTMQuery,
 				   (PVOID)pucReason, 1, FALSE, FALSE, TRUE, &u4SetInfoLen);
+	} else if (strncasecmp(cmd, "O-SAR-ENABLE", 12) == 0) {
+		UINT_32 u2SarMode = 0;
+		INT_8 ret = -1;
+
+		DBGLOG(REQ, INFO, "cmd=%s\n", cmd);
+		do {
+			if (len <= 13) {
+				DBGLOG(REQ, ERROR, "len <= 13 (%d).\n", len);
+				break;
+			}
+
+			ret = kstrtouint(cmd+13, 0, &u2SarMode);
+			if (ret) {
+				DBGLOG(REQ, ERROR, "string to int fail %d.\n", ret);
+				break;
+			}
+
+			DBGLOG(REQ, INFO, "u2SarMode=%d\n", u2SarMode);
+
+			rStatus = kalIoctl(prGlueInfo,
+					   wlanoidSendSarEnable,
+					   (PVOID)&u2SarMode,
+					   sizeof(u2SarMode),
+					   FALSE,
+					   FALSE,
+					   TRUE,
+					   &u4SetInfoLen);
+
+		} while (FALSE);
+
 	} else if (kalStrniCmp(cmd, "OSHAREMOD ", 10) == 0) {
 #if CFG_SUPPORT_OSHARE
 		struct OSHARE_MODE_T cmdBuf;

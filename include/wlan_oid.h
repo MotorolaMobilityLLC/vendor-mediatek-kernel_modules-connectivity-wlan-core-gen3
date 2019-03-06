@@ -2436,6 +2436,9 @@ uint32_t wlanoidGetWifiType(IN P_ADAPTER_T prAdapter,
 			    IN void *pvSetBuffer,
 			    IN uint32_t u4SetBufferLen,
 			    OUT uint32_t *pu4SetInfoLen);
+WLAN_STATUS
+wlanoidSendSarEnable(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBufferLen,
+		     PUINT_32 pu4SetInfoLen);
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************

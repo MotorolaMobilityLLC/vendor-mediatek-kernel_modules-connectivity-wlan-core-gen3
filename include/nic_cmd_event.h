@@ -427,6 +427,7 @@ typedef enum _ENUM_CMD_ID_T {
 #endif /* CFG_SUPPORT_QA_TOOL */
 	CMD_ID_CHIP_CONFIG = 0xCA,	/* 0xca (Set / Query) */
 	CMD_ID_STATS_LOG = 0xCB,	/* 0xcb (Set) */
+	CMD_ID_SET_SAR_ENABLE = 0xCC,
 	CMD_ID_SET_RDD_CH = 0xE1,
 #if CFG_SUPPORT_QA_TOOL
 	CMD_ID_LAYER_0_EXT_MAGIC_NUM = 0xED,	/* magic number for Extending MT6630 original CMD header */
@@ -747,6 +748,20 @@ typedef struct _CMD_RESET_BA_SCOREBOARD_T {
 	UINT_8 aucMacAddr[PARAM_MAC_ADDR_LEN];
 } CMD_RESET_BA_SCOREBOARD_T, *P_CMD_RESET_BA_SCOREBOARD_T;
 #endif
+
+
+struct TXPWR_LIMIT_SAR_T {
+	UINT_8    acTxPwrLimit2G;        /* Channel 1~14, Unit: 0.5dBm*/
+	UINT_8    acTxPwrLimit5G[4];     /* UNII 1~4 */
+};
+
+struct CMD_SAR_ENABLE_T {
+	UINT_8    u1SAREnable; /*0 : disable , 1 : enable */
+	UINT_8    u1CmdVersion;
+	UINT_8    reserved[2];
+	struct TXPWR_LIMIT_SAR_T rTxPwrLmtSar;
+};
+
 
 /* EVENT_CONNECTION_STATUS */
 typedef struct _EVENT_CONNECTION_STATUS {

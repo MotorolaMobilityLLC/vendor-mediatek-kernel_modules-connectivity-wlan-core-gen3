@@ -774,6 +774,8 @@ typedef struct _WIFI_VAR_T {
 	struct RADIO_MEASUREMENT_REPORT_PARAMS rRmRepParams;
 
 	struct WMM_INFO rWmmInfo;
+	struct TXPWR_LIMIT_SAR_T aucSarTable[CFG_MAX_SAR_TABLE_SIZE];
+
 } WIFI_VAR_T, *P_WIFI_VAR_T;	/* end of _WIFI_VAR_T */
 
 /* cnm_timer module */
