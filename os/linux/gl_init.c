@@ -2005,6 +2005,19 @@ VOID wlanSetSuspendMode(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgEnable)
 	kalSetNetAddressFromInterface(prGlueInfo, prDev, fgEnable);
 }
 
+BOOLEAN wlanIsFwOwn(VOID)
+{
+	P_GLUE_INFO_T prGlueInfo = NULL;
+
+	if (gprWdev)
+		prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(gprWdev->wiphy);
+
+	if (!prGlueInfo || !prGlueInfo->prAdapter)
+		return TRUE;
+
+	return prGlueInfo->prAdapter->fgIsFwOwn;
+}
+
 #if CFG_ENABLE_EARLY_SUSPEND
 static struct early_suspend wlan_early_suspend_desc = {
 	.level = EARLY_SUSPEND_LEVEL_BLANK_SCREEN,

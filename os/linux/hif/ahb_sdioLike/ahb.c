@@ -71,6 +71,8 @@ static int HifAhbBusCntGet(VOID);
 
 static int HifAhbBusCntClr(VOID);
 
+static int HifAhbIsWifiDrvOwn(VOID);
+
 static int HifTxCnt;
 
 #if (CONF_HIF_DEV_MISC == 1)
@@ -1195,6 +1197,20 @@ static int hifAhbSetMpuProtect(BOOLEAN enable)
 
 /*----------------------------------------------------------------------------*/
 /*!
+* \brief This function check the status of wifi driver
+*
+* \param[in] None
+*
+* \return 1: drv_own, 0: fw_own
+*/
+/*----------------------------------------------------------------------------*/
+static int HifAhbIsWifiDrvOwn(VOID)
+{
+	return (wlanIsFwOwn() == FALSE) ? 1 : 0;
+}
+
+/*----------------------------------------------------------------------------*/
+/*!
 * \brief This function configs the DMA TX/RX settings before any real TX/RX.
 *
 * \param[in] GlueInfo       Pointer to the GLUE_INFO_T structure.
@@ -1267,7 +1283,7 @@ static int HifAhbPltmProbe(IN struct platform_device *pDev)
 	rWmtCb.wlan_bus_cnt_get_cb = HifAhbBusCntGet;
 	rWmtCb.wlan_bus_cnt_clr_cb = HifAhbBusCntClr;
 	rWmtCb.wlan_emi_mpu_set_protection_cb = hifAhbSetMpuProtect;
-	rWmtCb.wlan_is_wifi_drv_own_cb = NULL;
+	rWmtCb.wlan_is_wifi_drv_own_cb = HifAhbIsWifiDrvOwn;
 	mtk_wcn_wmt_wlan_reg(&rWmtCb);
 
 	return 0;

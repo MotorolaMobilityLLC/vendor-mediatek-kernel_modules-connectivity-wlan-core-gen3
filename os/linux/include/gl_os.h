@@ -964,6 +964,8 @@ WLAN_STATUS wlanGetDebugLevel(IN UINT_32 u4DbgIdx, OUT PUINT_32 pu4DbgMask);
 
 VOID wlanSetSuspendMode(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgEnable);
 
+BOOLEAN wlanIsFwOwn(VOID);
+
 /*******************************************************************************
 *			 E X T E R N A L   F U N C T I O N S / V A R I A B L E
 ********************************************************************************
