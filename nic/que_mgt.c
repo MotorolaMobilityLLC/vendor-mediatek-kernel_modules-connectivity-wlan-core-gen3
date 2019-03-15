@@ -2545,15 +2545,6 @@ P_SW_RFB_T qmHandleRxPackets(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfbList
 				}
 			}
 
-			if (prCurrSwRfb->ucTid >= CFG_RX_MAX_BA_TID_NUM) {
-				DBGLOG(QM, ERROR, "TID from RXD = %d, out of range !!!\n", prCurrSwRfb->ucTid);
-				DBGLOG_MEM8(QM, ERROR, prCurrSwRfb->pucRecvBuff,
-					    HAL_RX_STATUS_GET_RX_BYTE_CNT(prRxStatus));
-				prCurrSwRfb->eDst = RX_PKT_DESTINATION_NULL;
-				QUEUE_INSERT_TAIL(prReturnedQue, (P_QUE_ENTRY_T) prCurrSwRfb);
-				continue;
-			}
-
 			ucBssIndex = prCurrSwRfb->prStaRec->ucBssIndex;
 			prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex);
 
@@ -2697,14 +2688,21 @@ P_SW_RFB_T qmHandleRxPackets(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfbList
 			 *  into the reordering queue in the STA_REC rather than into the
 			 *  rReturnedQue.
 			 */
-			qmProcessPktWithReordering(prAdapter, prCurrSwRfb, prReturnedQue);
+			 if (prCurrSwRfb->ucTid >= CFG_RX_MAX_BA_TID_NUM) {
+				DBGLOG(QM, ERROR, "TID from RXD = %d, out of range !!!\n", prCurrSwRfb->ucTid);
+				DBGLOG_MEM8(QM, ERROR, prCurrSwRfb->pucRecvBuff,
+					    HAL_RX_STATUS_GET_RX_BYTE_CNT(prRxStatus));
+				QUEUE_INSERT_TAIL(prReturnedQue, (P_QUE_ENTRY_T) prCurrSwRfb);
+			} else
+				qmProcessPktWithReordering(prAdapter, prCurrSwRfb, prReturnedQue);
 
 		} else if (prCurrSwRfb->fgDataFrame) {
 			/* Check Class Error */
 			if (secCheckClassError(prAdapter, prCurrSwRfb, prCurrSwRfb->prStaRec) == TRUE) {
 				P_RX_BA_ENTRY_T prReorderQueParm = NULL;
 
-				if (!fgIsBMC && fgIsHTran && RXM_IS_QOS_DATA_FRAME(
+				if ((prCurrSwRfb->ucTid < CFG_RX_MAX_BA_TID_NUM) &&
+					!fgIsBMC && fgIsHTran && RXM_IS_QOS_DATA_FRAME(
 				    HAL_RX_STATUS_GET_FRAME_CTL_FIELD(prCurrSwRfb->prRxStatusGroup4))) {
 					prReorderQueParm =
 					    ((prCurrSwRfb->prStaRec->aprRxReorderParamRefTbl)[prCurrSwRfb->ucTid]);
