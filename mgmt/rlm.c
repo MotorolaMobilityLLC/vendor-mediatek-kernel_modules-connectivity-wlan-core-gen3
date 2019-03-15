@@ -1429,19 +1429,6 @@ static UINT_8 rlmRecIeInfoForClient(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInf
 		PARAM_SSID_T rSsid;
 
 		prBssInfo->ucPrimaryChannel = prCsaParam->ucNewChannel;
-		COPY_SSID(rSsid.aucSsid, rSsid.u4SsidLen, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
-		prBssDesc = scanSearchBssDescByBssidAndSsid(prAdapter, prBssInfo->aucBSSID, TRUE, &rSsid);
-
-		if (prBssDesc) {
-			DBGLOG(RLM, INFO, "BSS " MACSTR " Desc found, channel update [%d]->[%d]\n",
-			       MAC2STR(prBssInfo->aucBSSID),
-			       prBssDesc->ucChannelNum,
-			       prCsaParam->ucNewChannel);
-			prBssDesc->ucChannelNum = prCsaParam->ucNewChannel;
-		} else {
-			DBGLOG(RLM, INFO, "BSS " MACSTR " Desc is not found\n", MAC2STR(prBssInfo->aucBSSID));
-		}
-
 		if (prCsaParam->fgHasWideBandIE) {
 			prBssInfo->ucVhtChannelWidth = prCsaParam->ucNewVhtBw;
 			prBssInfo->ucVhtChannelFrequencyS1 = prCsaParam->ucNewVhtS1;
@@ -1451,6 +1438,30 @@ static UINT_8 rlmRecIeInfoForClient(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInf
 			prBssInfo->ucVhtChannelFrequencyS1 = 0;
 			prBssInfo->ucVhtChannelFrequencyS2 = 0;
 		}
+		COPY_SSID(rSsid.aucSsid, rSsid.u4SsidLen, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
+		prBssDesc = scanSearchBssDescByBssidAndSsid(prAdapter, prBssInfo->aucBSSID, TRUE, &rSsid);
+
+		if (prBssDesc) {
+			DBGLOG(RLM, INFO,
+				   "BSS " MACSTR " channel[%d]->[%d], BW[%d]->[%d] S1[%d]->[%d], S2[%d]->[%d]\n",
+				   MAC2STR(prBssInfo->aucBSSID),
+				   prBssDesc->ucChannelNum,
+				   prCsaParam->ucNewChannel,
+				   prBssDesc->eChannelWidth,
+				   prBssInfo->ucVhtChannelWidth,
+				   prBssDesc->ucCenterFreqS1,
+				   prBssInfo->ucVhtChannelFrequencyS1,
+				   prBssDesc->ucCenterFreqS2,
+				   prBssInfo->ucVhtChannelFrequencyS2);
+			prBssDesc->ucChannelNum = prCsaParam->ucNewChannel;
+			prBssDesc->eChannelWidth = prBssInfo->ucVhtChannelWidth;
+			prBssDesc->ucCenterFreqS1 = prBssInfo->ucVhtChannelFrequencyS1;
+			prBssDesc->ucCenterFreqS2 = prBssInfo->ucVhtChannelFrequencyS2;
+
+		} else {
+			DBGLOG(RLM, INFO, "BSS " MACSTR " Desc is not found\n", MAC2STR(prBssInfo->aucBSSID));
+		}
+
 
 		if (prCsaParam->fgHasSCOIE)
 			prBssInfo->eBssSCO = prCsaParam->eNewSCO;
@@ -2526,21 +2537,6 @@ VOID rlmProcessSpecMgtAction(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb)
 			PARAM_SSID_T rSsid;
 
 			prBssInfo->ucPrimaryChannel = prCsaParam->ucNewChannel;
-			COPY_SSID(rSsid.aucSsid, rSsid.u4SsidLen, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
-			prBssDesc = scanSearchBssDescByBssidAndSsid(prAdapter, prStaRec->aucMacAddr, TRUE, &rSsid);
-
-			if (prBssDesc) {
-				DBGLOG(RLM, INFO,
-				       "BSS " MACSTR " Desc found, channel update [%d]->[%d]\n",
-				       MAC2STR(prBssInfo->aucBSSID),
-				       prBssDesc->ucChannelNum,
-				       prCsaParam->ucNewChannel);
-				prBssDesc->ucChannelNum = prCsaParam->ucNewChannel;
-			} else {
-				DBGLOG(RLM, INFO,
-				       "BSS " MACSTR " Desc is not found\n", MAC2STR(prBssInfo->aucBSSID));
-			}
-
 			if (prCsaParam->fgHasWideBandIE) {
 				prBssInfo->ucVhtChannelWidth = prCsaParam->ucNewVhtBw;
 				prBssInfo->ucVhtChannelFrequencyS1 = prCsaParam->ucNewVhtS1;
@@ -2549,6 +2545,29 @@ VOID rlmProcessSpecMgtAction(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb)
 				prBssInfo->ucVhtChannelWidth = VHT_OP_CHANNEL_WIDTH_20_40;
 				prBssInfo->ucVhtChannelFrequencyS1 = 0;
 				prBssInfo->ucVhtChannelFrequencyS2 = 0;
+			}
+			COPY_SSID(rSsid.aucSsid, rSsid.u4SsidLen, prBssInfo->aucSSID, prBssInfo->ucSSIDLen);
+			prBssDesc = scanSearchBssDescByBssidAndSsid(prAdapter, prStaRec->aucMacAddr, TRUE, &rSsid);
+			if (prBssDesc) {
+				DBGLOG(RLM, INFO,
+					"BSS " MACSTR " channel[%d]->[%d], BW[%d]->[%d] S1[%d]->[%d], S2[%d]->[%d]\n",
+					   MAC2STR(prBssInfo->aucBSSID),
+					   prBssDesc->ucChannelNum,
+					   prCsaParam->ucNewChannel,
+					   prBssDesc->eChannelWidth,
+					   prBssInfo->ucVhtChannelWidth,
+					   prBssDesc->ucCenterFreqS1,
+					   prBssInfo->ucVhtChannelFrequencyS1,
+					   prBssDesc->ucCenterFreqS2,
+					   prBssInfo->ucVhtChannelFrequencyS2);
+
+				prBssDesc->ucChannelNum = prCsaParam->ucNewChannel;
+				prBssDesc->eChannelWidth = prBssInfo->ucVhtChannelWidth;
+				prBssDesc->ucCenterFreqS1 = prBssInfo->ucVhtChannelFrequencyS1;
+				prBssDesc->ucCenterFreqS2 = prBssInfo->ucVhtChannelFrequencyS2;
+			} else {
+				DBGLOG(RLM, INFO,
+				       "BSS " MACSTR " Desc is not found\n", MAC2STR(prBssInfo->aucBSSID));
 			}
 
 			if (prCsaParam->fgHasSCOIE)
