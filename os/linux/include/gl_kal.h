@@ -498,6 +498,10 @@ enum VCORE_ACTION_T {
 *
 * \param[in] u4Size Required memory size.
 * \param[in] eMemType  Memory allocation type
+*Ps. when mem type is set to virtual
+*and size is smaller than one PAGE_SIZE,
+*it will be forced to malloc a physical
+*address.
 *
 * \return Pointer to allocated memory
 *         or NULL
@@ -510,7 +514,10 @@ enum VCORE_ACTION_T {
 		pvAddr = kmalloc(u4Size, GFP_KERNEL);   \
 	} \
 	else { \
-		pvAddr = vmalloc(u4Size);   \
+		if (u4Size > PAGE_SIZE) \
+			pvAddr = vmalloc(u4Size);   \
+		else \
+			pvAddr = kmalloc(u4Size, GFP_KERNEL);   \
 	} \
 	if (pvAddr) {   \
 		allocatedMemSize += u4Size;   \
@@ -526,7 +533,10 @@ enum VCORE_ACTION_T {
 		pvAddr = kmalloc(u4Size, GFP_KERNEL);   \
 	} \
 	else { \
-		pvAddr = vmalloc(u4Size);   \
+		if (u4Size > PAGE_SIZE) \
+			pvAddr = vmalloc(u4Size);   \
+		else \
+			pvAddr = kmalloc(u4Size, GFP_KERNEL);   \
 	} \
 	if (!pvAddr) \
 		ASSERT_NOMEM(); \
@@ -553,22 +563,13 @@ enum VCORE_ACTION_T {
 		DBGLOG(INIT, INFO, "0x%p(%ld) freed (%s:%s)\n", \
 			pvAddr, (UINT_32)u4Size, __FILE__, __func__;  \
 	}   \
-	if (eMemType == PHY_MEM_TYPE) { \
-		kfree(pvAddr; \
-	} \
-	else { \
-		vfree(pvAddr); \
-	} \
+	kvfree(pvAddr); \
+
 }
 #else
 #define kalMemFree(pvAddr, eMemType, u4Size)  \
 {   \
-	if (eMemType == PHY_MEM_TYPE) { \
-		kfree(pvAddr); \
-	} \
-	else { \
-		vfree(pvAddr); \
-	} \
+	kvfree(pvAddr); \
 }
 #endif
 
