@@ -1396,9 +1396,8 @@ p2pFuncDissolve(IN P_ADAPTER_T prAdapter,
 					p2pFuncDisconnect(prAdapter, prP2pBssInfo, prCurrStaRec, TRUE, u2ReasonCode);
 
 					prCurrStaRec = bssRemoveHeadClient(prAdapter, prP2pBssInfo);
+					fgWaitDeauthSendout = TRUE;
 				}
-
-				fgWaitDeauthSendout = TRUE;
 			}
 
 			break;
@@ -1411,8 +1410,10 @@ p2pFuncDissolve(IN P_ADAPTER_T prAdapter,
 			wlanAcquirePowerControl(prAdapter);
 			wlanProcessCommandQueue(prAdapter, &prAdapter->prGlueInfo->rCmdQueue);
 			wlanReleasePowerControl(prAdapter);
-
-			kalMsleep(1000);
+			if (prP2pBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT)
+				kalMsleep(1000);
+			else
+				kalMsleep(100);
 		}
 
 		/* Change Connection Status. */
