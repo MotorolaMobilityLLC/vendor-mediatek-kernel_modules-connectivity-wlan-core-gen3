@@ -194,7 +194,7 @@ UINT_32 dumpCrBeforeReset(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
 
 	if (prGlueInfo == NULL) {
 		DBGLOG(INIT, WARN, "prGlueInfo == NULL\n");
-		return -1;
+		return 1;
 	}
 
 	/*Pin-Hao need check some cr.*/
@@ -217,6 +217,10 @@ UINT_32 dumpCrBeforeReset(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
 		break;
 	}
 
+	if (prGlueInfo->rHifInfo.HifRegBaseAddr == NULL) {
+		DBGLOG(INIT, ERROR, "prGlueInfo->rHifInfo.InfraRegBaseAddr == NULL.\n");
+		return 1;
+	}
 
 	DBGLOG(INIT, ERROR,
 	       "HIF_BASE_ADDR+0x300: 0x%08x\n",
@@ -258,6 +262,11 @@ UINT_32 dumpCrBeforeReset(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
 	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
 				0x330));
 
+	if (prGlueInfo->rHifInfo.InfraRegBaseAddr == NULL) {
+		DBGLOG(INIT, ERROR, "prGlueInfo->rHifInfo.InfraRegBaseAddr == NULL.\n");
+		return 1;
+	}
+
 	DBGLOG(INIT, ERROR, "INFRASYS_AO_REG_BASE+0x0394 write 0x800c.\n");
 	if (u2ChipID == 0x6771) {
 		val = 0x800c;
@@ -268,6 +277,11 @@ UINT_32 dumpCrBeforeReset(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
 		CONNSYS_REG_WRITE(prGlueInfo->rHifInfo.InfraRegBaseAddr, u4InfraPseOffset,
 				  CONNSYS_REG_READ(prGlueInfo->rHifInfo.InfraRegBaseAddr,
 						   u4InfraPseOffset) | val);
+	}
+
+	if (prGlueInfo->rHifInfo.ConnCfgRegBaseAddr == NULL) {
+		DBGLOG(INIT, ERROR, "prGlueInfo->rHifInfo.ConnCfgRegBaseAddr == NULL.\n");
+		return 1;
 	}
 
 	DBGLOG(INIT, ERROR, "CONNSYS_CONFIG+0x6c write 0x6\n");
