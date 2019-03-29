@@ -4989,7 +4989,7 @@ WLAN_STATUS wlanCheckSystemConfiguration(IN P_ADAPTER_T prAdapter)
 		prBeacon->u2FrameCtrl = MAC_FRAME_BEACON;
 		COPY_MAC_ADDR(prBeacon->aucDestAddr, aucBCAddr);
 		COPY_MAC_ADDR(prBeacon->aucSrcAddr, aucZeroMacAddr);
-		COPY_MAC_ADDR(prBeacon->aucBSSID, aucZeroMacAddr);
+		COPY_MAC_ADDR(prBeacon->aucBSSID, aucBCAddr);
 		prBeacon->u2BeaconInterval = 100;
 		prBeacon->u2CapInfo = CAP_INFO_ESS;
 
