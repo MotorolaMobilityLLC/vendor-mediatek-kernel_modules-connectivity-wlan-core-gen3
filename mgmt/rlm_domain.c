@@ -182,7 +182,7 @@ DOMAIN_INFO_ENTRY arSupportedRegDomains[] = {
 	  {81, BAND_2G4, CHNL_SPAN_5, 1, 13, FALSE}
 	  ,			/* CH_SET_2G4_1_13 */
 
-	  {82, BAND_2G4, CHNL_SPAN_5, 14, 1, FALSE}
+	  //{82, BAND_2G4, CHNL_SPAN_5, 14, 1, FALSE}		PBGAM-118 Disable CH14 of 802.11b
 	  ,			/* CH_SET_2G4_14_14 */
 	  {115, BAND_5G, CHNL_SPAN_20, 36, 4, FALSE}
 	  ,			/* CH_SET_UNII_LOW_36_48 */
