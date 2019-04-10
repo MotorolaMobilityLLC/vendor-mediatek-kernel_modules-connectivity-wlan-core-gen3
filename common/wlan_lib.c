@@ -3478,10 +3478,10 @@ WLAN_STATUS wlanUpdateNetworkAddress(IN P_ADAPTER_T prAdapter)
 #endif
 			/* dynamic generate */
 			u4SysTime = (UINT_32) kalGetTimeTick();
-
-			rMacAddr[0] = 0x00;
-			rMacAddr[1] = 0x08;
-			rMacAddr[2] = 0x22;
+                        /* Motorola OUI */
+			rMacAddr[0] = 0xF0;
+			rMacAddr[1] = 0xD7;
+			rMacAddr[2] = 0xAA;
 			kalMemCopy(&rMacAddr[3], &u4SysTime, 3);
 		} else {
 #if CFG_SHOW_MACADDR_SOURCE
