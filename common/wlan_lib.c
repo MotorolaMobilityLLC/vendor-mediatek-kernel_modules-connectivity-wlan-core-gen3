@@ -42,8 +42,9 @@
  ********************************************************************************
  */
 
-
-const struct TXPWR_LIMIT_SAR_T g_aucSarTable[CFG_MAX_SAR_TABLE_SIZE] = {
+/* BEGIN IKMTKP-541 add proc fs to read/write sar table */
+struct TXPWR_LIMIT_SAR_T g_aucSarTable[CFG_MAX_SAR_TABLE_SIZE] = {
+/* END IKMTKP-541 add proc fs to read/write sar table */
 /*change the parameters as you want.*/
 	{0x01,	{0x01, 0x01, 0x01, 0x01}	},
 	{0x02,	{0x02, 0x03, 0x04, 0x05}	},

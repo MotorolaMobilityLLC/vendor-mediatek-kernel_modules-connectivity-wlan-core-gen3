@@ -64,6 +64,10 @@
 #define PROC_AUTO_PERF_CFG			"autoPerfCfg"
 #define PROC_SET_WIFI_CFG			"wificfg"
 
+/* BEGIN IKMTKP-541 add proc fs to read/write sar table */
+#define PROC_SAR_TABLE				"sar_table"
+/* END IKMTKP-541 add proc fs to read/write sar table */
+
 #define PROC_MCR_ACCESS_MAX_USER_INPUT_LEN      20
 #define PROC_RX_STATISTICS_MAX_USER_INPUT_LEN   10
 #define PROC_TX_STATISTICS_MAX_USER_INPUT_LEN   10
@@ -1098,6 +1102,71 @@ static const struct file_operations drv_status_ops = {
 	.write = procDrvStatusCfg,
 };
 
+/* BEGIN IKMTKP-541 add proc fs to read/write sar table */
+extern struct TXPWR_LIMIT_SAR_T g_aucSarTable[CFG_MAX_SAR_TABLE_SIZE];
+
+static int sar_table_show(struct seq_file *m, void *v)
+{
+	int i;
+	for (i = 0; i < CFG_MAX_SAR_TABLE_SIZE; i++) {
+		seq_printf(m, "level[0x%x]:2.4G[0x%x], B1[0x%x], B2[0x%x], B3[0x%x], B4[0x%x]\n",
+			i, g_aucSarTable[i].acTxPwrLimit2G, g_aucSarTable[i].acTxPwrLimit5G[0],
+			g_aucSarTable[i].acTxPwrLimit5G[1], g_aucSarTable[i].acTxPwrLimit5G[2],
+			g_aucSarTable[i].acTxPwrLimit5G[3]);
+	}
+	return 0;
+}
+
+static int procOpenSarTable(struct inode *inode, struct file *file)
+{
+	return single_open(file, sar_table_show, NULL);
+}
+
+static ssize_t procWriteSarTable(struct file *file, const char *buffer, size_t count, loff_t *data)
+{
+	UINT_8 *temp = &aucProcBuf[0];
+	UINT_32 u4CopySize = sizeof(aucProcBuf);
+	int i = 0;
+
+	kalMemSet(aucProcBuf, 0, u4CopySize);
+	if (u4CopySize > count)
+		u4CopySize = count;
+	else
+		u4CopySize = u4CopySize - 1;
+
+	if (copy_from_user(aucProcBuf, buffer, u4CopySize)) {
+		pr_err("error of copy from user\n");
+		return -EFAULT;
+	}
+	aucProcBuf[u4CopySize] = '\0';
+
+	while (temp) {
+		if (sscanf(temp, "%x %x %x %x %x", &g_aucSarTable[i].acTxPwrLimit2G,
+			&g_aucSarTable[i].acTxPwrLimit5G[0], &g_aucSarTable[i].acTxPwrLimit5G[1],
+			&g_aucSarTable[i].acTxPwrLimit5G[2], &g_aucSarTable[i].acTxPwrLimit5G[3]) != 5) {
+			pr_err("error to write file line %d\n", i);
+			break;
+		}
+
+		temp = kalStrChr(temp, ',');
+		if (!temp)
+			break;
+		temp++;
+		i++;
+	}
+	return count;
+}
+
+static const struct file_operations sar_ops = {
+	.owner		= THIS_MODULE,
+	.open		= procOpenSarTable,
+	.read		= seq_read,
+	.llseek		= seq_lseek,
+	.write		= procWriteSarTable,
+	.release	= single_release,
+};
+/* END IKMTKP-541 add proc fs to read/write sar table */
+
 INT_32 procInitFs(VOID)
 {
 	struct proc_dir_entry *prEntry;
@@ -1135,6 +1204,15 @@ INT_32 procInitFs(VOID)
 		return -1;
 	}
 	proc_set_user(prEntry, KUIDT_INIT(PROC_UID_SHELL), KGIDT_INIT(PROC_GID_WIFI));
+
+	/* BEGIN IKMTKP-541 add proc fs to read/write sar table */
+	prEntry = proc_create(PROC_SAR_TABLE, 0664, gprProcNetRoot, &sar_ops);
+	if (!prEntry) {
+		DBGLOG(INIT, ERROR, "Unable to create /proc entry %s/n", PROC_SAR_TABLE);
+		return -1;
+	}
+	proc_set_user(prEntry, KUIDT_INIT(PROC_UID_SHELL), KGIDT_INIT(PROC_GID_WIFI));
+	/* END IKMTKP-541 add proc fs to read/write sar table */
 
 	init_waitqueue_head(&waitqDrvStatus);
 	mutex_init(&drvStatusLock);
