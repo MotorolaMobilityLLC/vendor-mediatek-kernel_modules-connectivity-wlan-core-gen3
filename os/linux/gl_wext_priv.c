@@ -3496,7 +3496,7 @@ INT_32 priv_driver_cmds(IN struct net_device *prNetDev, IN PCHAR pcCommand, IN I
 			do {
 				if (strlen(pcCommand) <= strlen(CMD_O_SAR)) {
 					DBGLOG(REQ, ERROR,
-						"strlen(pcCommand) <= strlen(CMD_O_SAR).\n", ret);
+						"strlen(pcCommand) <= strlen(CMD_O_SAR).\n");
 					break;
 				}
 
