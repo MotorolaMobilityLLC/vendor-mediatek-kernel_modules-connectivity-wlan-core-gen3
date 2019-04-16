@@ -1517,7 +1517,7 @@ WLAN_STATUS nicTxGenerateDescTemplate(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_
 				ucTc = arNetwork2TcResource[prStaRec->ucBssIndex][aucTid2ACI[ucTid]];
 			ucTxDescSize = arTcTrafficSettings[ucTc].ucTxDescLength;
 
-			prTxDesc = kalMemAlloc(ucTxDescSize, VIR_MEM_TYPE);
+			prTxDesc = kalMemAlloc((UINT_16)ucTxDescSize, VIR_MEM_TYPE);
 			if (!prTxDesc) {
 				rStatus = WLAN_STATUS_RESOURCES;
 				break;
@@ -1544,7 +1544,7 @@ WLAN_STATUS nicTxGenerateDescTemplate(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_
 			/* ucTxDescSize = arTcTrafficSettings[ucTc].ucTxDescLength; */
 			ucTxDescSize = NIC_TX_DESC_SHORT_FORMAT_LENGTH;
 
-			prTxDesc = kalMemAlloc(ucTxDescSize, VIR_MEM_TYPE);
+			prTxDesc = kalMemAlloc((UINT_16)ucTxDescSize, VIR_MEM_TYPE);
 			if (!prTxDesc) {
 				rStatus = WLAN_STATUS_RESOURCES;
 				break;
