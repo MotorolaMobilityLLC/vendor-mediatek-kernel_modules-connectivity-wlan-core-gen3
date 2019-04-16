@@ -5835,7 +5835,7 @@ VOID aisCollectNeighborAP(P_ADAPTER_T prAdapter, PUINT_8 pucApBuf,
 		*/
 	}
 	prAisSpecBssInfo->rNeiApRcvTime = kalGetTimeTick();
-	prAisSpecBssInfo->u4NeiApValidInterval = !ucValidInterval ? 0xffffffff :
+	prAisSpecBssInfo->u4NeiApValidInterval = !ucValidInterval ? 20000 :
 		TU_TO_MSEC(ucValidInterval * prAdapter->prAisBssInfo->u2BeaconInterval);
 }
 
