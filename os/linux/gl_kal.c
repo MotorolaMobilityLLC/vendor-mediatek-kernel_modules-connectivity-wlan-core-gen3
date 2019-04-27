@@ -5241,10 +5241,6 @@ inline INT_32 kalPerMonInit(IN P_GLUE_INFO_T prGlueInfo)
 	KAL_CLR_BIT(PERF_MON_DISABLE_BIT, prPerMonitor->ulPerfMonFlag);
 	KAL_SET_BIT(PERF_MON_STOP_BIT, prPerMonitor->ulPerfMonFlag);
 	prPerMonitor->u4UpdatePeriod = 1000;
-
-#ifdef CONFIG_MTK_QOS_SUPPORT
-	kalInitPmQosLock();
-#endif
 	cnmTimerInitTimer(prGlueInfo->prAdapter,
 		&prPerMonitor->rPerfMonTimer,
 		(PFN_MGMT_TIMEOUT_FUNC) kalPerMonHandler, (ULONG) NULL);
@@ -5322,14 +5318,8 @@ inline INT_32 kalPerMonStop(IN P_GLUE_INFO_T prGlueInfo)
 {
 	struct PERF_MONITOR_T *prPerMonitor;
 
-	DBGLOG(SW4, TRACE, "enter %s\n", __func__);
-
-	if ((prGlueInfo == NULL) || (prGlueInfo->prAdapter == NULL)) {
-		DBGLOG(SW4, ERROR, "%s Invalid parameter..\n", __func__);
-		return -1;
-	}
-
 	prPerMonitor = &prGlueInfo->prAdapter->rPerMonitor;
+	DBGLOG(SW4, TRACE, "enter %s\n", __func__);
 
 	if (KAL_TEST_BIT(PERF_MON_DISABLE_BIT, prPerMonitor->ulPerfMonFlag)) {
 		DBGLOG(SW4, TRACE, "perf monitory disabled\n");
