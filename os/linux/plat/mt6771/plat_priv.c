@@ -33,6 +33,18 @@
 
 #if defined(COFNIG_MTK_CPU_CTRL) || \
 	(LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 146))
+
+#ifdef CONFIG_MTK_QOS_SUPPORT
+
+static struct mutex grPmQosLock;
+
+int kalInitPmQosLock(void)
+{
+	mutex_init(&grPmQosLock);
+	return 0;
+}
+#endif
+
 int kalBoostCpu(unsigned int level)
 {
 	int i = 0;
@@ -50,6 +62,8 @@ int kalBoostCpu(unsigned int level)
 	update_userlimit_cpu_freq(PPM_KIR_WIFI, CLUSTER_NUM, freq_to_set);
 
 #ifdef CONFIG_MTK_QOS_SUPPORT
+
+	mutex_lock(&grPmQosLock);
 	if (level) {
 		if (!requested) {
 			requested = 1;
@@ -61,6 +75,8 @@ int kalBoostCpu(unsigned int level)
 		pm_qos_remove_request(&wifi_qos_request);
 		requested = 0;
 	}
+	mutex_unlock(&grPmQosLock);
+
 #endif
 
 	return 0;
