@@ -1444,7 +1444,7 @@ priv_set_struct(IN struct net_device *prNetDev,
 			aucOidBuf[u4CmdLen] = 0;
 			i4ResultLen = priv_driver_cmds(prNetDev, aucOidBuf,
 						       u4CmdLen);
-			if (i4ResultLen > 1) {
+			if (i4ResultLen > 1 && i4ResultLen < 4096) {
 				if (copy_to_user(prIwReqData->data.pointer,
 						 &aucOidBuf[0], i4ResultLen)) {
 					DBGLOG(REQ, ERROR,
@@ -3600,7 +3600,7 @@ int priv_support_driver_cmd(IN struct net_device *prNetDev, IN OUT struct ifreq 
 
 	i4BytesWritten = priv_driver_cmds(prNetDev, pcCommand, i4TotalLen);
 
-	if (i4BytesWritten < 0) {
+	if (i4BytesWritten < 0 || i4BytesWritten > PRIV_CMD_SIZE) {
 		DBGLOG(REQ, ERROR, "%s: command %s failed; Written is %d\n",
 			__func__, pcCommand, i4BytesWritten);
 		ret = -EFAULT;
