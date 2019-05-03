@@ -1236,7 +1236,7 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 				prGlueInfo->u4LastNormalScanTime = rCuttentTime;
 				prGlueInfo->ucAbortScanCnt = 0;
 				DBGLOG(SCN, TRACE,
-					"LastNormalScanTime is %lld and reset scan abort cnt\n",
+					"LastNormalScanTime is %u and reset scan abort cnt\n",
 					prGlueInfo->u4LastNormalScanTime);
 			} else {
 				AisFsmSetScanState(prGlueInfo->prAdapter, FALSE);
