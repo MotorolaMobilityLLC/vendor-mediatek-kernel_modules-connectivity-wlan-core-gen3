@@ -826,7 +826,7 @@ VOID rlmDomainSendCmd(P_ADAPTER_T prAdapter)
 	rlmDomainSendPassiveScanInfoCmd(prAdapter);
 	rlmDomainSendDomainInfoCmd(prAdapter);
 #if CFG_SUPPORT_PWR_LIMIT_COUNTRY
-	rlmDomainSendPwrLimitCmd(prAdapter);
+	//rlmDomainSendPwrLimitCmd(prAdapter);
 #endif
 }
 
