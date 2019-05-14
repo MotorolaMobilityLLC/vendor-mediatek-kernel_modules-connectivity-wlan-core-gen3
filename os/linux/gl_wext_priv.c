@@ -3490,22 +3490,14 @@ INT_32 priv_driver_cmds(IN struct net_device *prNetDev, IN PCHAR pcCommand, IN I
 				 i4TotalLen, FALSE, FALSE, FALSE, &i4BytesWritten);
 		else if (!strncasecmp(pcCommand, CMD_O_SAR, strlen(CMD_O_SAR))) {
 			UINT_32 u2SarMode = 0;
-			INT_8 ret = -1;
-
 			DBGLOG(REQ, INFO, "cmd=%s\n", pcCommand);
 			do {
-				if (strlen(pcCommand) <= strlen(CMD_O_SAR)) {
-					DBGLOG(REQ, ERROR,
-						"strlen(pcCommand) <= strlen(CMD_O_SAR).\n");
-					break;
+				if (strlen(pcCommand) > strlen(CMD_O_SAR)) {
+					if (strncasecmp(pcCommand + strlen(CMD_O_SAR) + 1, "1", 1) == 0)
+						u2SarMode = 0x01;
+					else if (strncasecmp(pcCommand + strlen(CMD_O_SAR) + 1, "2", 1) == 0)
+						u2SarMode = 0x02;
 				}
-
-				ret = kstrtouint(pcCommand+13, 0, &u2SarMode);
-				if (ret) {
-					DBGLOG(REQ, ERROR, "string to int fail %d.\n", ret);
-					break;
-				}
-
 				DBGLOG(REQ, INFO, "u2SarMode=%d\n", u2SarMode);
 
 				kalIoctl(prGlueInfo,
