@@ -6182,6 +6182,10 @@ VOID qmDetectArpNoResponse(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo)
 	UINT_16 u2EtherType = 0;
 	int arpOpCode = 0;
 
+	/* We need to disable arp monitor in CTIA mode */
+	if (!prAdapter || prAdapter->fgDisBcnLostDetection == TRUE)
+		return;
+
 	prSkb = (struct sk_buff *)prMsduInfo->prPacket;
 
 	if (!prSkb || (prSkb->len <= ETHER_HEADER_LEN))
