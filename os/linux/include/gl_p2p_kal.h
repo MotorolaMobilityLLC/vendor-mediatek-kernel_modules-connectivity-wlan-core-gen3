@@ -217,6 +217,8 @@ BOOLEAN kalP2PMaxClients(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4NumClient);
 
 #endif
 
+INT_32 mtk_Netdev_To_RoleIdx(P_GL_P2P_INFO_T prGlP2pInfo, struct net_device *ndev, PUINT_8 pucRoleIdx);
+
 void kalP2pIndicateAcsResult(IN P_GLUE_INFO_T prGlueInfo,
 		IN UINT_8 ucRoleIndex,
 		IN UINT_8 ucPrimaryCh,

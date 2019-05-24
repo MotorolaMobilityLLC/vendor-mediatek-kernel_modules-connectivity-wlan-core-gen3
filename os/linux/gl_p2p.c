@@ -1497,19 +1497,44 @@ int p2pDoIOCTL(struct net_device *prDev, struct ifreq *prIfReq, int i4Cmd)
 /*----------------------------------------------------------------------------*/
 int p2pSetMACAddress(IN struct net_device *prDev, void *addr)
 {
-	P_ADAPTER_T prAdapter = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
+	struct sockaddr *sa = NULL;
+	UINT_32 rStatus;
+	UINT_32 u4BufLen;
+	UINT_8 aucRandomMac[MAC_ADDR_LEN];
 
-	ASSERT(prDev);
-
-	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
+	prGlueInfo = *((P_GLUE_INFO_T *)netdev_priv(prDev));
 	ASSERT(prGlueInfo);
 
-	prAdapter = prGlueInfo->prAdapter;
-	ASSERT(prAdapter);
+	if (!prDev || !addr) {
+		DBGLOG(INIT, ERROR, "Set random mac addr with ndev(%d) and addr(%d)\n",
+		       (prDev == NULL) ? 0 : 1, (addr == NULL) ? 0 : 1);
+		return WLAN_STATUS_INVALID_DATA;
+	}
 
-	/* @FIXME */
-	return eth_mac_addr(prDev, addr);
+	sa = (struct sockaddr *)addr;
+	COPY_MAC_ADDR(&aucRandomMac[0], sa->sa_data);
+
+	DBGLOG(INIT, INFO,
+				"Set random mac addr to " MACSTR ".\n",
+				MAC2STR(aucRandomMac));
+
+	rStatus = kalIoctl(prGlueInfo,
+				wlanoidSetP2pRandomMac,
+				&aucRandomMac[0],
+				sizeof(UINT_8)*MAC_ADDR_LEN,
+				FALSE,
+				FALSE,
+				TRUE,
+				&u4BufLen);
+
+	if (rStatus != WLAN_STATUS_SUCCESS) {
+		DBGLOG(P2P, ERROR, "Set random mac addr fail 0x%x\n", rStatus);
+		return rStatus;
+	}
+
+	return WLAN_STATUS_SUCCESS;
+
 }
 
 #if 0

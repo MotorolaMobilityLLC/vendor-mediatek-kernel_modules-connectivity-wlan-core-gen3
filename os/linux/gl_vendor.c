@@ -101,6 +101,8 @@
 #define WIFI_FEATURE_SET_TX_POWER_LIMIT (0x4000000)
 /* Support Using Body/Head Proximity for SAR */
 #define WIFI_FEATURE_USE_BODY_HEAD_SAR  (0x8000000)
+/* Support Random P2P MAC */
+#define WIFI_FEATURE_P2P_RAND_MAC  (0x100000000L)
 
 /* note: WIFI_FEATURE_GSCAN be enabled just for ACTS test item: scanner */
 #define WIFI_HAL_FEATURE_SET ((WIFI_FEATURE_P2P) |\
@@ -108,7 +110,8 @@
 			      (WIFI_FEATURE_PNO) |\
 			      (WIFI_FEATURE_TDLS) |\
 			      (WIFI_FEATURE_RSSI_MONITOR) |\
-			      (WIFI_FEATURE_CONTROL_ROAMING))
+			      (WIFI_FEATURE_CONTROL_ROAMING) |\
+			      (WIFI_FEATURE_P2P_RAND_MAC))
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -1829,7 +1832,7 @@ nla_put_failure:
 int mtk_cfg80211_vendor_get_supported_feature_set(struct wiphy *wiphy,
 		struct wireless_dev *wdev, const void *data, int data_len)
 {
-	UINT_32 u4FeatureSet = WIFI_HAL_FEATURE_SET;
+	uint64_t u8FeatureSet = WIFI_HAL_FEATURE_SET;
 	P_GLUE_INFO_T prGlueInfo;
 	P_REG_INFO_T prRegInfo;
 	struct sk_buff *skb;
@@ -1846,21 +1849,21 @@ int mtk_cfg80211_vendor_get_supported_feature_set(struct wiphy *wiphy,
 		return -EFAULT;
 
 	if (prRegInfo->ucSupport5GBand)
-		u4FeatureSet |= WIFI_FEATURE_INFRA_5G;
+		u8FeatureSet |= WIFI_FEATURE_INFRA_5G;
 
-	skb = cfg80211_vendor_cmd_alloc_reply_skb(wiphy, sizeof(u4FeatureSet));
+	skb = cfg80211_vendor_cmd_alloc_reply_skb(wiphy, sizeof(u8FeatureSet));
 	if (!skb) {
 		DBGLOG(REQ, ERROR, "Allocate skb failed\n");
 		return -ENOMEM;
 	}
 
 	if (unlikely(
-	    nla_put_nohdr(skb, sizeof(u4FeatureSet), &u4FeatureSet) < 0)) {
+	    nla_put_nohdr(skb, sizeof(u8FeatureSet), &u8FeatureSet) < 0)) {
 		DBGLOG(REQ, ERROR, "nla_put_nohdr failed\n");
 		goto nla_put_failure;
 	}
 
-	DBGLOG(REQ, TRACE, "supported feature set=0x%x\n", u4FeatureSet);
+	DBGLOG(REQ, TRACE, "supported feature set=0x%llx\n", u8FeatureSet);
 
 	return cfg80211_vendor_cmd_reply(skb);
 
@@ -1921,6 +1924,7 @@ int mtk_cfg80211_vendor_set_tx_power_scenario(struct wiphy *wiphy,
 int mtk_cfg80211_vendor_set_scan_mac_oui(struct wiphy *wiphy,
 	struct wireless_dev *wdev, const void *data, int data_len)
 {
+
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	UINT_32 rStatus = WLAN_STATUS_SUCCESS;
 	struct nlattr *attr;

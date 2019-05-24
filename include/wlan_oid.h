@@ -2447,6 +2447,10 @@ uint32_t
 wlanoidExternalAuthDone(IN struct _ADAPTER_T *prAdapter,
 		     IN void *pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT UINT_32 *pu4SetInfoLen);
 
+WLAN_STATUS
+wlanoidSetP2pRandomMac(P_ADAPTER_T prAdapter, void *pvSetBuffer,
+	UINT_32 u4SetBufferLen, UINT_32 *pu4SetInfoLen);
+
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************

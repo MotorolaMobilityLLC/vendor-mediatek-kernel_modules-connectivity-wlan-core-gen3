@@ -12568,4 +12568,83 @@ wlanoidExternalAuthDone(IN struct _ADAPTER_T *prAdapter,
 	return WLAN_STATUS_SUCCESS;
 }
 
+WLAN_STATUS
+wlanoidSetP2pRandomMac(P_ADAPTER_T prAdapter, void *pvSetBuffer,
+	UINT_32 u4SetBufferLen, UINT_32 *pu4SetInfoLen)
+{
+	P_BSS_INFO_T prDevBssInfo = NULL;
+	P_BSS_INFO_T prRoleBssInfo = NULL;
+	P_P2P_ROLE_FSM_INFO_T prP2pRoleFsmInfo = NULL;
+	P_GLUE_INFO_T prGlueInfo = NULL;
+
+	if ((prAdapter == NULL) || (pvSetBuffer == NULL)
+		|| (pu4SetInfoLen == NULL)) {
+		DBGLOG(OID, WARN,
+			"(prAdapter == NULL) ||(pvSetBuffer == NULL) ||(pu4SetInfoLen == NULL)\n");
+		return WLAN_STATUS_FAILURE;
+	}
+
+	DBGLOG(OID, INFO, "wlanoidSetP2pRandomMac.\n");
+	/*Todo: block set random mac when p2p goup work or hotspot work*/
+
+	prDevBssInfo = prAdapter->aprBssInfo[P2P_DEV_BSS_INDEX];
+	if (prDevBssInfo == NULL) {
+		DBGLOG(OID, WARN, "prDevBssInfo == NULL\n");
+		return WLAN_STATUS_FAILURE;
+	}
+
+	prP2pRoleFsmInfo = prAdapter->rWifiVar.aprP2pRoleFsmInfo[0];
+	if (prP2pRoleFsmInfo == NULL) {
+		DBGLOG(OID, WARN,
+			"prP2pRoleFsmInfo == NULL\n");
+		return WLAN_STATUS_FAILURE;
+	}
+
+	if (prP2pRoleFsmInfo->ucBssIndex > BSS_INFO_NUM) {
+		DBGLOG(OID, WARN,
+			"Invalid Bssindex %u.\n", prP2pRoleFsmInfo->ucBssIndex);
+		return WLAN_STATUS_FAILURE;
+	}
+
+	/* prRoleBssInfo = prAdapter->aprBssInfo[prP2pRoleFsmInfo->ucBssIndex];
+	*if (prRoleBssInfo == NULL) {
+	*DBGLOG(OID, WARN, "prDevBssInfo == NULL\n");
+	*return WLAN_STATUS_FAILURE;
+	*}
+	*/
+
+	prGlueInfo = prAdapter->prGlueInfo;
+	if ((prGlueInfo == NULL) || (prGlueInfo->prP2PInfo == NULL)
+		|| (prGlueInfo->prP2PInfo->prDevHandler == NULL)) {
+		DBGLOG(OID, WARN, "invalid parameter.\n");
+		return WLAN_STATUS_FAILURE;
+	}
+
+	/* 1. update dev bss*/
+	COPY_MAC_ADDR(prDevBssInfo->aucOwnMacAddr,
+		(PUINT_8)pvSetBuffer);
+
+	/* 2. update role bss, role index is always 0 in gen3 */
+	/* COPY_MAC_ADDR(prRoleBssInfo->aucOwnMacAddr,
+	*	((struct sockaddr *)pvSetBuffer)->sa_data);
+	*/
+
+	/* 3. update netdevice addr*/
+	COPY_MAC_ADDR(prGlueInfo->prP2PInfo->prDevHandler->dev_addr,
+		(PUINT_8)pvSetBuffer);
+
+	/* 4. update dev addr in wifivar*/
+	COPY_MAC_ADDR(prAdapter->rWifiVar.aucDeviceAddress,
+			(PUINT_8)pvSetBuffer);
+
+	/* 5. update interface addr in wifivar*/
+	COPY_MAC_ADDR(prAdapter->rWifiVar.aucInterfaceAddress,
+		(PUINT_8)pvSetBuffer);
+
+	DBGLOG(OID, INFO, "Done, Set p2p random mac to"MACSTR"\n",
+		MAC2STR((PUINT_8)pvSetBuffer));
+
+	return WLAN_STATUS_SUCCESS;
+
+}
 
