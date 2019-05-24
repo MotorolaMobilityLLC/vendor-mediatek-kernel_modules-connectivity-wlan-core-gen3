@@ -12584,7 +12584,6 @@ wlanoidSetP2pRandomMac(P_ADAPTER_T prAdapter, void *pvSetBuffer,
 	UINT_32 u4SetBufferLen, UINT_32 *pu4SetInfoLen)
 {
 	P_BSS_INFO_T prDevBssInfo = NULL;
-	P_BSS_INFO_T prRoleBssInfo = NULL;
 	P_P2P_ROLE_FSM_INFO_T prP2pRoleFsmInfo = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
 
