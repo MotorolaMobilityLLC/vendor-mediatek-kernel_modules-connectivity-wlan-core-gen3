@@ -44,6 +44,9 @@
 #define RSN_CIPHER_SUITE_TKIP           0x02AC0F00
 #define RSN_CIPHER_SUITE_CCMP           0x04AC0F00
 #define RSN_CIPHER_SUITE_WEP104         0x05AC0F00
+#define RSN_CIPHER_SUITE_SAE            0x08AC0F00
+#define RSN_CIPHER_SUITE_OWE            0x12AC0F00
+
 #if CFG_SUPPORT_802_11W
 #define RSN_CIPHER_SUITE_AES_128_CMAC   0x06AC0F00
 #endif
@@ -64,6 +67,9 @@
 #define WLAN_AKM_SUITE_FT_8021X         0x000FAC03
 #define WLAN_AKM_SUITE_FT_PSK           0x000FAC04
 #endif
+/* Add AKM SUITE for OWE since kernel haven't defined it. */
+#define WLAN_AKM_SUITE_OWE              0x000FAC12
+
 #if CFG_SUPPORT_802_11W
 #define RSN_AKM_SUITE_802_1X_SHA256     0x05AC0F00
 #define RSN_AKM_SUITE_PSK_SHA256        0x06AC0F00

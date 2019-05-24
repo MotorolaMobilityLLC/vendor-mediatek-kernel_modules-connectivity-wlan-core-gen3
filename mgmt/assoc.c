@@ -55,17 +55,8 @@ APPEND_VAR_IE_ENTRY_T txAssocReqIETable[] = {
 
 	{(ELEM_HDR_LEN + ELEM_MAX_LEN_HT_CAP), NULL, rlmReqGenerateHtCapIE}
 	,			/* 45 */
-#if CFG_SUPPORT_WPS2
-	{(ELEM_HDR_LEN + ELEM_MAX_LEN_WSC), NULL, rsnGenerateWSCIE}
-	,			/* 221 */
-#endif
 	{(ELEM_HDR_LEN + 1), NULL, assocGenerateMDIE}, /* Element ID: 54 */
 	{0, rsnCalculateFTIELen, rsnGenerateFTIE}, /* Element ID: 55 */
-
-#if CFG_SUPPORT_WAPI
-	{(ELEM_HDR_LEN + ELEM_MAX_LEN_WAPI), NULL, wapiGenerateWAPIIE}
-	,			/* 68 */
-#endif
 #if CFG_SUPPORT_802_11K
 	{(ELEM_HDR_LEN + 5), NULL, rlmGenerateRRMEnabledCapIE}, /* Element ID: 70 */
 #endif
@@ -345,6 +336,11 @@ __KAL_INLINE__ VOID assocBuildReAssocReqFrameCommonIEs(IN P_ADAPTER_T prAdapter,
 			pucBuffer += IE_SIZE(pucBuffer);
 		}
 	}
+	if (IS_STA_IN_AIS(prStaRec) && prConnSettings->assocIeLen != 0) {
+		kalMemCopy(pucBuffer, prConnSettings->pucAssocIEs, prConnSettings->assocIeLen);
+		prMsduInfo->u2FrameLength += prConnSettings->assocIeLen;
+		pucBuffer += prConnSettings->assocIeLen;
+	}
 
 }				/* end of assocBuildReAssocReqFrameCommonIEs() */
 
@@ -527,7 +523,8 @@ WLAN_STATUS assocSendReAssocReqFrame(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T
 	ASSERT(prStaRec->ucBssIndex <= MAX_BSS_INDEX);
 
 	u2EstimatedFrameLen += u2EstimatedExtraIELen;
-
+	if (IS_STA_IN_AIS(prStaRec))
+		u2EstimatedFrameLen += prAdapter->rWifiVar.rConnSettings.assocIeLen;
 	/* Allocate a MSDU_INFO_T */
 	prMsduInfo = cnmMgtPktAlloc(prAdapter, u2EstimatedFrameLen);
 	if (prMsduInfo == NULL) {

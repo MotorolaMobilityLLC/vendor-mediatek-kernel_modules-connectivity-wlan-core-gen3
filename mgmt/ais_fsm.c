@@ -496,7 +496,10 @@ VOID aisFsmStateInit_JOIN(IN P_ADAPTER_T prAdapter, P_BSS_DESC_T prBssDesc)
 			DBGLOG(AIS, LOUD, "JOIN INIT: eAuthMode == AUTH_MODE_AUTO_SWITCH\n");
 			prAisFsmInfo->ucAvailableAuthTypes = (UINT_8) (AUTH_TYPE_OPEN_SYSTEM | AUTH_TYPE_SHARED_KEY);
 			break;
-
+		case AUTH_MODE_WPA3_SAE:
+			DBGLOG(AIS, LOUD, "JOIN INIT: eAuthMode == AUTH_MODE_WPA3_SAE\n");
+			prAisFsmInfo->ucAvailableAuthTypes = (UINT_8) AUTH_TYPE_SAE;
+			break;
 		default:
 			ASSERT(!(prConnSettings->eAuthMode == AUTH_MODE_WPA_NONE));
 			DBGLOG(AIS, ERROR,
@@ -527,6 +530,8 @@ VOID aisFsmStateInit_JOIN(IN P_ADAPTER_T prAdapter, P_BSS_DESC_T prBssDesc)
 		case AUTH_MODE_NON_RSN_FT:
 			prAisFsmInfo->ucAvailableAuthTypes = (UINT_8) AUTH_TYPE_FAST_BSS_TRANSITION;
 			break;
+		case AUTH_MODE_WPA3_SAE:
+			prAisFsmInfo->ucAvailableAuthTypes = (UINT_8) AUTH_TYPE_SAE;
 		default:
 			prAisFsmInfo->ucAvailableAuthTypes = prAisSpecificBssInfo->ucRoamingAuthTypes;
 			break;
@@ -556,6 +561,10 @@ VOID aisFsmStateInit_JOIN(IN P_ADAPTER_T prAdapter, P_BSS_DESC_T prBssDesc)
 		prAisFsmInfo->ucAvailableAuthTypes &= ~(UINT_8) AUTH_TYPE_FAST_BSS_TRANSITION;
 
 		prStaRec->ucAuthAlgNum = (UINT_8) AUTH_ALGORITHM_NUM_FAST_BSS_TRANSITION;
+	} else if (prAisFsmInfo->ucAvailableAuthTypes & (UINT_8) AUTH_TYPE_SAE) {
+		DBGLOG(AIS, LOUD, "JOIN INIT: Try to do Authentication with AuthType == SAE.\n");
+		prAisFsmInfo->ucAvailableAuthTypes &= ~(UINT_8) AUTH_TYPE_SAE;
+		prStaRec->ucAuthAlgNum = (UINT_8) AUTH_ALGORITHM_NUM_SAE;
 	} else {
 		ASSERT(0);
 	}
@@ -4810,6 +4819,21 @@ BOOLEAN aisFsmIsRequestPending(IN P_ADAPTER_T prAdapter, IN ENUM_AIS_REQUEST_TYP
 	}
 
 	return FALSE;
+}
+
+struct _AIS_FSM_INFO_T *aisGetAisFsmInfo(
+	IN struct _ADAPTER_T *prAdapter,
+	IN uint8_t ucBssIndex) {
+
+	if (!IS_BSS_INDEX_AIS(prAdapter, ucBssIndex)) {
+		DBGLOG(AIS, WARN,
+			"Use default, invalid index = %d\n", ucBssIndex);
+		ucBssIndex = 0;
+	}
+
+	DBGLOG(AIS, LOUD, "ucBssIndex = %d\n", ucBssIndex);
+
+	return &prAdapter->rWifiVar.rAisFsmInfo;
 }
 
 /*----------------------------------------------------------------------------*/

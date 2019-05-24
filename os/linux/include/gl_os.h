@@ -504,12 +504,6 @@ struct _GLUE_INFO_T {
 	UINT_32 u4ExtCfgLength;	/* 0 means data is NOT valid */
 #endif
 
-#if 1				/* CFG_SUPPORT_WAPI */
-	/* Should be large than the PARAM_WAPI_ASSOC_INFO_T */
-	UINT_8 aucWapiAssocInfoIEs[42];
-	UINT_16 u2WapiAssocInfoIESz;
-#endif
-
 #if CFG_ENABLE_BT_OVER_WIFI
 	GL_BOW_INFO rBowInfo;
 #endif
@@ -524,8 +518,6 @@ struct _GLUE_INFO_T {
 	BOOLEAN fgWpsActive;
 	UINT_8 aucWSCIE[GLUE_INFO_WSCIE_LENGTH];	/*for probe req */
 	UINT_16 u2WSCIELen;
-	UINT_8 aucWSCAssocInfoIE[200];	/*for Assoc req */
-	UINT_16 u2WSCAssocInfoIELen;
 
 	/* NVRAM availability */
 	BOOLEAN fgNvramAvailable;
@@ -564,8 +556,6 @@ struct _GLUE_INFO_T {
 	BOOLEAN fgIsInSuspendMode;
 
 #if CFG_SUPPORT_PASSPOINT
-	UINT_8 aucHS20AssocInfoIE[200];	/*for Assoc req */
-	UINT_16 u2HS20AssocInfoIELen;
 	UINT_8 ucHotspotConfig;
 	BOOLEAN fgConnectHS20AP;
 

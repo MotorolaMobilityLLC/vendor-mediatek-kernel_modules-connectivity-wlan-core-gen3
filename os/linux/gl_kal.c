@@ -1018,6 +1018,7 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 	P_BSS_DESC_T prBssDesc = NULL;
 	OS_SYSTIME rCurrentTime;
 	BOOLEAN fgIsNeedUpdateBss = FALSE;
+	P_CONNECTION_SETTINGS_T prConnSettings = NULL;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 0))
 	struct cfg80211_scan_info rScanInfo = { 0 };
 #endif
@@ -1219,8 +1220,17 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 			cfg80211_disconnected(prGlueInfo->prDevHandler, u2DeauthReason, NULL, 0, GFP_KERNEL);
 #endif
 		}
+
 		kalMemFree(prGlueInfo->rFtIeForTx.pucIEBuf, VIR_MEM_TYPE, prGlueInfo->rFtIeForTx.u4IeLength);
 		kalMemZero(&prGlueInfo->rFtIeForTx, sizeof(prGlueInfo->rFtIeForTx));
+		/* Prevent memory leakage */
+		prConnSettings =
+			&prGlueInfo->prAdapter->rWifiVar.rConnSettings;
+		if (prConnSettings && prConnSettings->assocIeLen > 0) {
+			kalMemFree(prConnSettings->pucAssocIEs, VIR_MEM_TYPE,
+				   prConnSettings->assocIeLen);
+			prConnSettings->assocIeLen = 0;
+		}
 
 		prGlueInfo->eParamMediaStateIndicated = PARAM_MEDIA_STATE_DISCONNECTED;
 
@@ -4380,6 +4390,49 @@ kalIndicateMgmtTxStatus(IN P_GLUE_INFO_T prGlueInfo,
 	} while (FALSE);
 
 }				/* kalIndicateMgmtTxStatus */
+
+int kalExternalAuthRequest(IN struct _ADAPTER_T *prAdapter,
+				   IN uint8_t uBssIndex)
+{
+#if (defined(NL80211_ATTR_EXTERNAL_AUTH_SUPPORT) \
+	|| LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0))
+	struct cfg80211_external_auth_params params;
+	struct _AIS_FSM_INFO_T *prAisFsmInfo = NULL;
+	struct _BSS_DESC_T *prBssDesc = NULL;
+	struct net_device *ndev = NULL;
+
+	prAisFsmInfo = aisGetAisFsmInfo(prAdapter, uBssIndex);
+	if (!prAisFsmInfo) {
+		DBGLOG(SAA, WARN,
+			   "SAE auth failed with NULL prAisFsmInfo\n");
+		return WLAN_STATUS_INVALID_DATA;
+	}
+
+	prBssDesc = prAisFsmInfo->prTargetBssDesc;
+	if (!prBssDesc) {
+		DBGLOG(SAA, WARN,
+			   "SAE auth failed without prTargetBssDesc\n");
+		return WLAN_STATUS_INVALID_DATA;
+	}
+
+	ndev = prAdapter->prGlueInfo->prDevHandler;
+	params.action = NL80211_EXTERNAL_AUTH_START;
+	COPY_MAC_ADDR(params.bssid, prBssDesc->aucBSSID);
+	COPY_SSID(params.ssid.ssid, params.ssid.ssid_len,
+		  prBssDesc->aucSSID, prBssDesc->ucSSIDLen);
+	params.key_mgmt_suite = RSN_CIPHER_SUITE_SAE;
+	DBGLOG(AIS, INFO, "[WPA3] "MACSTR" %s %d %d %02x-%02x-%02x-%02x",
+		   params.bssid, params.ssid.ssid,
+		   params.ssid.ssid_len, params.action,
+		   (uint8_t) (params.key_mgmt_suite & 0x000000FF),
+		   (uint8_t) ((params.key_mgmt_suite >> 8) & 0x000000FF),
+		   (uint8_t) ((params.key_mgmt_suite >> 16) & 0x000000FF),
+		   (uint8_t) ((params.key_mgmt_suite >> 24) & 0x000000FF));
+	return cfg80211_external_auth_request(ndev, &params, GFP_KERNEL);
+#else
+	return WLAN_STATUS_NOT_SUPPORTED;
+#endif
+}
 
 VOID kalIndicateRxMgmtFrame(IN P_GLUE_INFO_T prGlueInfo, IN P_SW_RFB_T prSwRfb)
 {

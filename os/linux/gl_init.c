@@ -327,6 +327,10 @@ static struct cfg80211_ops mtk_wlan_ops = {
 	.tdls_mgmt = mtk_cfg80211_tdls_mgmt,
 #endif
 	.update_ft_ies = mtk_cfg80211_update_ft_ies,
+#if (defined(NL80211_ATTR_EXTERNAL_AUTH_SUPPORT) \
+	|| LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0))
+	.external_auth = mtk_cfg80211_external_auth,
+#endif
 };
 
 static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
@@ -576,7 +580,9 @@ static const struct ieee80211_txrx_stypes
 	},
 	[NL80211_IFTYPE_STATION] = {
 		.tx = 0xffff,
-		.rx = BIT(IEEE80211_STYPE_ACTION >> 4) | BIT(IEEE80211_STYPE_PROBE_REQ >> 4)
+		.rx = BIT(IEEE80211_STYPE_ACTION >> 4) |
+			BIT(IEEE80211_STYPE_PROBE_REQ >> 4) |
+			BIT(IEEE80211_STYPE_AUTH >> 4)
 	},
 	[NL80211_IFTYPE_AP] = {
 		.tx = 0xffff,
@@ -1640,7 +1646,12 @@ static void createWirelessDevice(void)
 	prWiphy->signal_type = CFG80211_SIGNAL_TYPE_MBM;
 	prWiphy->cipher_suites = mtk_cipher_suites;
 	prWiphy->n_cipher_suites = ARRAY_SIZE(mtk_cipher_suites);
-	prWiphy->flags = WIPHY_FLAG_SUPPORTS_FW_ROAM | WIPHY_FLAG_HAS_REMAIN_ON_CHANNEL;
+
+	prWiphy->flags = WIPHY_FLAG_SUPPORTS_FW_ROAM
+		| WIPHY_FLAG_HAS_REMAIN_ON_CHANNEL;
+#if CFG_SUPPORT_AAA
+	prWiphy->flags |= WIPHY_FLAG_HAVE_AP_SME;
+#endif
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0))
 	prWiphy->flags |= WIPHY_FLAG_SUPPORTS_SCHED_SCAN;
 #else
@@ -1658,6 +1669,7 @@ static void createWirelessDevice(void)
 	prWiphy->features |= NL80211_FEATURE_SCAN_RANDOM_MAC_ADDR;
 	prWiphy->features |= NL80211_FEATURE_SCHED_SCAN_RANDOM_MAC_ADDR;
 #endif
+	prWiphy->features |= NL80211_FEATURE_SAE;
 	prWiphy->max_remain_on_channel_duration = 5000;
 	prWiphy->mgmt_stypes = mtk_cfg80211_ais_default_mgmt_stypes;
 	prWiphy->vendor_commands = mtk_wlan_vendor_ops;
