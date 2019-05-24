@@ -12530,40 +12530,51 @@ wlanoidExternalAuthDone(IN struct _ADAPTER_T *prAdapter,
 			OUT uint32_t *pu4SetInfoLen)
 {
 	struct _STA_RECORD_T *prStaRec;
-	uint8_t ucBssIndex = 0;
-	struct PARAM_EXTERNAL_AUTH *params;
+	struct PARAM_EXTERNAL_AUTH *prParams;
 	struct MSG_SAA_EXTERNAL_AUTH_DONE *prExternalAuthMsg = NULL;
+	struct _AIS_FSM_INFO_T *prAisFsmInfo;
+	UINT_8 aucZeroMacAddr[] = NULL_MAC_ADDR;
+	UINT_8 ucBssIndex = 0;
 
-	params = (struct PARAM_EXTERNAL_AUTH *) pvSetBuffer;
-	ucBssIndex = params->ucBssIdx;
+	prParams = (struct PARAM_EXTERNAL_AUTH *) pvSetBuffer;
+	prAisFsmInfo = &(prAdapter->rWifiVar.rAisFsmInfo);
+	ucBssIndex = prParams->ucBssIdx;
 	if (!IS_BSS_INDEX_VALID(ucBssIndex)) {
 		DBGLOG(REQ, ERROR,
-			   "SAE-confirm failed with invalid BssIdx in ndev\n");
+		       "SAE-confirm failed with invalid BssIdx in ndev\n");
 		return WLAN_STATUS_INVALID_DATA;
 	}
 
 	prExternalAuthMsg = (struct MSG_SAA_EXTERNAL_AUTH_DONE *)cnmMemAlloc(
-				prAdapter, RAM_TYPE_MSG,
-				sizeof(struct MSG_SAA_EXTERNAL_AUTH_DONE));
+			     prAdapter, RAM_TYPE_MSG,
+			     sizeof(struct MSG_SAA_EXTERNAL_AUTH_DONE));
 	if (!prExternalAuthMsg) {
 		DBGLOG(OID, WARN,
-			   "SAE-confirm failed to allocate Msg\n");
+		       "SAE-confirm failed to allocate Msg\n");
 		return WLAN_STATUS_RESOURCES;
 	}
 
-	prStaRec = cnmGetStaRecByAddress(prAdapter, ucBssIndex, params->bssid);
+	/*In case of sometimes the external auth result*/
+	/*did not contain BSSID, we use prTargetBssDesc*/
+	if (EQUAL_MAC_ADDR(prParams->bssid, aucZeroMacAddr) &&
+	    prAisFsmInfo->prTargetBssDesc != NULL) {
+		DBGLOG(OID, WARN, "BSSID is Null, Set as AIS target BSSID\n");
+		COPY_MAC_ADDR(prParams->bssid, prAisFsmInfo->prTargetBssDesc->aucBSSID);
+	}
+
+	prStaRec = cnmGetStaRecByAddress(prAdapter, ucBssIndex, prParams->bssid);
 	if (!prStaRec) {
 		DBGLOG(REQ, WARN, "SAE-confirm failed with bssid:" MACSTR "\n",
-			   params->bssid);
+		       prParams->bssid);
 		return WLAN_STATUS_INVALID_DATA;
 	}
 
 	prExternalAuthMsg->rMsgHdr.eMsgId = MID_OID_SAA_FSM_EXTERNAL_AUTH;
 	prExternalAuthMsg->prStaRec = prStaRec;
-	prExternalAuthMsg->status = params->status;
+	prExternalAuthMsg->status = prParams->status;
 
 	mboxSendMsg(prAdapter, MBOX_ID_0, (struct _MSG_HDR_T *)prExternalAuthMsg,
-			MSG_SEND_METHOD_BUF);
+		    MSG_SEND_METHOD_BUF);
 
 	return WLAN_STATUS_SUCCESS;
 }

@@ -1324,8 +1324,7 @@ int mtk_cfg80211_external_auth(struct wiphy *wiphy,
 	rStatus = kalIoctl(prGlueInfo, wlanoidExternalAuthDone, (void *)&auth,
 			   sizeof(auth), FALSE, FALSE, FALSE, &u4BufLen);
 	if (rStatus != WLAN_STATUS_SUCCESS)
-		DBGLOG(OID, INFO, "SAE-confirm failed with: %d\n", rStatus);
-
+		DBGLOG(OID, INFO, "SAE-confirm failed with: 0x%x\n", rStatus);
 	return 0;
 }
 #endif

@@ -4421,13 +4421,9 @@ int kalExternalAuthRequest(IN struct _ADAPTER_T *prAdapter,
 	COPY_SSID(params.ssid.ssid, params.ssid.ssid_len,
 		  prBssDesc->aucSSID, prBssDesc->ucSSIDLen);
 	params.key_mgmt_suite = RSN_CIPHER_SUITE_SAE;
-	DBGLOG(AIS, INFO, "[WPA3] "MACSTR" %s %d %d %02x-%02x-%02x-%02x",
+	DBGLOG(AIS, INFO, "[WPA3] "MACSTR" SSID:%s Len:%d Act:%d",
 		   params.bssid, params.ssid.ssid,
-		   params.ssid.ssid_len, params.action,
-		   (uint8_t) (params.key_mgmt_suite & 0x000000FF),
-		   (uint8_t) ((params.key_mgmt_suite >> 8) & 0x000000FF),
-		   (uint8_t) ((params.key_mgmt_suite >> 16) & 0x000000FF),
-		   (uint8_t) ((params.key_mgmt_suite >> 24) & 0x000000FF));
+		   params.ssid.ssid_len, params.action);
 	return cfg80211_external_auth_request(ndev, &params, GFP_KERNEL);
 #else
 	return WLAN_STATUS_NOT_SUPPORTED;
