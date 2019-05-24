@@ -1472,7 +1472,7 @@ WLAN_STATUS nicTxGenerateDescTemplate(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_
 {
 	UINT_8 ucTid;
 	UINT_8 ucTc;
-	UINT_8 ucTxDescSize;
+	UINT_16 u2TxDescSize;
 	P_HW_MAC_TX_DESC_T prTxDesc;
 	P_MSDU_INFO_T prMsduInfo;
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
@@ -1506,7 +1506,7 @@ WLAN_STATUS nicTxGenerateDescTemplate(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_
 	prMsduInfo->ucStaRecIndex = prStaRec->ucIndex;
 	prMsduInfo->ucPID = NIC_TX_DESC_PID_INVALID;
 
-	ucTxDescSize = NIC_TX_DESC_SHORT_FORMAT_LENGTH;
+	u2TxDescSize = NIC_TX_DESC_SHORT_FORMAT_LENGTH;
 
 	DBGLOG(TX, TRACE, "Generate TXD template for STA[%u] QoS[%u]\n", prStaRec->ucIndex, prStaRec->fgIsQoS);
 
@@ -1519,9 +1519,9 @@ WLAN_STATUS nicTxGenerateDescTemplate(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_
 				ucTc = prAdapter->rWifiVar.ucTcRestrict;
 			else
 				ucTc = arNetwork2TcResource[prStaRec->ucBssIndex][aucTid2ACI[ucTid]];
-			ucTxDescSize = arTcTrafficSettings[ucTc].ucTxDescLength;
+			u2TxDescSize = arTcTrafficSettings[ucTc].ucTxDescLength;
 
-			prTxDesc = kalMemAlloc(ucTxDescSize, VIR_MEM_TYPE);
+			prTxDesc = kalMemAlloc(u2TxDescSize, VIR_MEM_TYPE);
 			if (!prTxDesc) {
 				rStatus = WLAN_STATUS_RESOURCES;
 				break;
@@ -1532,7 +1532,7 @@ WLAN_STATUS nicTxGenerateDescTemplate(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_
 			prMsduInfo->ucTC = ucTc;
 
 			/* Compose Tx desc template */
-			nicTxComposeDesc(prAdapter, prMsduInfo, ucTxDescSize, TRUE, (PUINT_8) prTxDesc);
+			nicTxComposeDesc(prAdapter, prMsduInfo, u2TxDescSize, TRUE, (PUINT_8) prTxDesc);
 
 			prStaRec->aprTxDescTemplate[ucTid] = prTxDesc;
 		}
@@ -1546,9 +1546,9 @@ WLAN_STATUS nicTxGenerateDescTemplate(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_
 				    [NET_TC_NON_STAREC_NON_QOS_INDEX];
 			}
 			/* ucTxDescSize = arTcTrafficSettings[ucTc].ucTxDescLength; */
-			ucTxDescSize = NIC_TX_DESC_SHORT_FORMAT_LENGTH;
+			u2TxDescSize = NIC_TX_DESC_SHORT_FORMAT_LENGTH;
 
-			prTxDesc = kalMemAlloc(ucTxDescSize, VIR_MEM_TYPE);
+			prTxDesc = kalMemAlloc(u2TxDescSize, VIR_MEM_TYPE);
 			if (!prTxDesc) {
 				rStatus = WLAN_STATUS_RESOURCES;
 				break;
@@ -1558,7 +1558,7 @@ WLAN_STATUS nicTxGenerateDescTemplate(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_
 			prMsduInfo->ucTC = ucTc;
 
 			/* Compose Tx desc template */
-			nicTxComposeDesc(prAdapter, prMsduInfo, ucTxDescSize, TRUE, (PUINT_8) prTxDesc);
+			nicTxComposeDesc(prAdapter, prMsduInfo, u2TxDescSize, TRUE, (PUINT_8) prTxDesc);
 
 			for (ucTid = 0; ucTid < TX_DESC_TID_NUM; ucTid++) {
 				prStaRec->aprTxDescTemplate[ucTid] = prTxDesc;
