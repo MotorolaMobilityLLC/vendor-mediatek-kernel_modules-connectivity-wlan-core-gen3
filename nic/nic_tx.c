@@ -606,7 +606,8 @@ BOOLEAN nicTxReleaseTCResource(IN P_ADAPTER_T prAdapter, IN UINT_8 ucTC, IN UINT
 	}
 
 	if (!nicTxSanityCheckResource(prAdapter))
-		DBGLOG(TX, ERROR, "Release TC[%u] resource page count [%u]\n", u2ReleasePageCnt);
+		DBGLOG(TX, ERROR, "Release TC[%u] resource page count [%u]\n",
+			ucTC, u2ReleasePageCnt);
 
 	DBGLOG(TX, LOUD,
 	       "TCQ Status Free Page:Buf[%03u:%02u, %03u:%02u, %03u:%02u, %03u:%02u, %03u:%02u, %03u:%02u]\n",
