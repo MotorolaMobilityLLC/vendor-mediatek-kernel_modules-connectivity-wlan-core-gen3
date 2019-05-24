@@ -214,6 +214,12 @@ struct _P2P_ROLE_FSM_INFO_T {
 	/* Scan related. */
 	P2P_SCAN_REQ_INFO_T rScanReqInfo;
 
+	/* Auto channel selection related. */
+	struct P2P_ACS_REQ_INFO rAcsReqInfo;
+
+	/* Auto channel selection related -- get lte safa channel from fw*/
+	PARAM_GET_CHN_INFO rLteSafeChnInfo;
+
 	/* FSM Timer */
 	TIMER_T rP2pRoleFsmTimeoutTimer;
 
@@ -295,5 +301,11 @@ p2pProcessEvent_UpdateNOAParam(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIdx, IN 
 			       prEventUpdateNoaParam);
 
 VOID p2pRoleFsmGetStaStatistics(IN P_ADAPTER_T prAdapter, IN ULONG ulParamPtr);
+/*the same with gen4m */
+void p2pRoleFsmRunEventAcs(IN P_ADAPTER_T prAdapter,
+		IN P_MSG_HDR_T prMsgHdr);
+
+BOOL p2pRoleFsmIsAcsProcessing(IN P_ADAPTER_T prAdapter,
+		UINT_8 ucRoleIdx);
 
 #endif

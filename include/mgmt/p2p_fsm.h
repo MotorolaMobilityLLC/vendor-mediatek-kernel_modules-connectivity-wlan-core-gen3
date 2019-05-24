@@ -84,6 +84,9 @@ struct _P2P_FSM_INFO_T {
 	/* GC Join related. */
 	P2P_JOIN_INFO_T rJoinInfo;
 
+	/* Auto channel selection related. */
+	struct P2P_ACS_REQ_INFO rAcsReqInfo;
+
 	/* FSM Timer */
 	TIMER_T rP2pFsmTimeoutTimer;
 

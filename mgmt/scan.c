@@ -2601,26 +2601,6 @@ VOID scanReportBss2Cfg80211(IN P_ADAPTER_T prAdapter, IN ENUM_BSS_TYPE_T eBSSTyp
 
 		LINK_FOR_EACH_ENTRY(prBssDesc, prBSSDescList, rLinkEntry, BSS_DESC_T) {
 
-#if CFG_AUTO_CHANNEL_SEL_SUPPORT
-			/* Record channel loading with channel's AP number */
-			UINT_8 ucIdx = 0;
-
-			if (prBssDesc->ucChannelNum <= 14)
-				ucIdx = prBssDesc->ucChannelNum - 1;
-			else if (prBssDesc->ucChannelNum >= 36 && prBssDesc->ucChannelNum <= 64)
-				ucIdx = 14 + (prBssDesc->ucChannelNum - 36) / 4;
-			else if (prBssDesc->ucChannelNum >= 100 && prBssDesc->ucChannelNum <= 144)
-				ucIdx = 14 + 8 + (prBssDesc->ucChannelNum - 100) / 4;
-			else if (prBssDesc->ucChannelNum >= 149)
-				ucIdx = 14 + 8 + 12 + (prBssDesc->ucChannelNum - 149) / 4;
-
-			if (ucIdx < MAX_CHN_NUM) {
-				prAdapter->rWifiVar.rChnLoadInfo.rEachChnLoad[ucIdx].ucChannel =
-					prBssDesc->ucChannelNum;
-				prAdapter->rWifiVar.rChnLoadInfo.rEachChnLoad[ucIdx].u2APNum++;
-			}
-#endif
-
 			/* Check BSSID is legal channel */
 			if (!scanCheckBssIsLegal(prAdapter, prBssDesc)) {
 				DBGLOG(SCN, TRACE, "Remove SSID[%s] on channel %d\n",
@@ -2679,10 +2659,6 @@ VOID scanReportBss2Cfg80211(IN P_ADAPTER_T prAdapter, IN ENUM_BSS_TYPE_T eBSSTyp
 				}
 			}
 		}
-
-#if CFG_AUTO_CHANNEL_SEL_SUPPORT
-		prAdapter->rWifiVar.rChnLoadInfo.fgDataReadyBit = TRUE;
-#endif
 	}
 
 }

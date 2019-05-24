@@ -44,6 +44,7 @@
 #include "wlan_p2p.h"
 #include "gl_kal.h"
 #include "gl_wext_priv.h"
+#include "gl_p2p_ioctl.h"
 #include "nic/p2p.h"
 
 #if DBG
@@ -103,6 +104,8 @@ kalP2PUpdateAssocInfo(IN P_GLUE_INFO_T prGlueInfo,
 		      IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen, IN BOOLEAN fgReassocRequest);
 
 UINT_32 kalP2PGetFreqInKHz(IN P_GLUE_INFO_T prGlueInfo);
+
+INT_32 mtk_Netdev_To_RoleIdx(P_GL_P2P_INFO_T prGlP2pInfo, struct net_device *ndev, PUINT_8 pucRoleIdx);
 
 UINT_8 kalP2PGetRole(IN P_GLUE_INFO_T prGlueInfo);
 
@@ -213,5 +216,13 @@ VOID kalP2PSetMaxClients(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4MaxClient);
 BOOLEAN kalP2PMaxClients(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4NumClient);
 
 #endif
+
+void kalP2pIndicateAcsResult(IN P_GLUE_INFO_T prGlueInfo,
+		IN UINT_8 ucRoleIndex,
+		IN UINT_8 ucPrimaryCh,
+		IN UINT_8 ucSecondCh,
+		IN UINT_8 ucSeg0Ch,
+		IN UINT_8 ucSeg1Ch,
+		IN ENUM_MAX_BANDWIDTH_SETTING eChnlBw);
 
 #endif /* _GL_P2P_KAL_H */

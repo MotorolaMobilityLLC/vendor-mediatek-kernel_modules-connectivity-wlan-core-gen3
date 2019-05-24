@@ -125,6 +125,7 @@ static PUINT_8 apucDebugMsg[] = {
 	(PUINT_8) DISP_STRING("MID_MNY_AIS_CANCEL_REMAIN_ON_CHANNEL"),
 	(PUINT_8) DISP_STRING("MID_MNY_AIS_MGMT_TX")
 	(PUINT_8) DISP_STRING("MID_WNM_AIS_BSS_TRANSITION"),
+	(PUINT_8) DISP_STRING("MID_MNY_P2P_ACS"),
 };
 
 /*lint -restore */
@@ -237,6 +238,7 @@ static MSG_HNDL_ENTRY_T arMsgMapTable[] = {
 	{MID_WNM_AIS_BSS_TRANSITION, aisFsmRunEventBssTransition},
 	{MID_OID_WMM_TSPEC_OPERATE, wmmRunEventTSOperate},
 	{MID_RLM_RM_SCHEDULE, rlmRunEventProcessNextRm},
+	{MID_MNY_P2P_ACS, p2pRoleFsmRunEventAcs},
 };
 
 /*******************************************************************************

@@ -736,9 +736,9 @@ typedef struct _WIFI_VAR_T {
 
 	UINT_32 u4NetifStopTh;
 	UINT_32 u4NetifStartTh;
-#if CFG_AUTO_CHANNEL_SEL_SUPPORT
+
 	PARAM_GET_CHN_INFO rChnLoadInfo;
-#endif
+
 #if CFG_SUPPORT_MTK_SYNERGY
 	UINT_8 ucMtkOui;
 	UINT_32 u4MtkOuiCap;

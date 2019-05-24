@@ -1592,7 +1592,7 @@ typedef struct _CMD_SET_PSCAN_ENABLE {
 	UINT_8 aucReserved[3];
 } CMD_SET_PSCAN_ENABLE, *P_CMD_SET_PSCAN_ENABLE;
 
-#if CFG_AUTO_CHANNEL_SEL_SUPPORT
+
 /*--------------------------------------------------------------*/
 /*! \brief MTK Auto Channel Selection related Container         */
 /*--------------------------------------------------------------*/
@@ -1604,13 +1604,14 @@ typedef struct _PARAM_CHN_LOAD_INFO {
 	/* Per-CHN Load */
 	UINT_8 ucChannel;
 	UINT_16 u2APNum;
-	UINT_8 ucReserved;
+	UINT_16 u2APNumScore;
+	UINT_8 aucReserved[3];
 } PARAM_CHN_LOAD_INFO, *P_PARAM_CHN_LOAD_INFO;
 
 typedef struct _PARAM_GET_CHN_INFO {
+	UINT_8 ucRoleIndex;
 	LTE_SAFE_CHN_INFO_T rLteSafeChnList;
 	PARAM_CHN_LOAD_INFO rEachChnLoad[MAX_CHN_NUM];
-	BOOLEAN fgDataReadyBit;
 	UINT_8 aucReserved[3];
 } PARAM_GET_CHN_INFO, *P_PARAM_GET_CHN_INFO;
 
@@ -1620,7 +1621,7 @@ typedef struct _PARAM_PREFER_CHN_INFO {
 	UINT_8 ucReserved;
 } PARAM_PREFER_CHN_INFO, *P_PARAM_PREFER_CHN_INFO;
 
-#endif
+
 
 /* use to save partial scan channel information */
 typedef struct _PARTIAL_SCAN_INFO_T {
@@ -2350,11 +2351,6 @@ WLAN_STATUS
 wlanoidPacketKeepAlive(IN P_ADAPTER_T prAdapter,
 		       IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 
-#if CFG_AUTO_CHANNEL_SEL_SUPPORT
-WLAN_STATUS
-wlanoidQueryLteSafeChannel(IN P_ADAPTER_T prAdapter,
-			   IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
-#endif
 
 #if FW_CFG_SUPPORT
 WLAN_STATUS wlanoidQueryCfgRead(IN P_ADAPTER_T prAdapter,

@@ -259,12 +259,6 @@ typedef struct iw_p2p_version {
 	UINT_32 u4Version;
 } IW_P2P_VERSION, *P_IW_P2P_VERSION;
 
-/*----------------------------------------------------------------------------*/
-/* NL80211 TEST MODE                                                          */
-/*----------------------------------------------------------------------------*/
-#if CONFIG_NL80211_TESTMODE
-
-#if CFG_AUTO_CHANNEL_SEL_SUPPORT
 typedef enum _ENUM_TESTMODE_AVAILABLE_CHAN_ATTR {
 	__NL80211_TESTMODE_AVAILABLE_CHAN_ATTR_INVALID,
 	NL80211_TESTMODE_AVAILABLE_CHAN_ATTR_2G_BASE_1,
@@ -276,9 +270,6 @@ typedef enum _ENUM_TESTMODE_AVAILABLE_CHAN_ATTR {
 	NL80211_TESTMODE_AVAILABLE_CHAN_ATTR_MAX = __NL80211_TESTMODE_AVAILABLE_CHAN_ATTR_AFTER_LAST - 1
 } ENUM_TESTMODE_AVAILABLE_CHAN_ATTR;
 
-#endif
-
-#endif
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -286,7 +277,7 @@ typedef enum _ENUM_TESTMODE_AVAILABLE_CHAN_ATTR {
 
 extern struct ieee80211_supported_band mtk_band_2ghz;
 extern struct ieee80211_supported_band mtk_band_5ghz;
-extern UINT_32 mtk_cipher_suites[5];
+extern const UINT_32 mtk_cipher_suites[5];
 
 /*******************************************************************************
 *                           P R I V A T E   D A T A
@@ -432,10 +423,6 @@ int mtk_p2p_cfg80211_testmode_wfd_update_cmd(IN struct wiphy *wiphy, IN void *da
 #endif
 
 int mtk_p2p_cfg80211_testmode_hotspot_block_list_cmd(IN struct wiphy *wiphy, IN void *data, IN int len);
-
-#if CFG_AUTO_CHANNEL_SEL_SUPPORT
-int mtk_p2p_cfg80211_testmode_get_best_channel(IN struct wiphy *wiphy, IN void *data, IN int len);
-#endif
 
 int mtk_p2p_cfg80211_testmode_hotspot_config_cmd(IN struct wiphy *wiphy, IN void *data, IN int len);
 #else

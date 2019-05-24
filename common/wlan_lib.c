@@ -7157,3 +7157,81 @@ integer_part:
 	return u4Ret;
 }
 
+/*----------------------------------------------------------------------------*/
+/*!
+ * \brief This routine is called to query LTE safe channels.
+ *
+ * \param[in]  pvAdapter        Pointer to the Adapter structure.
+ * \param[out] pvQueryBuffer    A pointer to the buffer that holds the result of
+ *                              the query.
+ * \param[in]  u4QueryBufferLen The length of the query buffer.
+ * \param[out] pu4QueryInfoLen  If the call is successful, returns the number of
+ *                              bytes written into the query buffer. If the call
+ *                              failed due to invalid length of the query
+ *                              buffer, returns the amount of storage needed.
+ *
+ * \retval WLAN_STATUS_PENDING
+ * \retval WLAN_STATUS_FAILURE
+ */
+/*----------------------------------------------------------------------------*/
+UINT_32
+wlanQueryLteSafeChannel(IN P_ADAPTER_T prAdapter,
+		IN UINT_8 ucRoleIndex)
+{
+	UINT_32 rResult = WLAN_STATUS_FAILURE;
+	P_P2P_ROLE_FSM_INFO_T prP2pRoleFsmInfo;
+
+
+	DBGLOG(P2P, TRACE, "[ACS] Get safe LTE Channels\n");
+
+	do {
+		if (!prAdapter)
+			break;
+
+		prP2pRoleFsmInfo = P2P_ROLE_INDEX_2_ROLE_FSM_INFO(prAdapter,
+			ucRoleIndex);
+		kalMemZero(&(prP2pRoleFsmInfo->rLteSafeChnInfo), sizeof(PARAM_GET_CHN_INFO));
+		prP2pRoleFsmInfo->rLteSafeChnInfo.ucRoleIndex = ucRoleIndex;
+
+		/* Get LTE safe channel list */
+		wlanSendSetQueryCmd(prAdapter,
+			CMD_ID_GET_LTE_CHN,
+			FALSE,
+			TRUE,
+			FALSE, /* Query ID */
+			nicCmdEventQueryLteSafeChn, /* The handler to receive
+						     * firmware notification
+						     */
+			nicOidCmdTimeoutCommon,
+			0,
+			NULL,
+			&(prP2pRoleFsmInfo->rLteSafeChnInfo),
+			0);
+		rResult = WLAN_STATUS_SUCCESS;
+	} while (FALSE);
+	return rResult;
+}				/* wlanoidQueryLteSafeChannel */
+
+UINT_8
+wlanGetChannelIndex(IN UINT_8 channel)
+{
+	UINT_8 ucIdx = 1;
+
+	if (channel <= 14)
+		ucIdx = channel - 1;
+	else if (channel >= 36 && channel <= 64)
+		ucIdx = 14 + (channel - 36) / 4;
+	else if (channel >= 100 && channel <= 140)
+		ucIdx = 14 + 8 + (channel - 100) / 4;
+	else if (channel >= 149 && channel <= 173)
+		ucIdx = 14 + 8 + 11 + (channel - 149) / 4;
+	else if (channel >= 184 && channel <= 216)
+		ucIdx = 14 + 8 + 11 + 7 + (channel - 184) / 4;
+	else{
+		/* if channel num=2,the return inx is 1; if invalid,will also return 1.need to distinguish */
+		DBGLOG(SCN, ERROR, "Invalid ch %u\n", channel);
+		return 255;
+	}
+	return ucIdx;
+}
+

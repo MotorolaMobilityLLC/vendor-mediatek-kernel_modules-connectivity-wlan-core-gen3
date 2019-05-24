@@ -188,6 +188,14 @@ static struct ieee80211_rate mtk_rates[] = {
 	.tx_params      = IEEE80211_HT_MCS_TX_DEFINED,      \
 }
 
+#define WLAN_VHT_MCS_INFO					\
+{								\
+	.rx_mcs_map     = 0xFFFA,				\
+	.rx_highest     = cpu_to_le16(867),			\
+	.tx_mcs_map     = 0xFFFA,				\
+	.tx_highest     = cpu_to_le16(867),			\
+}
+
 #define WLAN_HT_CAP                                   \
 {                                                       \
 	.ht_supported   = true,                             \
@@ -199,6 +207,20 @@ static struct ieee80211_rate mtk_rates[] = {
 	.ampdu_factor   = IEEE80211_HT_MAX_AMPDU_64K,       \
 	.ampdu_density  = IEEE80211_HT_MPDU_DENSITY_NONE,   \
 	.mcs            = WLAN_MCS_INFO,                  \
+}
+
+#define WLAN_VHT_CAP							\
+{									\
+	.vht_supported  = true,						\
+	.cap            = IEEE80211_VHT_CAP_RXLDPC			\
+			| IEEE80211_VHT_CAP_SUPP_CHAN_WIDTH_MASK	\
+			| IEEE80211_VHT_CAP_MAX_MPDU_LENGTH_11454	\
+			| IEEE80211_VHT_CAP_RXLDPC			\
+			| IEEE80211_VHT_CAP_SHORT_GI_80			\
+			| IEEE80211_VHT_CAP_TXSTBC			\
+			| IEEE80211_VHT_CAP_SU_BEAMFORMER_CAPABLE	\
+			| IEEE80211_VHT_CAP_SU_BEAMFORMEE_CAPABLE,	\
+	.vht_mcs        = WLAN_VHT_MCS_INFO,				\
 }
 
 /**********************************************************
@@ -221,6 +243,7 @@ struct ieee80211_supported_band mtk_band_5ghz = {
 	.bitrates = mtk_a_rates,
 	.n_bitrates = mtk_a_rates_size,
 	.ht_cap = WLAN_HT_CAP,
+	.vht_cap = WLAN_VHT_CAP,
 };
 
 const UINT_32 mtk_cipher_suites[5] = {
@@ -508,6 +531,7 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 	},
 };
 
+
 static const struct nl80211_vendor_cmd_info mtk_wlan_vendor_events[] = {
 	{
 		.vendor_id = GOOGLE_OUI,
@@ -659,6 +683,7 @@ static int wlanSetMacAddress(struct net_device *ndev, void *addr)
 	P_ADAPTER_T prAdapter = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	struct sockaddr *sa = NULL;
+	struct wireless_dev *wdev = NULL;
 
 	/**********************************************************************
 	 * Check if kernel passes valid data to us                            *
@@ -668,6 +693,18 @@ static int wlanSetMacAddress(struct net_device *ndev, void *addr)
 		DBGLOG(INIT, ERROR, "Set macaddr with ndev(%d) and addr(%d)\n",
 		       (ndev == NULL) ? 0 : 1, (addr == NULL) ? 0 : 1);
 		return WLAN_STATUS_INVALID_DATA;
+	}
+
+	/**********************************************************************
+	 * Block mac address changing if this setting is not for connection   *
+	 **********************************************************************
+	 */
+	wdev = ndev->ieee80211_ptr;
+	if (wdev->ssid_len > 0 || (wdev->current_bss)) {
+		DBGLOG(INIT, ERROR,
+		       "Reject mac addr change due to ssid_len(%d) & bss(%d)\n",
+		       wdev->ssid_len, wdev->current_bss);
+		return WLAN_STATUS_NOT_ACCEPTED;
 	}
 
 	/**********************************************************************
