@@ -74,6 +74,9 @@
 #define P2P_AP_CHNL_HOLD_TIME_MS 5000	/* 1000 is too short , the deauth would block in the queue */
 #define P2P_DEFAULT_LISTEN_CHANNEL                   1
 
+#define AP_DEFAULT_CHANNEL_2G     6
+#define AP_DEFAULT_CHANNEL_5G     36
+
 /*******************************************************************************
  *                                 M A C R O S
  ********************************************************************************
@@ -159,6 +162,14 @@ typedef struct _P2P_SSID_STRUCT_T {
 	UINT_8 ucSsidLen;
 } P2P_SSID_STRUCT_T, *P_P2P_SSID_STRUCT_T;
 
+enum ENUM_SCAN_REASON {
+	SCAN_REASON_UNKNOWN = 0,
+	SCAN_REASON_CONNECT,
+	SCAN_REASON_STARTAP,
+	SCAN_REASON_ACS,
+	SCAN_REASON_NUM,
+};
+
 typedef struct _P2P_SCAN_REQ_INFO_T {
 	ENUM_SCAN_TYPE_T eScanType;
 	ENUM_SCAN_CHANNEL eChannelSet;
@@ -171,8 +182,36 @@ typedef struct _P2P_SCAN_REQ_INFO_T {
 	UINT_32 u4BufLength;
 	UINT_8 aucIEBuf[MAX_IE_LENGTH];
 	UINT_8 ucSsidNum;
+	enum ENUM_SCAN_REASON eScanReason;
 	P2P_SSID_STRUCT_T arSsidStruct[SCN_SSID_MAX_NUM];	/* Currently we can only take one SSID scan request */
 } P2P_SCAN_REQ_INFO_T, *P_P2P_SCAN_REQ_INFO_T;
+
+enum P2P_VENDOR_ACS_HW_MODE {
+	P2P_VENDOR_ACS_HW_MODE_11B,
+	P2P_VENDOR_ACS_HW_MODE_11G,
+	P2P_VENDOR_ACS_HW_MODE_11A,
+	P2P_VENDOR_ACS_HW_MODE_11AD,
+	P2P_VENDOR_ACS_HW_MODE_11ANY
+};
+
+struct P2P_ACS_REQ_INFO {
+	UINT_8 ucRoleIdx;
+	BOOLEAN fgIsProcessing;
+	BOOLEAN fgIsHtEnable;
+	BOOLEAN fgIsHt40Enable;
+	BOOLEAN fgIsVhtEnable;
+	ENUM_MAX_BANDWIDTH_SETTING eChnlBw;
+	enum P2P_VENDOR_ACS_HW_MODE eHwMode;
+	UINT_32 u4LteSafeChnMask_2G;
+	UINT_32 u4LteSafeChnMask_5G_1;
+	UINT_32 u4LteSafeChnMask_5G_2;
+
+	/* output only */
+	UINT_8 ucPrimaryCh;
+	UINT_8 ucSecondCh;
+	UINT_8 ucCenterFreqS1;
+	UINT_8 ucCenterFreqS2;
+};
 
 typedef struct _P2P_CHNL_REQ_INFO_T {
 	LINK_T rP2pChnlReqLink;

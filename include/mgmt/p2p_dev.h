@@ -32,6 +32,7 @@ typedef struct _MSG_P2P_SCAN_REQUEST_T {
 	PUINT_8 pucIEBuf;
 	UINT_32 u4IELen;
 	BOOLEAN fgIsAbort;
+	enum ENUM_SCAN_REASON eScanReason;
 	RF_CHANNEL_INFO_T arChannelListInfo[1];
 } MSG_P2P_SCAN_REQUEST_T, *P_MSG_P2P_SCAN_REQUEST_T;
 
@@ -154,6 +155,18 @@ typedef struct _MSG_WFD_CONFIG_SETTINGS_CHANGED_T {
 	P_WFD_CFG_SETTINGS_T prWfdCfgSettings;
 } MSG_WFD_CONFIG_SETTINGS_CHANGED_T, *P_MSG_WFD_CONFIG_SETTINGS_CHANGED_T;
 #endif
+
+struct MSG_P2P_ACS_REQUEST {
+	MSG_HDR_T rMsgHdr; /* Must be the first member */
+	UINT_8 ucRoleIdx;
+	BOOLEAN fgIsHtEnable;
+	BOOLEAN fgIsHt40Enable;
+	BOOLEAN fgIsVhtEnable;
+	ENUM_MAX_BANDWIDTH_SETTING eChnlBw;
+	enum P2P_VENDOR_ACS_HW_MODE eHwMode;
+	UINT_32 u4NumChannel;
+	RF_CHANNEL_INFO_T arChannelListInfo[1];
+};
 
 /*========================= Initial ============================*/
 

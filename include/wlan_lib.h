@@ -600,7 +600,8 @@ typedef enum _ENUM_MAX_BANDWIDTH_SETTING_T {
 	MAX_BW_40MHZ,
 	MAX_BW_80MHZ,
 	MAX_BW_160MHZ,
-	MAX_BW_80_80_MHZ
+	MAX_BW_80_80_MHZ,
+	MAX_BW_UNKNOWN
 } ENUM_MAX_BANDWIDTH_SETTING, *P_ENUM_MAX_BANDWIDTH_SETTING_T;
 
 typedef struct _TX_PACKET_INFO {
@@ -1000,5 +1001,12 @@ VOID wlanReleasePendingCmdById(P_ADAPTER_T prAdapter, UINT_8 ucCid);
 UINT_32 wlanDecimalStr2Hexadecimals(PUINT_8 pucDecimalStr, PUINT_16 pu2Out);
 
 WLAN_STATUS wlanCfgParse(IN P_ADAPTER_T prAdapter, PUINT_8 pucConfigBuf, UINT_32 u4ConfigBufLen);
+
+UINT_32
+wlanQueryLteSafeChannel(IN P_ADAPTER_T prAdapter,
+		IN UINT_8 ucRoleIndex);
+
+UINT_8
+wlanGetChannelIndex(IN UINT_8 channel);
 
 #endif /* _WLAN_LIB_H */

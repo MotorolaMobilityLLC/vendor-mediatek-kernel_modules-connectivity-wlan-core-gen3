@@ -2177,14 +2177,14 @@ typedef struct _EVENT_STA_STATISTICS_T {
 	UINT_8 aucReserved[24];
 } EVENT_STA_STATISTICS_T, *P_EVENT_STA_STATISTICS_T;
 
-#if CFG_AUTO_CHANNEL_SEL_SUPPORT
+
 typedef struct _EVENT_LTE_SAFE_CHN_T {
 	UINT_8 ucVersion;
 	UINT_8 aucReserved[3];
 	UINT_32 u4Flags;	/* Bit0: valid */
 	LTE_SAFE_CHN_INFO_T rLteSafeChn;
 } EVENT_LTE_SAFE_CHN_T, *P_EVENT_LTE_SAFE_CHN_T;
-#endif
+
 
 #if CFG_SUPPORT_SNIFFER
 typedef struct _CMD_MONITOR_SET_INFO_T {
@@ -2473,9 +2473,9 @@ VOID nicCmdEventBuildDateCode(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInf
 
 VOID nicCmdEventQueryStaStatistics(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
 
-#if CFG_AUTO_CHANNEL_SEL_SUPPORT
+
 VOID nicCmdEventQueryLteSafeChn(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
-#endif
+
 
 #if CFG_SUPPORT_BATCH_SCAN
 VOID nicCmdEventBatchScanResult(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);

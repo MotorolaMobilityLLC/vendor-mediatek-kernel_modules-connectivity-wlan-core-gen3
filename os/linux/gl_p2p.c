@@ -127,6 +127,27 @@ static const struct wiphy_vendor_command mtk_p2p_vendor_ops[] = {
 		.flags = WIPHY_VENDOR_CMD_NEED_WDEV | WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = mtk_cfg80211_vendor_set_country_code
 	},
+#if CFG_AUTO_CHANNEL_SEL_SUPPORT
+	{
+		{
+			.vendor_id = OUI_QCA,
+			.subcmd = NL80211_VENDOR_SUBCMD_ACS
+		},
+		.flags = WIPHY_VENDOR_CMD_NEED_WDEV
+				| WIPHY_VENDOR_CMD_NEED_NETDEV
+				| WIPHY_VENDOR_CMD_NEED_RUNNING,
+		.doit = mtk_cfg80211_vendor_acs
+	},
+#endif
+	{
+		{
+			.vendor_id = OUI_QCA,
+			.subcmd = NL80211_VENDOR_SUBCMD_GET_FEATURES
+		},
+		.flags = WIPHY_VENDOR_CMD_NEED_WDEV
+				| WIPHY_VENDOR_CMD_NEED_NETDEV,
+		.doit = mtk_cfg80211_vendor_get_features
+	},
 };
 
 /* There isn't a lot of sense in it, but you can transmit anything you like */
@@ -313,6 +334,15 @@ static const struct wiphy_wowlan_support mtk_p2p_wowlan_support = {
 	.flags = WIPHY_WOWLAN_DISCONNECT | WIPHY_WOWLAN_ANY,
 };
 #endif
+
+/*need to check*/
+static const struct nl80211_vendor_cmd_info mtk_p2p_vendor_events[] = {
+	{
+		.vendor_id = OUI_QCA,
+		.subcmd = NL80211_VENDOR_SUBCMD_ACS
+	},
+};
+
 
 /*******************************************************************************
 *                                 M A C R O S
@@ -878,6 +908,8 @@ BOOLEAN glP2pCreateWirelessDevice(P_GLUE_INFO_T prGlueInfo)
 	prWiphy->signal_type = CFG80211_SIGNAL_TYPE_MBM;
 	prWiphy->vendor_commands = mtk_p2p_vendor_ops;
 	prWiphy->n_vendor_commands = sizeof(mtk_p2p_vendor_ops) / sizeof(struct wiphy_vendor_command);
+	prWiphy->vendor_events = mtk_p2p_vendor_events;
+	prWiphy->n_vendor_events = ARRAY_SIZE(mtk_p2p_vendor_events);
 
 #ifdef CONFIG_PM
 	prWiphy->wowlan = &mtk_p2p_wowlan_support;

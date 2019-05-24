@@ -1991,7 +1991,7 @@ VOID nicCmdEventQueryStaStatistics(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prC
 
 }
 
-#if CFG_AUTO_CHANNEL_SEL_SUPPORT
+/*the same as gen4m*/
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief This function is called when event for query LTE safe channels
@@ -2006,11 +2006,10 @@ VOID nicCmdEventQueryStaStatistics(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prC
 /*----------------------------------------------------------------------------*/
 VOID nicCmdEventQueryLteSafeChn(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
 {
-	UINT_32 u4QueryInfoLen;
 	P_EVENT_LTE_SAFE_CHN_T prEvent;
-	P_GLUE_INFO_T prGlueInfo;
 	P_PARAM_GET_CHN_INFO prLteSafeChnInfo;
 	UINT_8 ucIdx = 0;
+	P_P2P_ROLE_FSM_INFO_T prP2pRoleFsmInfo;
 
 	if ((prAdapter == NULL)
 		|| (prCmdInfo == NULL)
@@ -2020,29 +2019,43 @@ VOID nicCmdEventQueryLteSafeChn(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdI
 		return;
 	}
 
-	if (prCmdInfo->fgIsOid) {
-		prGlueInfo = prAdapter->prGlueInfo;
 		prEvent = (P_EVENT_LTE_SAFE_CHN_T) pucEventBuf;	/* FW responsed data */
 
 		prLteSafeChnInfo = (P_PARAM_GET_CHN_INFO) prCmdInfo->pvInformationBuffer;
+		if (prLteSafeChnInfo->ucRoleIndex >= BSS_P2P_NUM) {
+			ASSERT(FALSE);
+			return;
+		}
 
-		u4QueryInfoLen = sizeof(PARAM_GET_CHN_INFO);
+		prP2pRoleFsmInfo = P2P_ROLE_INDEX_2_ROLE_FSM_INFO(prAdapter,
+			prLteSafeChnInfo->ucRoleIndex);
 
 		/* Statistics from FW is valid */
 		if (prEvent->u4Flags & BIT(0)) {
-			for (ucIdx = 0; ucIdx < 5; ucIdx++) {
-				prLteSafeChnInfo->rLteSafeChnList.au4SafeChannelBitmask[ucIdx] =
-					prEvent->rLteSafeChn.au4SafeChannelBitmask[ucIdx];
+			P_CMD_LTE_SAFE_CHN_INFO_T prLteSafeChnList;
 
-				DBGLOG(P2P, INFO,
-				       "[ACS]LTE safe channels[%d]=0x%08x\n", ucIdx,
-				       prLteSafeChnInfo->rLteSafeChnList.au4SafeChannelBitmask[ucIdx]);
+			prLteSafeChnList = &prLteSafeChnInfo->rLteSafeChnList;
+			for (ucIdx = 0; ucIdx < 5; ucIdx++) {
+				prLteSafeChnList->au4SafeChannelBitmask[ucIdx]
+					= prEvent->rLteSafeChn.
+						au4SafeChannelBitmask[ucIdx];
+
+				DBGLOG(NIC, INFO,
+					"[ACS]LTE safe channels[%d]=0x%08x\n",
+					ucIdx,
+					prLteSafeChnList->au4SafeChannelBitmask[ucIdx]);
 			}
+
+		} else {
+			DBGLOG(NIC, ERROR, "FW's event is NOT valid.\n");
 		}
-		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
-	}
+
+		p2pFunProcessAcsReport(prAdapter,
+						prLteSafeChnInfo->ucRoleIndex,
+						prLteSafeChnInfo,
+						&(prP2pRoleFsmInfo->rAcsReqInfo));
 }
-#endif
+
 
 #ifdef FW_CFG_SUPPORT
 VOID nicCmdEventQueryCfgRead(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)

@@ -44,6 +44,22 @@
 #define GOOGLE_OUI 0x001A11
 #define OUI_QCA 0x001374
 
+#define NL80211_VENDOR_SUBCMD_ACS 54
+#define NL80211_VENDOR_SUBCMD_GET_FEATURES 55
+
+#define WIFI_VENDOR_ATTR_FEATURE_FLAGS 7
+
+enum NL80211_VENDOR_FEATURES {
+	VENDOR_FEATURE_KEY_MGMT_OFFLOAD        = 0,
+	VENDOR_FEATURE_SUPPORT_HW_MODE_ANY     = 1,
+	VENDOR_FEATURE_OFFCHANNEL_SIMULTANEOUS = 2,
+	VENDOR_FEATURE_P2P_LISTEN_OFFLOAD      = 3,
+	VENDOR_FEATURE_OCE_STA                 = 4,
+	VENDOR_FEATURE_OCE_AP                  = 5,
+	VENDOR_FEATURE_OCE_STA_CFON            = 6,
+	NUM_VENDOR_FEATURES /* keep last */
+};
+
 typedef enum {
 	/* Don't use 0 as a valid subcommand */
 	ANDROID_NL80211_SUBCMD_UNSPECIFIED,
@@ -144,8 +160,12 @@ typedef enum {
 	RTT_EVENT_COMPLETE,
 	GSCAN_EVENT_COMPLETE_SCAN,
 	GSCAN_EVENT_HOTLIST_RESULTS_LOST,
-	WIFI_EVENT_RSSI_MONITOR
+	WIFI_EVENT_RSSI_MONITOR,
 } WIFI_VENDOR_EVENT;
+
+enum WIFI_P2P_VENDOR_EVENT {
+	WIFI_EVENT_ACS,
+};
 
 typedef enum {
 	WIFI_ATTRIBUTE_BAND = 1,
@@ -321,6 +341,24 @@ typedef enum {
 #define MAX_FW_ROAMING_BLACKLIST_SIZE	16
 #define MAX_FW_ROAMING_WHITELIST_SIZE	16
 
+enum WIFI_VENDOR_ATTR_ACS {
+	WIFI_VENDOR_ATTR_ACS_CHANNEL_INVALID = 0,
+	WIFI_VENDOR_ATTR_ACS_PRIMARY_CHANNEL,
+	WIFI_VENDOR_ATTR_ACS_SECONDARY_CHANNEL,
+	WIFI_VENDOR_ATTR_ACS_HW_MODE,
+	WIFI_VENDOR_ATTR_ACS_HT_ENABLED,
+	WIFI_VENDOR_ATTR_ACS_HT40_ENABLED,
+	WIFI_VENDOR_ATTR_ACS_VHT_ENABLED,
+	WIFI_VENDOR_ATTR_ACS_CHWIDTH,
+	WIFI_VENDOR_ATTR_ACS_CH_LIST,
+	WIFI_VENDOR_ATTR_ACS_VHT_SEG0_CENTER_CHANNEL,
+	WIFI_VENDOR_ATTR_ACS_VHT_SEG1_CENTER_CHANNEL,
+	WIFI_VENDOR_ATTR_ACS_FREQ_LIST,
+	WIFI_VENDOR_ATTR_ACS_AFTER_LAST,
+	WIFI_VENDOR_ATTR_ACS_MAX =
+		WIFI_VENDOR_ATTR_ACS_AFTER_LAST - 1
+};
+
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -380,9 +418,13 @@ extern UINT_8 keyStructBuf[100];	/* add/remove key shared buffer */
 #if (KERNEL_VERSION(4, 12, 0) <= LINUX_VERSION_CODE)
 #define NLA_PARSE_NESTED(nlattr, maxtype, nla, policy)	\
 	nla_parse_nested(nlattr, maxtype, nla, policy, NULL)
+#define NLA_PARSE(tb, maxtype, head, len, policy) \
+		nla_parse(tb, maxtype, head, len, policy, NULL)
 #else
 #define NLA_PARSE_NESTED(nlattr, maxtype, nla, policy)	\
 	nla_parse_nested(nlattr, maxtype, nla, policy)
+#define NLA_PARSE(tb, maxtype, head, len, policy) \
+		nla_parse(tb, maxtype, head, len, policy, NULL)
 #endif
 #endif
 
@@ -853,5 +895,10 @@ int mtk_cfg80211_vendor_get_supported_feature_set(
 	const void *data, int data_len);
 int mtk_cfg80211_vendor_set_scan_mac_oui(struct wiphy *wiphy,
 				struct wireless_dev *wdev, const void *data, int data_len);
+int mtk_cfg80211_vendor_acs(struct wiphy *wiphy,
+		struct wireless_dev *wdev, const void *data, int data_len);
+
+int mtk_cfg80211_vendor_get_features(struct wiphy *wiphy,
+		struct wireless_dev *wdev, const void *data, int data_len);
 
 #endif /* _GL_VENDOR_H */

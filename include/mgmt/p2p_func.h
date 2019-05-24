@@ -216,4 +216,22 @@ UINT_32 p2pFuncCalculateP2P_IE_NoA(IN P_ADAPTER_T prAdapter, IN UINT_8 ucBssIdx,
 
 VOID p2pFuncGenerateP2P_IE_NoA(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo);
 
+UINT_8 p2pFunGetAcsBestCh(IN P_ADAPTER_T prAdapter,
+		IN ENUM_BAND_T eBand,
+		IN ENUM_MAX_BANDWIDTH_SETTING eChnlBw,
+		IN UINT_32 u4LteSafeChnMask_2G,
+		IN UINT_32 u4LteSafeChnMask_5G_1,
+		IN UINT_32 u4LteSafeChnMask_5G_2);
+
+void p2pFunProcessAcsReport(IN P_ADAPTER_T prAdapter,
+		IN UINT_8 ucRoleIndex,
+		IN P_PARAM_GET_CHN_INFO prLteSafeChnInfo,
+		IN struct P2P_ACS_REQ_INFO *prAcsReqInfo);
+
+void p2pFunIndicateAcsResult(IN P_GLUE_INFO_T prGlueInfo,
+		IN struct P2P_ACS_REQ_INFO *prAcsReqInfo);
+
+void p2pFunCalAcsChnScores(IN P_ADAPTER_T prAdapter,
+		IN ENUM_BAND_T eBand);
+
 #endif
