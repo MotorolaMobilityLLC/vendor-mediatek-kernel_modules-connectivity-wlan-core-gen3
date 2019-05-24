@@ -80,6 +80,7 @@ typedef enum _ENUM_MSG_ID_T {
 	MID_OID_AIS_FSM_ABORT,	/* OID/IOCTL notify AIS for abort */
 	MID_AIS_SAA_FSM_START,	/* AIS notify SAA for Starting authentication/association fsm */
 	MID_OID_SAA_FSM_CONTINUE, /* OID notify SAA to continue to do authentication/association fsm for FT */
+	MID_OID_SAA_FSM_EXTERNAL_AUTH, /*OID notify SAA to handle external auth status*/
 	MID_AIS_SAA_FSM_ABORT,	/* AIS notify SAA for Aborting authentication/association fsm */
 	MID_SAA_AIS_JOIN_COMPLETE,	/* SAA notify AIS for indicating join complete */
 
@@ -225,6 +226,12 @@ struct MSG_SAA_FT_CONTINUE {
 	MSG_HDR_T rMsgHdr;
 	P_STA_RECORD_T prStaRec;
 	BOOLEAN fgFTRicRequest; /* if fgFTRicRequest is TRUE, then will do FT Resource Request Protocol */
+};
+
+struct MSG_SAA_EXTERNAL_AUTH_DONE {
+	MSG_HDR_T rMsgHdr;
+	P_STA_RECORD_T prStaRec;
+	UINT_16 status;
 };
 
 /* specific message data types */

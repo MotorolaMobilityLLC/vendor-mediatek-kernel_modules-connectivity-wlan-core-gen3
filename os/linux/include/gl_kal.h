@@ -1148,4 +1148,7 @@ VOID kalTakeVcoreAction(UINT_8 ucAction);
 VOID kalVcoreInitUninit(BOOLEAN fgInit);
 
 VOID kalMayChangeVcore(VOID);
+
+int kalExternalAuthRequest(IN struct _ADAPTER_T *prAdapter, IN uint8_t uBssIndex);
+
 #endif /* _GL_KAL_H */

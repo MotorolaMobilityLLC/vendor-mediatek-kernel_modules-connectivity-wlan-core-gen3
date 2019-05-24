@@ -1399,9 +1399,9 @@ cnmPeerUpdate(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBufferLen, 
 		if (!((prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION3_ENABLED)
 		      || (prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION3_KEY_ABSENT)
 		      || (prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION_DISABLED)
-		      || (prAdapter->prGlueInfo->u2WSCAssocInfoIELen)
+		      || (prAdapter->prGlueInfo->fgWpsActive)
 #if CFG_SUPPORT_WAPI
-		      || (prAdapter->prGlueInfo->u2WapiAssocInfoIESz)
+		      || (prAdapter->rWifiVar.rConnSettings.fgWapiMode)
 #endif
 		    )) {
 

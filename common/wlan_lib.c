@@ -5546,6 +5546,26 @@ PVOID wlanGetNetInterfaceByBssIdx(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucBssIn
 	return NULL;
 }
 
+uint8_t wlanGetBssIdx(struct net_device *ndev)
+{
+	if (ndev) {
+		struct _NETDEV_PRIVATE_GLUE_INFO *prNetDevPrivate
+			= (struct _NETDEV_PRIVATE_GLUE_INFO *)
+			netdev_priv(ndev);
+
+		DBGLOG(REQ, LOUD,
+			"ucBssIndex = %d\n",
+			prNetDevPrivate->ucBssIdx);
+
+		return prNetDevPrivate->ucBssIdx;
+	}
+
+	DBGLOG(REQ, LOUD,
+		"ucBssIndex = 0xff\n");
+
+	return 0xff;
+}
+
 /*----------------------------------------------------------------------------*/
 /*!
 * @brief This function is to get BSS-INDEX for AIS network.

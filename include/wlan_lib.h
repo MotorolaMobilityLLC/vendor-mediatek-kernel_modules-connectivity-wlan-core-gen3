@@ -923,6 +923,8 @@ UINT_8 wlanGetBssIdxByNetInterface(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvNetIn
 
 PVOID wlanGetNetInterfaceByBssIdx(IN P_GLUE_INFO_T prGlueInfo, IN UINT_8 ucBssIndex);
 
+uint8_t wlanGetBssIdx(struct net_device *ndev);
+
 /* for windows as windows glue cannot see through P_ADAPTER_T */
 UINT_8 wlanGetAisBssIndex(IN P_ADAPTER_T prAdapter);
 

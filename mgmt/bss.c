@@ -170,9 +170,9 @@ VOID bssDetermineStaRecPhyTypeSet(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBs
 		if (!((prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION3_ENABLED) ||
 		      (prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION3_KEY_ABSENT)
 		      || (prAdapter->rWifiVar.rConnSettings.eEncStatus == ENUM_ENCRYPTION_DISABLED)
-		      || (prAdapter->prGlueInfo->u2WSCAssocInfoIELen)
+		      || (prAdapter->prGlueInfo->fgWpsActive)
 #if CFG_SUPPORT_WAPI
-		      || (prAdapter->prGlueInfo->u2WapiAssocInfoIESz)
+		      || (prAdapter->rWifiVar.rConnSettings.fgWapiMode)
 #endif
 		    )) {
 			DBGLOG(BSS, TRACE, "Ignore the HT Bit for TKIP as pairwise cipher configed!\n");

@@ -3450,18 +3450,6 @@ static void wext_support_ioctl_SIOCSIWGENIE(IN P_GLUE_INFO_T prGlueInfo, IN char
 #if CFG_SUPPORT_WAPI
 	rStatus = kalIoctl(prGlueInfo, wlanoidSetWapiAssocInfo, prExtraBuf, u4ExtraSize, FALSE, FALSE, TRUE, &u4BufLen);
 	if (rStatus != WLAN_STATUS_SUCCESS) {
-#endif
-#if CFG_SUPPORT_WPS2
-		PUINT_8 prDesiredIE = NULL;
-
-		if (wextSrchDesiredWPSIE(prExtraBuf, u4ExtraSize, 0xDD, (PUINT_8 *) &prDesiredIE)) {
-			rStatus =
-			    kalIoctl(prGlueInfo,
-				     wlanoidSetWSCAssocInfo,
-				     prDesiredIE, IE_SIZE(prDesiredIE), FALSE, FALSE, TRUE, &u4BufLen);
-		}
-#endif
-#if CFG_SUPPORT_WAPI
 	}
 #endif
 

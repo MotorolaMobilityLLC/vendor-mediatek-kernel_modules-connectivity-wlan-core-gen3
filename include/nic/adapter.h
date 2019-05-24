@@ -191,6 +191,9 @@ typedef struct _CONNECTION_SETTINGS_T {
 	BOOLEAN fgSecModeChangeStartTimer;
 #endif
 	struct LINK_MGMT rBlackList;
+
+	UINT_8 *pucAssocIEs;
+	size_t assocIeLen;
 } CONNECTION_SETTINGS_T, *P_CONNECTION_SETTINGS_T;
 
 struct _BSS_INFO_T {
@@ -1133,6 +1136,10 @@ struct _ADAPTER_T {
 
 #define IS_BSS_AIS(_prBssInfo) \
 	((_prBssInfo)->eNetworkType == NETWORK_TYPE_AIS)
+
+#define IS_BSS_INDEX_AIS(_prAdapter, _BssIndex) \
+	((IS_BSS_INDEX_VALID(_BssIndex) && \
+	IS_BSS_AIS(GET_BSS_INFO_BY_INDEX(_prAdapter, _BssIndex))))
 
 #define IS_BSS_P2P(_prBssInfo) \
 	((_prBssInfo)->eNetworkType == NETWORK_TYPE_P2P)

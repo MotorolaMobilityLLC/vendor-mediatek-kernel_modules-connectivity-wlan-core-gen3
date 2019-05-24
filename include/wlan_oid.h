@@ -160,6 +160,7 @@ typedef enum _ENUM_PARAM_AUTH_MODE_T {
 	AUTH_MODE_WPA2_PSK,
 	AUTH_MODE_WPA2_FT, /* Fast Bss Transition for 802.1x */
 	AUTH_MODE_WPA2_FT_PSK, /* Fast Bss Transition for WPA2 PSK */
+	AUTH_MODE_WPA3_SAE,
 	AUTH_MODE_NUM		/*!< Upper bound, not real case */
 } ENUM_PARAM_AUTH_MODE_T, *P_ENUM_PARAM_AUTH_MODE_T;
 
@@ -215,6 +216,7 @@ typedef enum _ENUM_PARAM_PHY_TYPE_T {
 	PHY_TYPE_NUM		/* 5 */
 } ENUM_PARAM_PHY_TYPE_T, *P_ENUM_PARAM_PHY_TYPE_T;
 
+
 typedef enum _ENUM_PARAM_OP_MODE_T {
 	NET_TYPE_IBSS = 0,	/*!< Try to merge/establish an AdHoc, do periodic SCAN for merging. */
 	NET_TYPE_INFRA,		/*!< Try to join an Infrastructure, do periodic SCAN for joining. */
@@ -240,6 +242,12 @@ typedef struct _PARAM_CONNECT_T {
 	UINT_8 *pucBssid;
 	UINT_32 u4CenterFreq;
 } PARAM_CONNECT_T, *P_PARAM_CONNECT_T;
+
+struct PARAM_EXTERNAL_AUTH {
+	UINT_8 bssid[PARAM_MAC_ADDR_LEN];
+	UINT_16 status;
+	UINT_8 ucBssIdx;
+};
 
 /* This is enum defined for user to select an AdHoc Mode */
 typedef enum _ENUM_PARAM_AD_HOC_MODE_T {
@@ -2173,12 +2181,6 @@ wlanoidSetWapiKey(IN P_ADAPTER_T prAdapter,
 		  IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 #endif
 
-#if CFG_SUPPORT_WPS2
-WLAN_STATUS
-wlanoidSetWSCAssocInfo(IN P_ADAPTER_T prAdapter,
-		       IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
-#endif
-
 #if CFG_ENABLE_WAKEUP_ON_LAN
 WLAN_STATUS
 wlanoidSetAddWakeupPattern(IN P_ADAPTER_T prAdapter,
@@ -2432,16 +2434,23 @@ wlanoidConfigRoaming(IN P_ADAPTER_T prAdapter,
 WLAN_STATUS
 wlanoidSetScanMacOui(IN P_ADAPTER_T prAdapter,
 		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
-uint32_t wlanoidGetWifiType(IN P_ADAPTER_T prAdapter,
-			    IN void *pvSetBuffer,
-			    IN uint32_t u4SetBufferLen,
-			    OUT uint32_t *pu4SetInfoLen);
+
 WLAN_STATUS
-wlanoidStopApRole(P_ADAPTER_T prAdapter, void *pvSetBuffer,
-		UINT_32 u4SetBufferLen, UINT_32 *pu4SetInfoLen);
+wlanoidStopApRole(IN P_ADAPTER_T prAdapter,
+		     IN void *pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT UINT_32 *pu4SetInfoLen);
+
 WLAN_STATUS
-wlanoidSendSarEnable(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBufferLen,
-		     PUINT_32 pu4SetInfoLen);
+wlanoidSendSarEnable(IN P_ADAPTER_T prAdapter,
+		     IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
+
+uint32_t
+wlanoidGetWifiType(IN P_ADAPTER_T prAdapter,
+		     IN void *pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT UINT_32 *pu4SetInfoLen);
+
+uint32_t
+wlanoidExternalAuthDone(IN struct _ADAPTER_T *prAdapter,
+		     IN void *pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT UINT_32 *pu4SetInfoLen);
+
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************

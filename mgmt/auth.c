@@ -506,12 +506,18 @@ WLAN_STATUS authCheckRxAuthFrameTransSeq(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T
 	P_WLAN_AUTH_FRAME_T prAuthFrame;
 	UINT_16 u2RxTransactionSeqNum;
 	UINT_16 u2MinPayloadLen;
-#if CFG_IGNORE_INVALID_AUTH_TSN
 	P_STA_RECORD_T prStaRec;
-#endif
 
 	ASSERT(prSwRfb);
 
+	prStaRec = cnmGetStaRecByIndex(prAdapter, prSwRfb->ucStaRecIdx);
+
+	if (prStaRec
+	    && IS_STA_IN_AIS(prStaRec)
+	    && prStaRec->eAuthAssocState == SAA_STATE_EXTERNAL_AUTH) {
+		saaFsmRunEventRxAuth(prAdapter, prSwRfb);
+		return WLAN_STATUS_SUCCESS;
+	}
 	/* 4 <1> locate the Authentication Frame. */
 	prAuthFrame = (P_WLAN_AUTH_FRAME_T) prSwRfb->pvHeader;
 
@@ -534,14 +540,12 @@ WLAN_STATUS authCheckRxAuthFrameTransSeq(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T
 	case AUTH_TRANSACTION_SEQ_4:
 		saaFsmRunEventRxAuth(prAdapter, prSwRfb);
 		break;
-
 	case AUTH_TRANSACTION_SEQ_1:
 	case AUTH_TRANSACTION_SEQ_3:
 #if CFG_SUPPORT_AAA
 		aaaFsmRunEventRxAuth(prAdapter, prSwRfb);
 #endif /* CFG_SUPPORT_AAA */
 		break;
-
 	default:
 		DBGLOG(SAA, WARN,
 		       "Strange Authentication frame, TransSeqNo: %d, StatusCode: %d\n",

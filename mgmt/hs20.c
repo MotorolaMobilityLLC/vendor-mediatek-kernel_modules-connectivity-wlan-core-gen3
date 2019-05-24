@@ -71,69 +71,6 @@
 *                              F U N C T I O N S
 ********************************************************************************
 */
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief    This function is called to generate Interworking IE for Probe Rsp, Bcn, Assoc Req/Rsp.
-*
-* \param[in] prAdapter  Pointer of ADAPTER_T
-* \param[out] prMsduInfo  Pointer of the Msdu Info
-*
-* \return VOID
-*/
-/*----------------------------------------------------------------------------*/
-VOID hs20GenerateInterworkingIE(IN P_ADAPTER_T prAdapter, OUT P_MSDU_INFO_T prMsduInfo)
-{
-}
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief    This function is called to generate Roaming Consortium IE for Probe Rsp, Bcn, Assoc Req/Rsp.
-*
-* \param[in] prAdapter  Pointer of ADAPTER_T
-* \param[out] prMsduInfo  Pointer of the Msdu Info
-*
-* \return VOID
-*/
-/*----------------------------------------------------------------------------*/
-VOID hs20GenerateRoamingConsortiumIE(IN P_ADAPTER_T prAdapter, OUT P_MSDU_INFO_T prMsduInfo)
-{
-}
-
-/*----------------------------------------------------------------------------*/
-/*!
-* \brief    This function is called to generate HS2.0 IE for Probe Rsp, Bcn, Assoc Req/Rsp.
-*
-* \param[in] prAdapter  Pointer of ADAPTER_T
-* \param[out] prMsduInfo  Pointer of the Msdu Info
-*
-* \return VOID
-*/
-/*----------------------------------------------------------------------------*/
-VOID hs20GenerateHS20IE(IN P_ADAPTER_T prAdapter, OUT P_MSDU_INFO_T prMsduInfo)
-{
-	PUINT_8 pucBuffer;
-
-	ASSERT(prAdapter);
-	ASSERT(prMsduInfo);
-
-	if (prMsduInfo->ucBssIndex != KAL_NETWORK_TYPE_AIS_INDEX) {
-		DBGLOG(HS20, INFO, "[%s] prMsduInfo->ucBssIndex(%d) is not KAL_NETWORK_TYPE_AIS_INDEX\n",
-			__func__, prMsduInfo->ucBssIndex);
-		return;
-	}
-
-	pucBuffer = (PUINT_8) ((ULONG) prMsduInfo->prPacket + (ULONG) prMsduInfo->u2FrameLength);
-
-	/* ASSOC INFO IE ID: 221 :0xDD */
-	if (prAdapter->prGlueInfo->u2HS20AssocInfoIELen) {
-		kalMemCopy(pucBuffer, &prAdapter->prGlueInfo->aucHS20AssocInfoIE,
-			   prAdapter->prGlueInfo->u2HS20AssocInfoIELen);
-		prMsduInfo->u2FrameLength += prAdapter->prGlueInfo->u2HS20AssocInfoIELen;
-	}
-
-}
-
 VOID hs20FillExtCapIE(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo, P_MSDU_INFO_T prMsduInfo)
 {
 	P_EXT_CAP_T prExtCap;
