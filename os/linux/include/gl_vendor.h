@@ -419,12 +419,12 @@ extern UINT_8 keyStructBuf[100];	/* add/remove key shared buffer */
 #define NLA_PARSE_NESTED(nlattr, maxtype, nla, policy)	\
 	nla_parse_nested(nlattr, maxtype, nla, policy, NULL)
 #define NLA_PARSE(tb, maxtype, head, len, policy) \
-		nla_parse(tb, maxtype, head, len, policy, NULL)
+	nla_parse(tb, maxtype, head, len, policy, NULL)
 #else
 #define NLA_PARSE_NESTED(nlattr, maxtype, nla, policy)	\
 	nla_parse_nested(nlattr, maxtype, nla, policy)
 #define NLA_PARSE(tb, maxtype, head, len, policy) \
-		nla_parse(tb, maxtype, head, len, policy, NULL)
+	nla_parse(tb, maxtype, head, len, policy)
 #endif
 #endif
 
