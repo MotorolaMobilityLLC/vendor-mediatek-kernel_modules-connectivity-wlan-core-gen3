@@ -1754,7 +1754,8 @@ WLAN_STATUS nicTxMsduQueue(IN P_ADAPTER_T prAdapter, UINT_8 ucPortIdx, P_QUE_T p
 			else
 				QUEUE_INSERT_TAIL(prFreeQueue, (P_QUE_ENTRY_T) prMsduInfo);
 		}
-
+		if (prMsduInfo->ucPID > NIC_TX_DESC_DRIVER_PID_MAX)
+			DBGLOG(TX, INFO, "Abnormal PID:%d\n", prMsduInfo->ucPID);
 #if (CFG_SDIO_TX_AGG == 0)
 		ASSERT(u4TotalLength <= u4ValidBufSize);
 
