@@ -2496,6 +2496,7 @@ VOID nicRxProcessMgmtPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb)
 		nicRxReturnRFB(prAdapter, prSwRfb);
 		RX_INC_CNT(&prAdapter->rRxCtrl, RX_DROP_TOTAL_COUNT);
 #if defined(MT6631)
+		HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
 		GL_RESET_TRIGGER(prAdapter, RST_FLAG_DO_CORE_DUMP);
 #endif
 		return;
@@ -2800,6 +2801,7 @@ VOID nicRxProcessRFBs(IN P_ADAPTER_T prAdapter)
 					else
 						DBGLOG_MEM32(RX, ERROR,
 							     (PUINT_32)prSwRfb->prRxStatus, 200);
+						HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
 						GL_RESET_TRIGGER(prAdapter, RST_FLAG_DO_CORE_DUMP);
 					} else
 						DBGLOG_MEM32(RX, ERROR, (PUINT_32)prSwRfb->prRxStatus,
@@ -3246,12 +3248,15 @@ VOID nicRxSDIOAggReceiveRFBs(IN P_ADAPTER_T prAdapter)
 					       u2PktLength, rxNum, i);
 					DBGLOG_MEM32(RX, WARN, (PUINT_32)&prEnhDataStr->rRxInfo,
 						     sizeof(prEnhDataStr->rRxInfo));
+					HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
 					GL_RESET_TRIGGER(prAdapter, RST_FLAG_DO_CORE_DUMP);
 					return;
 				} else if (u2PktLength > CFG_RX_MAX_PKT_SIZE) {
 					DBGLOG(RX, ERROR,
 					       "PktLen(%d) > MAX_PKT_SIZE(%d) in RX%u idx %u, try to read out all\n",
 					       u2PktLength, CFG_RX_MAX_PKT_SIZE, rxNum, i);
+					DBGLOG_MEM32(RX, WARN, (PUINT_32)&prEnhDataStr->rRxInfo,
+						     sizeof(prEnhDataStr->rRxInfo));
 					/*
 					 * Rx packet length is too large and untrustable,
 					 * try to read out all data in this Rx port to
@@ -3265,6 +3270,7 @@ VOID nicRxSDIOAggReceiveRFBs(IN P_ADAPTER_T prAdapter)
 					 */
 					u4RxAvailAggLen = 0;
 					u4RxAggCount++;
+					HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
 					break;
 				}
 
@@ -3316,11 +3322,9 @@ VOID nicRxSDIOAggReceiveRFBs(IN P_ADAPTER_T prAdapter)
 					else
 						DBGLOG_MEM32(RX, ERROR,
 							     pucSrcAddr, 200);
-
 					#if defined(MT6631)
 					HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
 					#endif
-
 					u2PktLenExceptionCount++;
 					/*
 					 * Trigger chip reset if we can not read out all data in one time
