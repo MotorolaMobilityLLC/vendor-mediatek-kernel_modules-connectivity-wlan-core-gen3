@@ -296,7 +296,11 @@ VOID glSetHifInfo(GLUE_INFO_T *GlueInfo, ULONG ulCookie)
 	    of_property_read_u32_index(HifInfo->Dev->of_node, "reg", 1, &val)) {
 		DBGLOG(INIT, ERROR, "Failed to get WIFI-HIF base addr from DT!! Tx/Rx maybe abnormal!!\n");
 	}
+#if __BITS_PER_LONG == 32
+	HifInfo->HifRegPhyBase = (ULONG)val;
+#else
 	HifInfo->HifRegPhyBase = (((ULONG)val_h << 16) << 16) | (ULONG)val;
+#endif
 	HifInfo->InfraRegBaseAddr = (PUINT_8)of_iomap(HifInfo->Dev->of_node, 2);
 	HifInfo->ConnCfgRegBaseAddr = (PUINT_8)of_iomap(HifInfo->Dev->of_node, 3);
 #else
@@ -310,7 +314,7 @@ VOID glSetHifInfo(GLUE_INFO_T *GlueInfo, ULONG ulCookie)
 #endif
 	g_pHifRegBaseAddr = &(HifInfo->HifRegBaseAddr);
 
-	DBGLOG(INIT, TRACE, "HifRegBaseAddr = %p, HifRegPhyBase = 0x%lx\n",
+	DBGLOG(INIT, INFO, "HifRegBaseAddr = %p, HifRegPhyBase = 0x%lx\n",
 	       HifInfo->HifRegBaseAddr, HifInfo->HifRegPhyBase);
 
 	/* default disable DMA */
