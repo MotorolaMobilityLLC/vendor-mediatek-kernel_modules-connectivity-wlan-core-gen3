@@ -1003,6 +1003,9 @@ p2pFuncStartGO(IN P_ADAPTER_T prAdapter,
 		/* 4 <3.1> Setup SCO and Bandwidth */
 		rlmBssInitForAPandIbss(prAdapter, prBssInfo);
 
+		SET_NET_ACTIVE(prAdapter, prBssInfo->ucBssIndex);
+		nicActivateNetwork(prAdapter, prBssInfo->ucBssIndex);
+
 		/* 4 <3.2> Update BSS-INFO to FW */
 		nicUpdateBss(prAdapter, prBssInfo->ucBssIndex);
 
