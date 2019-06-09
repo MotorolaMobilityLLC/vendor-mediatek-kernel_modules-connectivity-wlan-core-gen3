@@ -2098,8 +2098,7 @@ VOID wlanReleasePendingOid(IN P_ADAPTER_T prAdapter, IN ULONG ulParamPtr)
 #if (CFG_SUPPORT_TRACE_TC4 == 1)
 					wlanDumpTcResAndTxedCmd(NULL, 0);
 #endif
-					if (prAdapter != NULL)
-						dumpCrBeforeReset(prAdapter->prGlueInfo, prAdapter->u2ChipID);
+					HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
 					GL_RESET_TRIGGER(prAdapter, RST_FLAG_DO_CORE_DUMP);
 				}
 
