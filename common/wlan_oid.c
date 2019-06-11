@@ -11383,6 +11383,63 @@ wlanoidSetMonitor(IN P_ADAPTER_T prAdapter, IN PVOID pvSetBuffer, IN UINT_32 u4S
 }
 #endif
 
+#if CFG_SUPPORT_RSSI_DISCONNECT
+/*----------------------------------------------------------------------------*/
+/*!
+* \brief This routine is called to query the latest RSSI value before disconnecting.
+*
+* \param[in] prAdapter Pointer to the Adapter structure.
+* \param[in] pvQueryBuffer Pointer to the buffer that holds the result of the query.
+* \param[in] u4QueryBufferLen The length of the query buffer.
+* \param[out] pu4QueryInfoLen If the call is successful, returns the number of
+*   bytes written into the query buffer. If the call failed due to invalid length of
+*   the query buffer, returns the amount of storage needed.
+*
+* \retval WLAN_STATUS_SUCCESS
+* \retval WLAN_STATUS_BUFFER_TOO_SHORT
+* \retval WLAN_STATUS_NOT_SUPPORTED
+*/
+/*----------------------------------------------------------------------------*/
+
+WLAN_STATUS
+wlanoidQueryRssiDisconnect(IN P_ADAPTER_T prAdapter,
+		      IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen)
+{
+	PARAM_RSSI i4cRssi;
+
+	DEBUGFUNC("wlanoidQueryRssiDisconnect");
+
+	if (!prAdapter || !pu4QueryInfoLen)
+		return -EPERM;
+	if (u4QueryBufferLen && !pvQueryBuffer)
+		return -EPERM;
+
+	*pu4QueryInfoLen = sizeof(PARAM_RSSI);
+
+	/* Check for query buffer length */
+	if (u4QueryBufferLen < *pu4QueryInfoLen) {
+		DBGLOG(OID, WARN, "Too short length %u\n", u4QueryBufferLen);
+		return WLAN_STATUS_BUFFER_TOO_SHORT;
+	}
+	DBGLOG(OID, INFO, "fgIsLinkQualityValid = %d, rLinkQualityUpdateTime = %d\n",
+		prAdapter->fgIsLinkQualityValid, prAdapter->rLinkQualityUpdateTime);
+	if (!prAdapter->rLinkQualityUpdateTime || kalGetMediaStateIndicated(prAdapter->prGlueInfo)
+		== PARAM_MEDIA_STATE_CONNECTED)
+		return WLAN_STATUS_NOT_SUPPORTED;
+
+	i4cRssi = (PARAM_RSSI) prAdapter->rLinkQuality.cRssi;	/* ranged from (-128 ~ 30) in unit of dBm */
+
+	if (i4cRssi > PARAM_WHQL_RSSI_MAX_DBM)
+		i4cRssi = PARAM_WHQL_RSSI_MAX_DBM;
+	else if (i4cRssi < PARAM_WHQL_RSSI_MIN_DBM)
+		i4cRssi = PARAM_WHQL_RSSI_MIN_DBM;
+	DBGLOG(OID, INFO, "i4cRssi = %d\n", i4cRssi);
+	kalMemCopy(pvQueryBuffer, &i4cRssi, sizeof(PARAM_RSSI));
+	return WLAN_STATUS_SUCCESS;
+
+}				/* end of wlanoidQueryRssiDisconnect() */
+#endif
+
 WLAN_STATUS
 wlanoidNotifyFwSuspend(IN P_ADAPTER_T prAdapter,
 		       IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)

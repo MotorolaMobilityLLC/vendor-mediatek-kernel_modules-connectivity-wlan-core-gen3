@@ -739,6 +739,8 @@
 
 #define CFG_SUPPORT_P2P_RSSI_QUERY        0
 
+#define CFG_SUPPORT_RSSI_DISCONNECT	1
+
 #define CFG_SHOW_MACADDR_SOURCE     1
 #define CFG_SUPPORT_VO_ENTERPRISE               1
 #define CFG_SUPPORT_WMM_AC                      1

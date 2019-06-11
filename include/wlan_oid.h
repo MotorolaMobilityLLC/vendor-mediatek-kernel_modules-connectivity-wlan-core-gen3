@@ -2320,6 +2320,12 @@ WLAN_STATUS wlanoidSetMonitor(IN P_ADAPTER_T prAdapter,
 			      IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen);
 #endif
 
+#if CFG_SUPPORT_RSSI_DISCONNECT
+WLAN_STATUS
+wlanoidQueryRssiDisconnect(IN P_ADAPTER_T prAdapter,
+		      IN PVOID pvQueryBuffer, IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen);
+#endif
+
 #if CFG_SUPPORT_GSCN
 WLAN_STATUS
 wlanoidSetGSCNAction(IN P_ADAPTER_T prAdapter,

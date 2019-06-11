@@ -2300,6 +2300,7 @@ reqExtSetAcpiDevicePowerState(IN P_GLUE_INFO_T prGlueInfo,
 #define CMD_FW_EVENT		"FW-EVENT "
 #define CMD_O_SAR		"O-SAR-ENABLE"
 #define CMD_FW_PARAM            "set_fw_param "
+#define CMD_RSSI_DISCONNECT	"DISCONRSSI"
 #define PRIV_CMD_SIZE 512
 
 static UINT_8 g_ucMiracastMode = MIRACAST_MODE_OFF;
@@ -3319,6 +3320,33 @@ int priv_driver_set_monitor(IN struct net_device *prNetDev, IN char *pcCommand, 
 }
 #endif
 
+#if CFG_SUPPORT_RSSI_DISCONNECT
+int priv_driver_get_rssiDisconnect(IN struct net_device *prNetDev, IN char *pcCommand, IN int i4TotalLen)
+{
+	P_GLUE_INFO_T prGlueInfo = NULL;
+	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
+	UINT_32 u4BufLen = 0;
+	PARAM_RSSI i4Rssi = 0;
+	INT_32 i4BytesWritten = 0;
+
+	if (!prNetDev)
+		return -EPERM;
+	if (GLUE_CHK_PR2(prNetDev, pcCommand) == FALSE)
+		return -EPERM;
+	prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prNetDev));
+
+	rStatus = kalIoctl(prGlueInfo, wlanoidQueryRssiDisconnect, &i4Rssi,
+		sizeof(i4Rssi), TRUE, TRUE, TRUE, &u4BufLen);
+	if (rStatus != WLAN_STATUS_SUCCESS)
+		return -EPERM;
+
+	DBGLOG(REQ, INFO, "i4Rssi = %d\n", i4Rssi);
+	i4BytesWritten = snprintf(pcCommand, i4TotalLen, "DISCONRSSI %d", i4Rssi);
+	DBGLOG(REQ, INFO, "%s: Command result is %s\n", __func__, pcCommand);
+	return i4BytesWritten;
+}
+#endif
+
 #if CFG_SUPPORT_BATCH_SCAN
 #define CMD_BATCH_SET           "WLS_BATCHING SET"
 #define CMD_BATCH_GET           "WLS_BATCHING GET"
@@ -3513,7 +3541,12 @@ INT_32 priv_driver_cmds(IN struct net_device *prNetDev, IN PCHAR pcCommand, IN I
 		} else if (!strncasecmp(pcCommand, CMD_FW_PARAM, strlen(CMD_FW_PARAM))) {
 			kalIoctl(prGlueInfo, wlanoidSetFwParam, (PVOID)(pcCommand + 13),
 				 i4TotalLen - 13, FALSE, FALSE, FALSE, &i4BytesWritten);
-		} else
+		}
+#if CFG_SUPPORT_RSSI_DISCONNECT
+		else if (!strncasecmp(pcCommand, CMD_RSSI_DISCONNECT, strlen(CMD_RSSI_DISCONNECT)))
+			i4BytesWritten = priv_driver_get_rssiDisconnect(prNetDev, pcCommand, i4TotalLen);
+#endif
+		else
 			i4CmdFound = 0;
 	}
 	/* i4CmdFound */
