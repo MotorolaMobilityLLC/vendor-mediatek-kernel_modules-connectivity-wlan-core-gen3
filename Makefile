@@ -33,6 +33,9 @@ ccflags-y += -DARP_MONITER_ENABLE=1
 # Moto read MACs from boot params
 ccflags-y += -DMOTO_UTAGS_MAC=1
 
+# Moto wifi sar table
+ccflags-y += -DCONFIG_MOTO_LIMA_WIFI_SAR=1
+
 ifeq ($(CONFIG_MTK_WIFI_MCC_SUPPORT), y)
     ccflags-y += -DCFG_SUPPORT_CHNL_CONFLICT_REVISE=0
 else
