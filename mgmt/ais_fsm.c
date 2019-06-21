@@ -532,6 +532,7 @@ VOID aisFsmStateInit_JOIN(IN P_ADAPTER_T prAdapter, P_BSS_DESC_T prBssDesc)
 			break;
 		case AUTH_MODE_WPA3_SAE:
 			prAisFsmInfo->ucAvailableAuthTypes = (UINT_8) AUTH_TYPE_SAE;
+			break;
 		default:
 			prAisFsmInfo->ucAvailableAuthTypes = prAisSpecificBssInfo->ucRoamingAuthTypes;
 			break;
