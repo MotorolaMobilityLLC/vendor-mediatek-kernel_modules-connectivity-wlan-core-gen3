@@ -12586,6 +12586,7 @@ wlanoidSetP2pRandomMac(P_ADAPTER_T prAdapter, void *pvSetBuffer,
 	P_BSS_INFO_T prDevBssInfo = NULL;
 	P_P2P_ROLE_FSM_INFO_T prP2pRoleFsmInfo = NULL;
 	P_GLUE_INFO_T prGlueInfo = NULL;
+	P_BSS_INFO_T prRoleBssInfo = NULL;
 
 	if ((prAdapter == NULL) || (pvSetBuffer == NULL)
 		|| (pu4SetInfoLen == NULL)) {
@@ -12616,12 +12617,11 @@ wlanoidSetP2pRandomMac(P_ADAPTER_T prAdapter, void *pvSetBuffer,
 		return WLAN_STATUS_FAILURE;
 	}
 
-	/* prRoleBssInfo = prAdapter->aprBssInfo[prP2pRoleFsmInfo->ucBssIndex];
-	*if (prRoleBssInfo == NULL) {
-	*DBGLOG(OID, WARN, "prDevBssInfo == NULL\n");
-	*return WLAN_STATUS_FAILURE;
-	*}
-	*/
+	prRoleBssInfo = prAdapter->aprBssInfo[prP2pRoleFsmInfo->ucBssIndex];
+	if (prRoleBssInfo == NULL) {
+		DBGLOG(OID, WARN, "prDevBssInfo == NULL\n");
+		return WLAN_STATUS_FAILURE;
+	}
 
 	prGlueInfo = prAdapter->prGlueInfo;
 	if ((prGlueInfo == NULL) || (prGlueInfo->prP2PInfo == NULL)
@@ -12635,9 +12635,8 @@ wlanoidSetP2pRandomMac(P_ADAPTER_T prAdapter, void *pvSetBuffer,
 		(PUINT_8)pvSetBuffer);
 
 	/* 2. update role bss, role index is always 0 in gen3 */
-	/* COPY_MAC_ADDR(prRoleBssInfo->aucOwnMacAddr,
-	*	((struct sockaddr *)pvSetBuffer)->sa_data);
-	*/
+	 COPY_MAC_ADDR(prRoleBssInfo->aucOwnMacAddr,
+		(PUINT_8)pvSetBuffer);
 
 	/* 3. update netdevice addr*/
 	COPY_MAC_ADDR(prGlueInfo->prP2PInfo->prDevHandler->dev_addr,
