@@ -1412,7 +1412,7 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 #endif
 			prScanReqMsg->ucSeqNum = ++prAisFsmInfo->ucSeqNumOfScanReq;
 			prScanReqMsg->ucBssIndex = prAdapter->prAisBssInfo->ucBssIndex;
-			if (rlmFillScanMsg(prAdapter, prScanReqMsg)) {
+			if (rlmFillScanMsg(prAdapter, (struct _MSG_SCN_SCAN_REQ_V3_T *)prScanReqMsg)) {
 				mboxSendMsg(prAdapter, MBOX_ID_0, (P_MSG_HDR_T) prScanReqMsg, MSG_SEND_METHOD_BUF);
 				break;
 			}

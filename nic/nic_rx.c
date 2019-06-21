@@ -2807,7 +2807,9 @@ VOID nicRxProcessRFBs(IN P_ADAPTER_T prAdapter)
 					else
 						DBGLOG_MEM32(RX, ERROR,
 							     (PUINT_32)prSwRfb->prRxStatus, 200);
+					#if defined(MT6631)
 						HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
+					#endif
 						GL_RESET_TRIGGER(prAdapter, RST_FLAG_DO_CORE_DUMP);
 					} else
 						DBGLOG_MEM32(RX, ERROR, (PUINT_32)prSwRfb->prRxStatus,
@@ -3254,7 +3256,9 @@ VOID nicRxSDIOAggReceiveRFBs(IN P_ADAPTER_T prAdapter)
 					       u2PktLength, rxNum, i);
 					DBGLOG_MEM32(RX, WARN, (PUINT_32)&prEnhDataStr->rRxInfo,
 						     sizeof(prEnhDataStr->rRxInfo));
+					#if defined(MT6631)
 					HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
+					#endif
 					GL_RESET_TRIGGER(prAdapter, RST_FLAG_DO_CORE_DUMP);
 					return;
 				} else if (u2PktLength > CFG_RX_MAX_PKT_SIZE) {
@@ -3276,7 +3280,9 @@ VOID nicRxSDIOAggReceiveRFBs(IN P_ADAPTER_T prAdapter)
 					 */
 					u4RxAvailAggLen = 0;
 					u4RxAggCount++;
+					#if defined(MT6631)
 					HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
+					#endif
 					break;
 				}
 

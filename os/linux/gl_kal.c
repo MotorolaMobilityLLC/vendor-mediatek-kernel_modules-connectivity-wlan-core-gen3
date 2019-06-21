@@ -5612,6 +5612,7 @@ VOID __weak kalSetEmiMpuProtection(phys_addr_t emiPhyBase, UINT_32 size, BOOLEAN
 
 VOID kalVcoreInitUninit(BOOLEAN fgInit)
 {
+#ifdef CONFIG_MTK_QOS_SUPPORT
 	if (fgInit) {
 		atomic_set(&vcore_req_cnt, 0);
 		atomic_set(&vcore_changed, 0);
@@ -5621,14 +5622,17 @@ VOID kalVcoreInitUninit(BOOLEAN fgInit)
 		pm_qos_update_request(&vcore_req, VCORE_OPP_UNREQ);
 		pm_qos_remove_request(&vcore_req);
 	}
+#endif
 }
 
 inline VOID kalMayChangeVcore(VOID)
 {
+#ifdef CONFIG_MTK_QOS_SUPPORT
 	if (unlikely(!atomic_read(&vcore_changed))) {
 		atomic_inc(&vcore_changed);
 		kalTakeVcoreAction(VCORE_SET_HIGHER);
 	}
+#endif
 }
 
 VOID kalTakeVcoreAction(UINT_8 ucAction)
