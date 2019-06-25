@@ -1363,6 +1363,15 @@ void kalDumpAhbDebugInfo(P_GLUE_INFO_T prGlueInfo, UINT_16 u2ChipID)
 	UINT_32 val;
 	UINT_32 u4InfraPseOffset = 0x0394;
 
+	if (prGlueInfo->rHifInfo.InfraRegBaseAddr == NULL) {
+		DBGLOG(INIT, ERROR, "prGlueInfo->rHifInfo.InfraRegBaseAddr == NULL.\n");
+		return;
+	}
+	if (prGlueInfo->rHifInfo.ConnCfgRegBaseAddr == NULL) {
+		DBGLOG(INIT, ERROR, "prGlueInfo->rHifInfo.ConnCfgRegBaseAddr == NULL.\n");
+		return;
+	}
+
 	DBGLOG(RX, ERROR,
 	       "HIF_DBGCR02: 0x%08x, HIF_DBGCR08: 0x%08x\n",
 	       CONNSYS_REG_READ(prGlueInfo->rHifInfo.HifRegBaseAddr,
