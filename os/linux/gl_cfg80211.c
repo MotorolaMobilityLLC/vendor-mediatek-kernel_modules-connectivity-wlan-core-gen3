@@ -1084,7 +1084,7 @@ int mtk_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev, struct cf
 				u4AkmSuite = RSN_CIPHER_SUITE_OWE;
 				break;
 			default:
-				DBGLOG(REQ, WARN, "invalid auth mode (%d)\n", eAuthMode);
+				DBGLOG(REQ, WARN, "invalid wpa2 akm (%u)\n", sme->crypto.akm_suites[0]);
 				return -EINVAL;
 			}
 		}
@@ -2034,7 +2034,8 @@ int mtk_cfg80211_testmode_set_key_ext(IN struct wiphy *wiphy, IN void *data, IN 
 		/* handle_sec_msg_final(prIWEncExt->key, 32, prIWEncExt->key, NULL); */
 /* #endif */
 		/* PN */
-		memcpy(prWpiKey->aucPN, prIWEncExt->tx_seq, IW_ENCODE_SEQ_MAX_SIZE * 2);
+		memcpy(prWpiKey->aucPN, prIWEncExt->tx_seq, IW_ENCODE_SEQ_MAX_SIZE);
+		memcpy(prWpiKey->aucPN + IW_ENCODE_SEQ_MAX_SIZE, prIWEncExt->rx_seq, IW_ENCODE_SEQ_MAX_SIZE);
 
 		/* BSSID */
 		memcpy(prWpiKey->aucAddrIndex, prIWEncExt->addr, 6);
