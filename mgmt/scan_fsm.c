@@ -607,6 +607,7 @@ VOID scnFsmMsgAbort(IN P_ADAPTER_T prAdapter, IN P_MSG_HDR_T prMsgHdr)
 					    FALSE,
 					    NULL, NULL, sizeof(CMD_SCAN_CANCEL), (PUINT_8)&rCmdScanCancel, NULL, 0);
 
+			cnmTimerStopTimer(prAdapter, &prScanInfo->rScanDoneTimer);
 			/* generate scan-done event for caller */
 			scnFsmGenerateScanDoneMsg(prAdapter,
 						  prScanParam->ucSeqNum,

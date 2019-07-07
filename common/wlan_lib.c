@@ -5315,7 +5315,7 @@ WLAN_STATUS wlanQueryStaStatistics(IN P_ADAPTER_T prAdapter, IN PVOID pvQueryBuf
 
 #if CFG_ENABLE_PER_STA_STATISTICS
 
-		DBGLOG(TX, INFO, "skbToDriver %lld, skbFreed: %lld\n",
+		DBGLOG(TX, TRACE, "skbToDriver %lld, skbFreed: %lld\n",
 			prAdapter->prGlueInfo->u8SkbToDriver,
 			prAdapter->prGlueInfo->u8SkbFreed);
 		prAdapter->prGlueInfo->u8SkbFreed = 0;
