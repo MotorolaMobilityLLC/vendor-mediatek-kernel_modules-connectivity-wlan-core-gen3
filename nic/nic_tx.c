@@ -2580,9 +2580,6 @@ VOID nicTxProcessTxDoneEvent(IN P_ADAPTER_T prAdapter, IN P_WIFI_EVENT_T prEvent
 	if (prTxDone->ucPacketSeq < NIC_TX_DESC_DRIVER_PID_MIN ||
 	    prTxDone->ucPacketSeq > NIC_TX_DESC_DRIVER_PID_MAX) {
 		DBGLOG(TX, ERROR, "PacketSeq in TX done event is wrong, value %d\n", prTxDone->ucPacketSeq);
-		#if defined(MT6631)
-		HAL_DUMP_AHB_INFO(prAdapter, prAdapter->u2ChipID);
-		#endif
 		return;
 	}
 	if (prTxDone->ucWlanIndex >= WTBL_SIZE) {
