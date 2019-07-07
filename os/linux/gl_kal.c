@@ -42,7 +42,7 @@
 #include <net/netlink.h>
 #endif
 #if CFG_SUPPORT_WAKEUP_REASON_DEBUG
-#include <mt_sleep.h>
+#include <mtk_sleep.h>
 #endif
 
 #ifndef MTK_WCN_BUILT_IN_DRIVER
@@ -5113,35 +5113,43 @@ UINT_64 kalGetBootTime(void)
 }
 
 #if CFG_SUPPORT_WAKEUP_REASON_DEBUG
+#if 0 /* can not link this function defined by spm, so remove it. */
 /* if SPM is not implement this function, we will use this default one */
-wake_reason_t __weak slp_get_wake_reason(VOID)
+UINT_32 __weak slp_get_wake_reason(VOID)
 {
 	DBGLOG(INIT, WARN, "SPM didn't define this function!\n");
 	return WR_NONE;
 }
+#endif
 
 #ifdef MT6630
+#if 0
 /* if SPM is not implement this function, we will use this default one */
 bool __weak spm_read_eint_status(UINT_32 u4EintNum)
 {
 	DBGLOG(INIT, WARN, "SPM didn't define this function!\n");
 	return FALSE;
 }
+#endif
 static inline BOOLEAN spm_check_wakesrc(VOID)
 {
 	return spm_read_eint_status(4);
 }
+
 #else
+#if 0
 /* if SPM is not implement this function, we will use this default one */
 UINT_32 __weak spm_get_last_wakeup_src(VOID)
 {
 	return 0;
 }
+#endif
 static inline BOOLEAN spm_check_wakesrc(VOID)
 {
 	return !!(spm_get_last_wakeup_src() & WAKE_SRC_CONN2AP);
 }
 #endif
+
 BOOLEAN kalIsWakeupByWlan(P_ADAPTER_T  prAdapter)
 {
 	/*
