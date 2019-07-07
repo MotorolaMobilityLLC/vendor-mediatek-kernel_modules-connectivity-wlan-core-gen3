@@ -42,7 +42,7 @@
 #define AIS_JOIN_TIMEOUT                    7
 
 #define CTIA_MAGIC_SSID                     "no_use_ctia_ssid"	/* "ctia_test_only_*#*#3646633#*#*" */
-#define CTIA_MAGIC_SSID_LEN                 30
+#define CTIA_MAGIC_SSID_LEN			16				/* strlen(CTIA_MAGIC_SSID) */
 
 #define AIS_FSM_STATE_SEARCH_ACTION_PHASE_0	0
 #define AIS_FSM_STATE_SEARCH_ACTION_PHASE_1	1
