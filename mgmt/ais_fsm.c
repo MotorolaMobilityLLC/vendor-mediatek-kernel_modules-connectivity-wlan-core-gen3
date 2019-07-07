@@ -5914,6 +5914,10 @@ VOID aisCollectNeighborAP(P_ADAPTER_T prAdapter, PUINT_8 pucApBuf,
 		**	}
 		** }
 		*/
+		if (u2BufLen < IE_SIZE(prIe)) {
+			DBGLOG(AIS, WARN, "Truncated neighbor report\n");
+			break;
+		}
 	}
 	prAisSpecBssInfo->rNeiApRcvTime = kalGetTimeTick();
 	prAisSpecBssInfo->u4NeiApValidInterval = !ucValidInterval ? 0xffffffff :
