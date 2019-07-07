@@ -1443,6 +1443,16 @@ UINT_32 TsfRawData2IqFmt(P_EVENT_DUMP_MEM_T prEventDumpMem)
 	pucDataRAWWF0 = kmalloc(150, GFP_KERNEL);
 	pucDataRAWWF1 = kmalloc(150, GFP_KERNEL);
 
+	if ((!pucDataWF0) || (!pucDataWF1) ||
+	    (!pucDataRAWWF0) || (!pucDataRAWWF1)) {
+		DBGLOG(INIT, ERROR, "kmalloc failed.\n");
+		kfree(pucDataWF0);
+		kfree(pucDataWF1);
+		kfree(pucDataRAWWF0);
+		kfree(pucDataRAWWF1);
+		return -1;
+	}
+
 	fgAppend = TRUE;
 
 	DBGLOG(RFTEST, INFO, "TsfRawData2IqFmt : prEventDumpMem->u4RemainLength = %u\n",
@@ -1508,7 +1518,7 @@ UINT_32 TsfRawData2IqFmt(P_EVENT_DUMP_MEM_T prEventDumpMem)
 			u4RemainByte = 0;
 			u4CpyLen = 0;
 		} else {
-			u4CpyLen = (u4RemainByte - u4FmtLen >= 0) ? u4FmtLen : u4RemainByte;
+			u4CpyLen = (u4RemainByte >= u4FmtLen) ? u4FmtLen : u4RemainByte;
 		}
 
 		DBGLOG(RFTEST, TRACE, "TsfRawData2IqFmt : u4CpyLen = %u\n", u4CpyLen);
