@@ -5900,6 +5900,24 @@ VOID wlanInitFeatureOption(IN P_ADAPTER_T prAdapter)
 	prWifiVar->ePowerMode = (PARAM_POWER_MODE) wlanCfgGetUint32(prAdapter, "PowerSave", Param_PowerModeMax);
 	prWifiVar->rScanInfo.rScanParam.u2DefaultDwellTime =
 	    (UINT_16)wlanCfgGetUint32(prAdapter, "DefaultDwellTime", 0);
+#if CFG_SUPPORT_DATA_STALL
+	prWifiVar->u4PerHighThreshold = (uint32_t) wlanCfgGetUint32(
+			prAdapter, "PerHighThreshold",
+			EVENT_PER_HIGH_THRESHOLD);
+	prWifiVar->u4TxLowRateThreshold = (uint32_t) wlanCfgGetUint32(
+			prAdapter, "TxLowRateThreshold",
+			EVENT_TX_LOW_RATE_THRESHOLD);
+	prWifiVar->u4RxLowRateThreshold = (uint32_t) wlanCfgGetUint32(
+			prAdapter, "RxLowRateThreshold",
+			EVENT_RX_LOW_RATE_THRESHOLD);
+	prWifiVar->u4ReportEventInterval = (uint32_t) wlanCfgGetUint32(
+			prAdapter, "ReportEventInterval",
+			REPORT_EVENT_INTERVAL);
+	prWifiVar->u4TrafficThreshold = (uint32_t) wlanCfgGetUint32(
+			prAdapter, "TrafficThreshold",
+			TRAFFIC_RHRESHOLD);
+#endif
+
 }
 
 VOID wlanCfgSetSwCtrl(IN P_ADAPTER_T prAdapter)
@@ -7377,6 +7395,23 @@ void wlanFinishCollectingLinkQuality(P_GLUE_INFO_T prGlueInfo)
 	prLinkQualityInfo->u8LastTxFailCount = prLinkQualityInfo->u8TxFailCount;
 	prLinkQualityInfo->u8LastTxTotalCount = prLinkQualityInfo->u8TxTotalCount;
 	prLinkQualityInfo->u8LastIdleSlotCount = prLinkQualityInfo->u8IdleSlotCount;
+#if CFG_SUPPORT_DATA_STALL
+	/* Just for Station mode */
+	if (!(prAdapter->prAisBssInfo->prStaRecOfAP))
+		return;
+	if (u8TxTotalCntDif >= (UINT_64)prAdapter->rWifiVar.u4TrafficThreshold) {
+		if (prLinkQualityInfo->u4CurTxPer > prAdapter->rWifiVar.u4PerHighThreshold)
+			mtk_cfg80211_vendor_event_driver_error(prGlueInfo->prAdapter,
+				EVENT_PER_HIGH, (UINT_16)sizeof(UINT_8));
+		else if (prLinkQualityInfo->u4CurTxRate < prAdapter->rWifiVar.u4TxLowRateThreshold)
+			mtk_cfg80211_vendor_event_driver_error(prGlueInfo->prAdapter,
+				EVENT_TX_LOW_RATE, (UINT_16)sizeof(UINT_8));
+		else if (prLinkQualityInfo->u4CurRxRate &&
+					(prLinkQualityInfo->u4CurRxRate < prAdapter->rWifiVar.u4RxLowRateThreshold))
+			mtk_cfg80211_vendor_event_driver_error(prGlueInfo->prAdapter,
+				EVENT_RX_LOW_RATE, (UINT_16)sizeof(UINT_8));
+		}
+#endif
 }
 
 UINT_32 wlanGetStaIdxByWlanIdx(IN P_ADAPTER_T prAdapter,

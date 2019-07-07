@@ -43,6 +43,9 @@
 */
 #define GOOGLE_OUI 0x001A11
 #define OUI_QCA 0x001374
+#if CFG_SUPPORT_DATA_STALL
+#define OUI_MTK 0x000CE7
+#endif
 
 #define NL80211_VENDOR_SUBCMD_ACS 54
 #define NL80211_VENDOR_SUBCMD_GET_FEATURES 55
@@ -162,7 +165,15 @@ typedef enum {
 	GSCAN_EVENT_COMPLETE_SCAN,
 	GSCAN_EVENT_HOTLIST_RESULTS_LOST,
 	WIFI_EVENT_RSSI_MONITOR,
+#if CFG_SUPPORT_DATA_STALL
+	WIFI_EVENT_DRIVER_ERROR
+#endif
 } WIFI_VENDOR_EVENT;
+#if CFG_SUPPORT_DATA_STALL
+enum WIFI_DATA_STALL_ATTRIBUTE {
+	WIFI_ATTRIBUTE_ERROR_REASON = 0,
+};
+#endif
 
 enum WIFI_P2P_VENDOR_EVENT {
 	WIFI_EVENT_ACS,
@@ -903,4 +914,8 @@ int mtk_cfg80211_vendor_get_features(struct wiphy *wiphy,
 		struct wireless_dev *wdev, const void *data, int data_len);
 int mtk_cfg80211_vendor_driver_memory_dump(struct wiphy *wiphy,
 	struct wireless_dev *wdev, const void *data, int data_len);
+#if CFG_SUPPORT_DATA_STALL
+int mtk_cfg80211_vendor_event_driver_error(struct _ADAPTER_T *prAdapter,
+					enum ENUM_VENDOR_DRIVER_EVENT event, UINT_32 dataLen);
+#endif
 #endif /* _GL_VENDOR_H */

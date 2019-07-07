@@ -582,6 +582,12 @@ static const struct nl80211_vendor_cmd_info mtk_wlan_vendor_events[] = {
 		.vendor_id = GOOGLE_OUI,
 		.subcmd = WIFI_EVENT_RSSI_MONITOR
 	},
+#if CFG_SUPPORT_DATA_STALL
+	{
+		.vendor_id = OUI_MTK,
+		.subcmd = WIFI_EVENT_DRIVER_ERROR
+	},
+#endif
 };
 
 /* There isn't a lot of sense in it, but you can transmit anything you like */

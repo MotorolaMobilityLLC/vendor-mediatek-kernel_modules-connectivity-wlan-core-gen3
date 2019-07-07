@@ -137,6 +137,13 @@ extern struct delayed_work sched_workq;
 				    RADIOTAP_FIELD_ANT | \
 				    RADIOTAP_FIELD_VENDOR)
 #endif
+#if CFG_SUPPORT_DATA_STALL
+#define REPORT_EVENT_INTERVAL		3
+#define EVENT_PER_HIGH_THRESHOLD	50
+#define EVENT_TX_LOW_RATE_THRESHOLD	20
+#define EVENT_RX_LOW_RATE_THRESHOLD	50
+#define TRAFFIC_RHRESHOLD      10
+#endif
 
 /*******************************************************************************
 *                             D A T A   T Y P E S
@@ -249,6 +256,16 @@ typedef enum _ENUM_AGPS_EVENT {
 	AGPS_EVENT_WLAN_OFF,
 	AGPS_EVENT_WLAN_AP_LIST,
 } ENUM_CCX_EVENT;
+#if CFG_SUPPORT_DATA_STALL
+enum ENUM_VENDOR_DRIVER_EVENT {
+	EVENT_TEST_MODE,
+	EVENT_ARP_NO_RESPONSE,
+	EVENT_PER_HIGH,
+	EVENT_TX_LOW_RATE,
+	EVENT_RX_LOW_RATE
+};
+#endif
+
 BOOLEAN kalIndicateAgpsNotify(P_ADAPTER_T prAdapter, UINT_8 cmd, PUINT_8 data, UINT_16 dataLen);
 #endif /* CFG_SUPPORT_AGPS_ASSIST */
 
@@ -730,7 +747,6 @@ do {\
 	left_size -= ret_val;\
 	buf += ret_val;\
 } while (0)
-
 #define USEC_TO_SYSTIME(_usec)      ((_usec) / USEC_PER_MSEC)
 #define MSEC_TO_SYSTIME(_msec)      (_msec)
 
@@ -1150,7 +1166,6 @@ BOOLEAN kalScanParseRandomMac(
 BOOLEAN kalSchedScanParseRandomMac(
 	const struct net_device *ndev,
 	IN struct cfg80211_sched_scan_request *request);
-
 VOID kalTakeVcoreAction(UINT_8 ucAction);
 
 VOID kalVcoreInitUninit(BOOLEAN fgInit);

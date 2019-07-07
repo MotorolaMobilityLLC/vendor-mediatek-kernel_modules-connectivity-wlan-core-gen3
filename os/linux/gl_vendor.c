@@ -2077,7 +2077,6 @@ int mtk_cfg80211_vendor_driver_memory_dump(struct wiphy *wiphy,
 	}
 	rParam.ucBssIdx = 0; /* prNetDevPrivate->ucBssIdx; */
 	rParam.prLinkQualityInfo = &rLinkQualityInfo;
-
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
 	i4Status = kalIoctl(prGlueInfo, wlanoidGetLinkQualityInfo,
 		 &rParam, sizeof(struct PARAM_GET_LINK_QUALITY_INFO),
@@ -2136,7 +2135,6 @@ int mtk_cfg80211_vendor_driver_memory_dump(struct wiphy *wiphy,
 err_handle_label:
 	return i4Status;
 }
-
 int mtk_cfg80211_vendor_acs(struct wiphy *wiphy,
 		struct wireless_dev *wdev, const void *data, int data_len)
 {
@@ -2365,4 +2363,49 @@ nla_put_failure:
 	kfree_skb(reply_skb);
 	return -EINVAL;
 }
+#if CFG_SUPPORT_DATA_STALL
+int mtk_cfg80211_vendor_event_driver_error(struct _ADAPTER_T *prAdapter,
+					enum ENUM_VENDOR_DRIVER_EVENT event, UINT_32 dataLen)
+{
+	struct sk_buff *skb = NULL;
+	struct wiphy *wiphy;
+	struct wireless_dev *wdev;
+	P_WIFI_VAR_T prWifiVar = &prAdapter->rWifiVar;
 
+	wiphy = priv_to_wiphy(prAdapter->prGlueInfo);
+	wdev = ((prAdapter->prGlueInfo)->prDevHandler)->ieee80211_ptr;
+
+	if (!wiphy || !wdev || !prWifiVar)
+		return -ENOMEM;
+
+	if (prAdapter->tmReportinterval > 0 &&
+		!CHECK_FOR_TIMEOUT(kalGetTimeTick(),
+		prAdapter->tmReportinterval,
+		prWifiVar->u4ReportEventInterval*1000)) {
+		return -ENOMEM;
+	}
+	GET_CURRENT_SYSTIME(&prAdapter->tmReportinterval);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 4, 0))
+	skb = cfg80211_vendor_event_alloc(wiphy, wdev, dataLen,
+		WIFI_EVENT_DRIVER_ERROR, GFP_KERNEL);
+#else
+	skb = cfg80211_vendor_event_alloc(wiphy, dataLen,
+		WIFI_EVENT_DRIVER_ERROR, GFP_KERNEL);
+#endif
+	if (!skb) {
+		DBGLOG(REQ, ERROR, "%s allocate skb failed\n", __func__);
+		return -ENOMEM;
+	}
+
+	if (dataLen > 0 &&
+		unlikely(nla_put(skb, WIFI_ATTRIBUTE_ERROR_REASON
+		, dataLen, &event) < 0))
+		goto nla_put_failure;
+
+	cfg80211_vendor_event(skb, GFP_KERNEL);
+	return TRUE;
+nla_put_failure:
+	kfree_skb(skb);
+	return FALSE;
+}
+#endif

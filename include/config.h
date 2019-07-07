@@ -906,6 +906,7 @@
 #else
 #define CFG_SUPPORT_SCAN_RANDOM_MAC     0
 #endif
+#define CFG_SUPPORT_DATA_STALL			1
 
 /*------------------------------------------------------------------------------
  * Link Quality Monitor

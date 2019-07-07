@@ -3128,8 +3128,13 @@ int tx_thread(void *data)
 		if (prGlueInfo->fgEnSdioTestPattern == TRUE)
 			kalSetEvent(prGlueInfo);
 #endif
-		if (test_and_clear_bit(GLUE_FLAG_RESET_CONN_BIT, &prGlueInfo->ulFlag))
+		if (test_and_clear_bit(GLUE_FLAG_RESET_CONN_BIT, &prGlueInfo->ulFlag)) {
 			aisBssBeaconTimeout(prGlueInfo->prAdapter);
+#if CFG_SUPPORT_DATA_STALL
+			mtk_cfg80211_vendor_event_driver_error(prGlueInfo->prAdapter,
+				EVENT_ARP_NO_RESPONSE, (UINT_16)sizeof(UINT_8));
+#endif
+		}
 
 #if CFG_DBG_GPIO_PINS
 		/* TX thread go to sleep */
@@ -5488,6 +5493,9 @@ VOID kalPerMonHandler(IN P_ADAPTER_T prAdapter, ULONG ulParam)
 	struct net_device *prNetDev = NULL;
 	UINT_32 u4Idx = 0;
 	P_BSS_INFO_T prP2pBssInfo = (P_BSS_INFO_T) NULL;
+#if CFG_SUPPORT_DATA_STALL
+	P_WIFI_VAR_T prWifiVar = &prAdapter->rWifiVar;
+#endif
 
 	LONG latestTxBytes, latestRxBytes, txDiffBytes, rxDiffBytes;
 	LONG p2pLatestTxBytes, p2pLatestRxBytes, p2pTxDiffBytes, p2pRxDiffBytes;
@@ -5540,6 +5548,12 @@ VOID kalPerMonHandler(IN P_ADAPTER_T prAdapter, ULONG ulParam)
 	prPerMonitor->ulLastRxBytes = latestRxBytes;
 	prPerMonitor->ulP2PLastTxBytes = p2pLatestTxBytes;
 	prPerMonitor->ulP2PLastRxBytes = p2pLatestRxBytes;
+#if CFG_SUPPORT_DATA_STALL
+	/* test mode */
+	if (prWifiVar->u4ReportEventInterval == 0)
+		mtk_cfg80211_vendor_event_driver_error(prAdapter,
+			EVENT_TEST_MODE, (uint16_t)sizeof(u_int8_t));
+#endif
 
 	if (prPerMonitor->ulThroughput < THROUGHPUT_L1_THRESHOLD)
 		prPerMonitor->u4TarPerfLevel = 0;
