@@ -7368,8 +7368,7 @@ void wlanFinishCollectingLinkQuality(P_GLUE_INFO_T prGlueInfo)
 			  prLinkQualityInfo->u8LastTxFailCount) : 0;
 	if (u8TxTotalCntDif >= u8TxFailCntDif)
 		prLinkQualityInfo->u4CurTxPer = (u8TxTotalCntDif == 0) ? 0 :
-				(int)((float)(u8TxFailCntDif * 100) /
-					(float)(u8TxTotalCntDif));
+				(int)((u8TxFailCntDif * 100) / (u8TxTotalCntDif));
 	else
 		prLinkQualityInfo->u4CurTxPer = 0;
 	if (prLinkQualityInfo->u8IdleSlotCount < prLinkQualityInfo->u8LastIdleSlotCount) {

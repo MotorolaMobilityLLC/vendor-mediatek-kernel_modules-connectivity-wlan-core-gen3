@@ -138,11 +138,11 @@ extern struct delayed_work sched_workq;
 				    RADIOTAP_FIELD_VENDOR)
 #endif
 #if CFG_SUPPORT_DATA_STALL
-#define REPORT_EVENT_INTERVAL		3
-#define EVENT_PER_HIGH_THRESHOLD	50
+#define REPORT_EVENT_INTERVAL		30
+#define EVENT_PER_HIGH_THRESHOLD	80
 #define EVENT_TX_LOW_RATE_THRESHOLD	20
-#define EVENT_RX_LOW_RATE_THRESHOLD	50
-#define TRAFFIC_RHRESHOLD      10
+#define EVENT_RX_LOW_RATE_THRESHOLD	20
+#define TRAFFIC_RHRESHOLD      150
 #endif
 
 /*******************************************************************************
