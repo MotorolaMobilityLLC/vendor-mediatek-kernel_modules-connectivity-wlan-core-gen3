@@ -1454,12 +1454,18 @@ INT_32 wlanUpdateDfsChannelTable(P_GLUE_INFO_T prGlueInfo, UINT_8 ucCurrChNo)
 				if (aucChannelList[i].ucChannelNum == ucCurrChNo) {
 
 					mtk_5ghz_channels[j].dfs_state =	NL80211_DFS_AVAILABLE;
+					mtk_5ghz_channels[j].flags &= ~IEEE80211_CHAN_RADAR;
+					mtk_5ghz_channels[j].orig_flags &= ~IEEE80211_CHAN_RADAR;
+
 					DBGLOG(INIT, INFO,
 						"update all dfs channel %u to NL80211_DFS_AVAILABLE by force.\n",
 						aucChannelList[i].ucChannelNum);
 				} else {
 
 					mtk_5ghz_channels[j].dfs_state =	 NL80211_DFS_USABLE;
+					mtk_5ghz_channels[j].flags |= IEEE80211_CHAN_RADAR;
+					mtk_5ghz_channels[j].orig_flags |= IEEE80211_CHAN_RADAR;
+
 					DBGLOG(INIT, TRACE,
 						"update all dfs channel %u to NL80211_DFS_USABLE.\n",
 						aucChannelList[i].ucChannelNum);
