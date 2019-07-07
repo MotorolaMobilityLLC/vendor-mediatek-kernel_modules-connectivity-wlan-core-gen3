@@ -1487,6 +1487,17 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 				UINT_8 ucChnlNum = 0;
 				UINT_8 i = 0;
 
+				/* Add the connection channel */
+				if (prAisFsmInfo->prTargetBssDesc) {
+					ucChannel = prAisFsmInfo->prTargetBssDesc->ucChannelNum;
+					eBand = ucChannel <= 14 ? BAND_2G4:BAND_5G;
+					if (rlmDomainIsLegalChannel(prAdapter, eBand, ucChannel) &&
+						ucChnlNum != MAXIMUM_OPERATION_CHANNEL_LIST) {
+						prChnlInfo[i].eBand = eBand;
+						prChnlInfo[i].ucChannelNum = ucChannel;
+						ucChnlNum++;
+					}
+				}
 				LINK_FOR_EACH_ENTRY(prNeiAP, prNeighborAPLink, rLinkEntry, struct NEIGHBOR_AP_T) {
 					ucChannel = prNeiAP->ucChannel;
 					eBand = ucChannel <= 14 ? BAND_2G4:BAND_5G;
