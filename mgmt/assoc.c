@@ -1569,6 +1569,12 @@ WLAN_STATUS assocSendReAssocRespFrame(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_
 
 	nicTxConfigPktControlFlag(prMsduInfo, MSDU_CONTROL_FLAG_FORCE_TX, TRUE);
 
+	DBGLOG(AAA, INFO,
+			"Send Assoc Resp to " MACSTR ", Seq: %d, status: %d\n",
+			MAC2STR(prStaRec->aucMacAddr),
+			prMsduInfo->ucTxSeqNum,
+			prStaRec->u2StatusCode);
+
 	/* 4 <6> Enqueue the frame to send this (Re)Association Response frame. */
 	DBGLOG(AAA, TRACE, "Send (Re)Assoc Resp, SeqNo: %d\n", prMsduInfo->ucTxSeqNum);
 	nicTxEnqueueMsdu(prAdapter, prMsduInfo);

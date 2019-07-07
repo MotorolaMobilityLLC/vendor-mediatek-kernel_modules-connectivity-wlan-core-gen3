@@ -93,6 +93,7 @@ BOOLEAN rsnParseRsnIE(IN P_ADAPTER_T prAdapter, IN P_RSN_INFO_ELEM_T prInfoElem,
 	UINT_16 u2AuthSuiteCount = 0;
 	PUINT_8 pucPairSuite = NULL;
 	PUINT_8 pucAuthSuite = NULL;
+	UINT_16 u2PmkidCount = 0;
 	PUINT_8 cp;
 
 	DEBUGFUNC("rsnParseRsnIE");
@@ -203,6 +204,35 @@ BOOLEAN rsnParseRsnIE(IN P_ADAPTER_T prAdapter, IN P_RSN_INFO_ELEM_T prInfoElem,
 		}
 
 		WLAN_GET_FIELD_16(cp, &u2Cap);
+		cp += 2;
+		u4RemainRsnIeLen -= 2;
+
+		if (u4RemainRsnIeLen == 0)
+			break;
+
+		if (u4RemainRsnIeLen < 2) {
+			DBGLOG(RSN, TRACE,
+				"Fail to parse PMKID count in RSN iE\n");
+			return FALSE;
+		}
+
+		WLAN_GET_FIELD_16(cp, &u2PmkidCount);
+		cp += 2;
+		u4RemainRsnIeLen -= 2;
+
+		if (u2PmkidCount > 4) {
+			DBGLOG(RSN, TRACE,
+				"Bad RSN IE due to PMKID count(%d)\n",
+				u2PmkidCount);
+			return FALSE;
+		}
+
+		if (u2PmkidCount > 0 && u4RemainRsnIeLen < 16 * u2PmkidCount) {
+			DBGLOG(RSN, TRACE,
+				"Fail to parse PMKID in RSN iE, count: %d\n",
+				u2PmkidCount);
+			return FALSE;
+		}
 	} while (FALSE);
 
 	/* Save the RSN information for the BSS. */
