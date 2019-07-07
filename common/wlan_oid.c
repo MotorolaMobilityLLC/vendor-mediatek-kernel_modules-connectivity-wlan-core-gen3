@@ -3514,10 +3514,10 @@ wlanoidRssiMonitor(IN P_ADAPTER_T prAdapter,
 	}
 
 	kalMemZero(&rRssi, sizeof(PARAM_RSSI_MONITOR_T));
-
+#if 0
 	if (kalGetMediaStateIndicated(prAdapter->prGlueInfo) == PARAM_MEDIA_STATE_DISCONNECTED)
 		return WLAN_STATUS_ADAPTER_NOT_READY;
-
+#endif
 	kalMemCopy(&rRssi, pvQueryBuffer, sizeof(PARAM_RSSI_MONITOR_T));
 	if (rRssi.enable) {
 		if (rRssi.max_rssi_value > PARAM_WHQL_RSSI_MAX_DBM)

@@ -1345,6 +1345,14 @@ int mtk_cfg80211_vendor_set_rssi_monitoring(struct wiphy *wiphy, struct wireless
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
 	ASSERT(prGlueInfo);
 
+	if (rRSSIMonitor.enable == TRUE) {
+		if (wdev->current_bss == NULL ||
+		    kalGetMediaStateIndicated(prGlueInfo) == PARAM_MEDIA_STATE_DISCONNECTED) {
+			DBGLOG(REQ, TRACE, "Reject Requsts to enable RSSI monitor when disconnected\n");
+			return -EINVAL;
+		}
+	}
+
 	rStatus = kalIoctl(prGlueInfo,
 			   wlanoidRssiMonitor,
 			   &rRSSIMonitor, sizeof(PARAM_RSSI_MONITOR_T), FALSE, FALSE, TRUE, &u4BufLen);
