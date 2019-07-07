@@ -61,6 +61,8 @@ static struct wireless_dev *gprWdev;
 BOOLEAN fgNvramAvailable;
 UINT_8 g_aucNvram[CFG_FILE_WIFI_REC_SIZE];
 
+static INT_32 g_fixedIfindex;
+
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -1573,11 +1575,30 @@ static INT_32 wlanNetRegister(struct wireless_dev *prWdev)
 			break;
 		}
 
-		if (register_netdev(prWdev->netdev) < 0) {
-			DBGLOG(INIT, ERROR, "Register net_device failed\n");
-			wlanClearDevIdx(prWdev->netdev);
-			i4DevIdx = -1;
+		if (g_fixedIfindex != 0) {
+			prWdev->netdev->ifindex = g_fixedIfindex;
+			DBGLOG(INIT, INFO, "Use assigned ifindex %d.\n",
+				prWdev->netdev->ifindex);
 		}
+
+		if (register_netdev(prWdev->netdev) < 0) {
+			/*if g_fixedIfindex is already in use, re-register..*/
+			prWdev->netdev->ifindex = 0;
+			if (register_netdev(prWdev->netdev) < 0) {
+				DBGLOG(INIT, ERROR, "Register net_device failed\n");
+							wlanClearDevIdx(prWdev->netdev);
+							i4DevIdx = -1;
+			} else {
+				g_fixedIfindex = prWdev->netdev->ifindex;
+				DBGLOG(INIT, INFO, "Use ifindex as %d from now\n",
+					g_fixedIfindex);
+			}
+		} else {
+			g_fixedIfindex = prWdev->netdev->ifindex;
+			DBGLOG(INIT, INFO, "Use ifindex as %d from now\n",
+				g_fixedIfindex);
+		}
+
 #if 1
 		prNetDevPrivate = (P_NETDEV_PRIVATE_GLUE_INFO) netdev_priv(prGlueInfo->prDevHandler);
 		ASSERT(prNetDevPrivate->prGlueInfo == prGlueInfo);
@@ -2838,6 +2859,7 @@ static int initWlan(void)
 	P_GLUE_INFO_T prGlueInfo = NULL;
 
 	DBGLOG(INIT, INFO, "initWlan\n");
+	g_fixedIfindex = 0;
 
 	wlanDebugInit();
 	fgNvramAvailable = FALSE;
