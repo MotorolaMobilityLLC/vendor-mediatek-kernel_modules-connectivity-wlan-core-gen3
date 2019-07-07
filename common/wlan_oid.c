@@ -1082,6 +1082,9 @@ wlanoidSetConnect(IN P_ADAPTER_T prAdapter, IN PVOID pvSetBuffer, IN UINT_32 u4S
 			DBGLOG(OID, INFO, "DisBySsid\n");
 			kalIndicateStatusAndComplete(prGlueInfo, WLAN_STATUS_MEDIA_DISCONNECT, NULL, 0);
 			prAisAbortMsg->ucReasonOfDisconnect = DISCONNECT_REASON_CODE_NEW_CONNECTION;
+			cnmMemFree(prAdapter, prAisAbortMsg);
+			/* reject this connect to avoid to install key fail */
+			return WLAN_STATUS_FAILURE;
 		}
 	} else
 		prAisAbortMsg->ucReasonOfDisconnect = DISCONNECT_REASON_CODE_NEW_CONNECTION;
