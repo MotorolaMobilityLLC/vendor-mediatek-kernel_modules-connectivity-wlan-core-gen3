@@ -1426,6 +1426,54 @@ void wlanMonWorkHandler(struct work_struct *work)
 
 /*----------------------------------------------------------------------------*/
 /*!
+ * \brief when station connect DFS channel, update all DFS channel as NL80211_DFS_USABLE.
+ *          workaround this case: Hotspot can not setup when station connect DFS channel.
+ * \param[in] prGlueInfo      Pointer to glue info
+ *
+ * \return   none
+ */
+/*----------------------------------------------------------------------------*/
+INT_32 wlanUpdateDfsChannelTable(P_GLUE_INFO_T prGlueInfo, UINT_8 ucCurrChNo)
+{
+	UINT_8 i, j;
+	UINT_8 ucNumOfChannel;
+	RF_CHANNEL_INFO_T aucChannelList[ARRAY_SIZE(mtk_5ghz_channels)];
+
+	DBGLOG(INIT, TRACE, "ucCurrChNo %u.\n", ucCurrChNo);
+
+	/* 1. Get current domain DFS channel list */
+	rlmDomainGetDfsChnls(prGlueInfo->prAdapter, ARRAY_SIZE(mtk_5ghz_channels),
+		&ucNumOfChannel, aucChannelList);
+
+	/* 2. Enable specific channel based on domain channel list */
+	for (i = 0; i < ucNumOfChannel; i++) {
+
+		for (j = 0; j < ARRAY_SIZE(mtk_5ghz_channels); j++) {
+			if (mtk_5ghz_channels[j].hw_value == aucChannelList[i].ucChannelNum) {
+
+				if (aucChannelList[i].ucChannelNum == ucCurrChNo) {
+
+					mtk_5ghz_channels[j].dfs_state =	NL80211_DFS_AVAILABLE;
+					DBGLOG(INIT, INFO,
+						"update all dfs channel %u to NL80211_DFS_AVAILABLE by force.\n",
+						aucChannelList[i].ucChannelNum);
+				} else {
+
+					mtk_5ghz_channels[j].dfs_state =	 NL80211_DFS_USABLE;
+					DBGLOG(INIT, TRACE,
+						"update all dfs channel %u to NL80211_DFS_USABLE.\n",
+						aucChannelList[i].ucChannelNum);
+				}
+				break;
+			}
+		}
+	}
+
+	return 0;
+}
+
+/*----------------------------------------------------------------------------*/
+/*!
  * \brief Update channel table for cfg80211 based on current country domain
  *
  * \param[in] prGlueInfo      Pointer to glue info

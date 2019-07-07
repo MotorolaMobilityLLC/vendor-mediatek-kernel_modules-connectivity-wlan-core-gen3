@@ -1004,11 +1004,15 @@ UINT_32 wlanDecimalStr2Hexadecimals(PUINT_8 pucDecimalStr, PUINT_16 pu2Out);
 
 WLAN_STATUS wlanCfgParse(IN P_ADAPTER_T prAdapter, PUINT_8 pucConfigBuf, UINT_32 u4ConfigBufLen);
 
+
 UINT_32
 wlanQueryLteSafeChannel(IN P_ADAPTER_T prAdapter,
 		IN UINT_8 ucRoleIndex);
 
 UINT_8
 wlanGetChannelIndex(IN UINT_8 channel);
+
+extern INT_32 wlanUpdateDfsChannelTable(P_GLUE_INFO_T prGlueInfo, UINT_8 ucCurrChNo);
+
 
 #endif /* _WLAN_LIB_H */
