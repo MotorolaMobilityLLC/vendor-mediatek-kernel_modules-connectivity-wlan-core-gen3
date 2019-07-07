@@ -53,6 +53,13 @@
 #include <linux/pm_qos.h>
 #include <helio-dvfsrc-opp.h>
 #endif
+
+#ifdef FW_CFG_SUPPORT
+#ifdef CFG_SUPPORT_COEX_IOT_AP
+#include "fwcfg.h"
+#endif
+#endif
+
 /*******************************************************************************
  *                              C O N S T A N T S
  ********************************************************************************
@@ -1250,6 +1257,10 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 		/*workaround sta dfs channel + sap turn on fail issue.*/
 		wlanUpdateDfsChannelTable(prGlueInfo, 0);
 
+#if (defined FW_CFG_SUPPORT) && (defined CFG_SUPPORT_COEX_IOT_AP)
+		if (prGlueInfo->prAdapter)
+			wlanFWCfgForceDisIotAP(prGlueInfo->prAdapter);
+#endif
 		break;
 
 	case WLAN_STATUS_SCAN_COMPLETE:

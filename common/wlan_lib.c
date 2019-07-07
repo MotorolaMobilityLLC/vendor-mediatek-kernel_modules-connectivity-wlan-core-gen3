@@ -5918,6 +5918,9 @@ VOID wlanInitFeatureOption(IN P_ADAPTER_T prAdapter)
 			TRAFFIC_RHRESHOLD);
 #endif
 
+#ifdef CFG_SUPPORT_COEX_IOT_AP
+	prWifiVar->ucEnCoexIotAP = (UINT_8) wlanCfgGetUint32(prAdapter, "EnCoexIotAP", 1);
+#endif
 }
 
 VOID wlanCfgSetSwCtrl(IN P_ADAPTER_T prAdapter)

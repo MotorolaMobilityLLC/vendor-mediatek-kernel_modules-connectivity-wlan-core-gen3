@@ -89,6 +89,16 @@ struct _FW_CFG {
 	PUINT_8 key;
 	PUINT_8 value;
 };
+#ifdef CFG_SUPPORT_COEX_IOT_AP
+#define COEX_ISSUE_TYPE_ID    1
+struct FwCfgForIotAP {
+	UINT_8 ucIotType;
+	UINT_8 aucIotApMacAddr[MAC_ADDR_LEN];
+	UINT_8 ucMacAddrMask[MAC_ADDR_LEN];
+	PUINT_8 aucEnableCmdString;
+	PUINT_8 aucDisableCmdString;
+};
+#endif
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -123,5 +133,10 @@ WLAN_STATUS wlanFwCfgParse(IN P_ADAPTER_T prAdapter, PUINT_8 pucConfigBuf);
 WLAN_STATUS wlanFwArrayCfg(IN P_ADAPTER_T prAdpter);
 
 WLAN_STATUS wlanFwFileCfg(IN P_ADAPTER_T prAdpter);
+#ifdef CFG_SUPPORT_COEX_IOT_AP
+WLAN_STATUS wlanFWCfgForIotAP(IN P_ADAPTER_T prAdpter, UINT_8 aucBssid[]);
+WLAN_STATUS wlanFWCfgForceDisIotAP(IN P_ADAPTER_T prAdapter);
+#endif
+
 #endif
 #endif

@@ -776,6 +776,9 @@ typedef struct _WIFI_VAR_T {
 	UINT_32 u4TrafficThreshold;
 #endif
 
+#ifdef CFG_SUPPORT_COEX_IOT_AP
+	UINT_8 ucEnCoexIotAP;
+#endif
 #if CFG_RX_BA_REORDERING_ENHANCEMENT
 	BOOLEAN fgEnableReportIndependentPkt;
 #endif
@@ -1117,6 +1120,10 @@ struct _ADAPTER_T {
 #endif
 #if CFG_SUPPORT_DATA_STALL
 	OS_SYSTIME tmReportinterval;
+#endif
+#ifdef CFG_SUPPORT_COEX_IOT_AP
+	BOOLEAN fgEnCts2Self;
+	UINT_8 ucPrevItem;
 #endif
 };				/* end of _ADAPTER_T */
 

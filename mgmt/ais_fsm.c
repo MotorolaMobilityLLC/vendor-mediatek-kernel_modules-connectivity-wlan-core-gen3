@@ -33,6 +33,11 @@
 ********************************************************************************
 */
 #include "precomp.h"
+#ifdef FW_CFG_SUPPORT
+#ifdef CFG_SUPPORT_COEX_IOT_AP
+#include "fwcfg.h"
+#endif
+#endif
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -2785,6 +2790,9 @@ enum _ENUM_AIS_STATE_T aisFsmJoinCompleteAction(IN struct _ADAPTER_T *prAdapter,
 			prAisFsmInfo->ucJoinFailCntAfterScan = 0;
 			prAisBssInfo->u2DeauthReason = REASON_CODE_RESERVED;
 			glNotifyDrvStatus(CONNECT_AP, (PVOID)prStaRec->aucMacAddr);
+#if (defined FW_CFG_SUPPORT) && (defined CFG_SUPPORT_COEX_IOT_AP)
+			wlanFWCfgForIotAP(prAdapter, prAisFsmInfo->prTargetBssDesc->aucBSSID);
+#endif
 			/* 4 <1.7> Set the Next State of AIS FSM */
 			eNextState = AIS_STATE_NORMAL_TR;
 		}

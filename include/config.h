@@ -917,6 +917,9 @@
 #ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
 #define CFG_LINK_QUALITY_MONITOR_UPDATE_INTERVAL	1000
 #endif
+#ifdef FW_CFG_SUPPORT
+#define CFG_SUPPORT_COEX_IOT_AP
+#endif
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
