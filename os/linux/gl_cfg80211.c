@@ -1190,6 +1190,12 @@ int mtk_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev, struct cf
 			}
 		}
 #endif
+		/*We need to free buffer first*/
+		if (prConnSettings->assocIeLen > 0) {
+			kalMemFree(prConnSettings->pucAssocIEs, VIR_MEM_TYPE,
+				   prConnSettings->assocIeLen);
+			prConnSettings->assocIeLen = 0;
+		}
 		/*Do mem allocate*/
 		if (prConnSettings->assocIeLen == 0) {
 			prConnSettings->pucAssocIEs =
@@ -1198,10 +1204,10 @@ int mtk_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev, struct cf
 		}
 		if (prConnSettings->pucAssocIEs)
 			kalMemCopy(prConnSettings->pucAssocIEs,
-			   sme->ie, prConnSettings->assocIeLen);
+				   sme->ie, prConnSettings->assocIeLen);
 		else {
 			DBGLOG(INIT, INFO,
-				"allocate memory for AssocIEs failed!\n");
+			       "allocate memory for AssocIEs failed!\n");
 			prConnSettings->assocIeLen = 0;
 			return -ENOMEM;
 		}
@@ -1275,13 +1281,6 @@ int mtk_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev, struct cf
 	rNewSsid.pucBssid = (UINT_8 *)sme->bssid;
 	rNewSsid.pucSsid = (UINT_8 *)sme->ssid;
 	rNewSsid.u4SsidLen = sme->ssid_len;
-
-	if (prConnSettings->assocIeLen > 0) {
-		/*We need to free them first*/
-		kalMemFree(prConnSettings->pucAssocIEs, VIR_MEM_TYPE,
-			prConnSettings->assocIeLen);
-		prConnSettings->assocIeLen = 0;
-	}
 
 	rStatus = kalIoctl(prGlueInfo, wlanoidSetConnect, (PVOID)&rNewSsid, sizeof(PARAM_CONNECT_T),
 			   FALSE, FALSE, TRUE, &u4BufLen);
