@@ -1383,6 +1383,36 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 			prGlueInfo->eParamMediaStateIndicated = PARAM_MEDIA_STATE_DISCONNECTED;
 			break;
 		}
+
+	case WLAN_STATUS_BSS_CH_SWITCH:
+		{
+			struct cfg80211_chan_def chan;
+
+			if (!prGlueInfo->prAdapter || !prGlueInfo->prAdapter->prAisBssInfo) {
+				DBGLOG(INIT, ERROR, "No AIS BSS info\n");
+				return;
+			}
+
+			/* retrieve channel */
+			ucChannelNum = prGlueInfo->prAdapter->prAisBssInfo->ucPrimaryChannel;
+			if (ucChannelNum <= 14) {
+				prChannel =
+					ieee80211_get_channel(priv_to_wiphy(prGlueInfo),
+							      ieee80211_channel_to_frequency
+							      (ucChannelNum, NL80211_BAND_2GHZ));
+			} else {
+				prChannel =
+					ieee80211_get_channel(priv_to_wiphy(prGlueInfo),
+							      ieee80211_channel_to_frequency
+							      (ucChannelNum, NL80211_BAND_5GHZ));
+			}
+
+			/* create the chandef structure */
+			cfg80211_chandef_create(&chan, prChannel, NL80211_CHAN_HT20);
+
+			/* CFG80211 indication */
+			cfg80211_ch_switch_notify(prGlueInfo->prDevHandler, &chan);
+		}
 	default:
 		break;
 	}

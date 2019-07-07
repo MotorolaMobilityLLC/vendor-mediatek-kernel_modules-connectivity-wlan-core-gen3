@@ -1476,6 +1476,14 @@ static UINT_8 rlmRecIeInfoForClient(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInf
 			qmSetStaRecTxAllowed(prAdapter, prStaRec, TRUE);
 			DBGLOG(RLM, INFO, "After switching, TxAllowed=%d\n", prStaRec->fgIsTxAllowed);
 		}
+		/*
+		 * In STA+SAP concurrent mode, to ensure the two BSSes are working in SCC,
+		 * we need to indicate Framework the channel switch event to let it restart SAP
+		 * on the new channel.
+		 */
+		if (cnmSapIsActive(prAdapter))
+			kalIndicateStatusAndComplete(prAdapter->prGlueInfo,
+						     WLAN_STATUS_BSS_CH_SWITCH, NULL, 0);
 	}
 #endif
 
@@ -2583,7 +2591,16 @@ VOID rlmProcessSpecMgtAction(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb)
 				qmSetStaRecTxAllowed(prAdapter, prStaRec, TRUE);
 				DBGLOG(RLM, INFO, "After switching, TxAllowed=%d\n", prStaRec->fgIsTxAllowed);
 			}
+			/*
+			 * In STA+SAP concurrent mode, to ensure the two BSSes are working in SCC,
+			 * we need to indicate Framework the channel switch event to let it restart SAP
+			 * on the new channel.
+			 */
+			if (cnmSapIsActive(prAdapter))
+				kalIndicateStatusAndComplete(prAdapter->prGlueInfo,
+							     WLAN_STATUS_BSS_CH_SWITCH, NULL, 0);
 		}
+
 		nicUpdateBss(prAdapter, prBssInfo->ucBssIndex);
 	}
 

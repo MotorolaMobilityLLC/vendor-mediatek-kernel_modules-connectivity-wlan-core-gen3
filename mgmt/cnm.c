@@ -395,23 +395,14 @@ BOOLEAN cnmAisInfraChannelFixed(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUI
 	for (i = 0; i < BSS_INFO_NUM; i++) {
 		prBssInfo = prAdapter->aprBssInfo[i];
 
-#if 0
-		DBGLOG(INIT, INFO, "%s BSS[%u] active[%u] netType[%u]\n",
-				    __func__, i, prBssInfo->fgIsNetActive, prBssInfo->eNetworkType;
-#endif
-
 		if (!IS_NET_ACTIVE(prAdapter, i))
 			continue;
 
-#if CFG_ENABLE_WIFI_DIRECT
+#if CFG_ENABLE_WIFI_DIRECT && CFG_SAP_LIMIT_AIS_CHNL
 		if (prBssInfo->eNetworkType == NETWORK_TYPE_P2P) {
-			BOOLEAN fgFixedChannel = p2pFuncIsAPMode(prAdapter->rWifiVar.prP2PConnSettings);
-
-			if (fgFixedChannel) {
-
+			if (p2pFuncIsAPMode(prAdapter->rWifiVar.prP2PConnSettings)) {
 				*prBand = prBssInfo->eBand;
 				*pucPrimaryChannel = prBssInfo->ucPrimaryChannel;
-
 				return TRUE;
 
 			}
@@ -431,28 +422,6 @@ BOOLEAN cnmAisInfraChannelFixed(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUI
 
 	return FALSE;
 }
-
-#if CFG_SUPPORT_CHNL_CONFLICT_REVISE
-BOOLEAN cnmAisDetectP2PChannel(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel)
-{
-	UINT_8 i = 0;
-	P_BSS_INFO_T prBssInfo;
-#if CFG_ENABLE_WIFI_DIRECT
-	for (; i < BSS_INFO_NUM; i++) {
-		prBssInfo = prAdapter->aprBssInfo[i];
-		if (prBssInfo->eNetworkType != NETWORK_TYPE_P2P)
-			continue;
-		if (prBssInfo->eConnectionState == PARAM_MEDIA_STATE_CONNECTED ||
-		    (prBssInfo->eCurrentOPMode == OP_MODE_ACCESS_POINT && prBssInfo->eIntendOPMode == OP_MODE_NUM)) {
-			*prBand = prBssInfo->eBand;
-			*pucPrimaryChannel = prBssInfo->ucPrimaryChannel;
-			return TRUE;
-		}
-	}
-#endif
-	return FALSE;
-}
-#endif
 
 /*----------------------------------------------------------------------------*/
 /*!
@@ -981,4 +950,33 @@ VOID cnmRequestChannelUtilization(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr)
 BOOLEAN cnmChUtilIsRunning(P_ADAPTER_T prAdapter)
 {
 	return timerPendingTimer(&prAdapter->rCnmInfo.rReqChnlUtilTimer);
+}
+
+/*----------------------------------------------------------------------------*/
+/*!
+* @brief Check whether a BSS for SAP (Hotspot) is active
+*
+* @param (none)
+*
+* @return TRUE: Active
+*         FALSE: Inactive
+*/
+/*----------------------------------------------------------------------------*/
+BOOLEAN cnmSapIsActive(P_ADAPTER_T prAdapter)
+{
+	P_BSS_INFO_T prBssInfo;
+	UINT_8 i;
+
+	ASSERT(prAdapter);
+
+	for (i = 0; i < BSS_INFO_NUM; i++) {
+		prBssInfo = prAdapter->aprBssInfo[i];
+
+		if (prBssInfo && IS_BSS_ACTIVE(prBssInfo) &&
+		    IS_BSS_P2P(prBssInfo) &&
+		    p2pFuncIsAPMode(prAdapter->rWifiVar.prP2PConnSettings))
+			return TRUE;
+	}
+
+	return FALSE;
 }

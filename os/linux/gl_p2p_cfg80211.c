@@ -1500,7 +1500,7 @@ mtk_p2p_cfg80211_change_iface(IN struct wiphy *wiphy,
 		if ((wiphy == NULL) || (ndev == NULL))
 			break;
 
-		DBGLOG(P2P, TRACE, "mtk_p2p_cfg80211_change_iface.\n");
+		DBGLOG(P2P, TRACE, "Change interface type to %d\n", type);
 
 		if (ndev->ieee80211_ptr)
 			ndev->ieee80211_ptr->iftype = type;
@@ -1527,26 +1527,16 @@ mtk_p2p_cfg80211_change_iface(IN struct wiphy *wiphy,
 
 		switch (type) {
 		case NL80211_IFTYPE_P2P_CLIENT:
-			DBGLOG(P2P, TRACE, "NL80211_IFTYPE_P2P_CLIENT.\n");
-			/* This case need to fall through */
 		case NL80211_IFTYPE_STATION:
-			if (type == NL80211_IFTYPE_STATION)
-				DBGLOG(P2P, TRACE, "NL80211_IFTYPE_STATION.\n");
 			prSwitchModeMsg->eOpMode = OP_MODE_INFRASTRUCTURE;
 			kalP2PSetRole(prGlueInfo, 1);
 			break;
 		case NL80211_IFTYPE_AP:
-			DBGLOG(P2P, TRACE, "NL80211_IFTYPE_AP.\n");
-			kalP2PSetRole(prGlueInfo, 2);
-			/* This case need to fall through */
 		case NL80211_IFTYPE_P2P_GO:
-			if (type == NL80211_IFTYPE_P2P_GO)
-				DBGLOG(P2P, TRACE, "NL80211_IFTYPE_P2P_GO not AP.\n");
 			prSwitchModeMsg->eOpMode = OP_MODE_ACCESS_POINT;
 			kalP2PSetRole(prGlueInfo, 2);
 			break;
 		default:
-			DBGLOG(P2P, TRACE, "Other type :%d .\n", type);
 			prSwitchModeMsg->eOpMode = OP_MODE_P2P_DEVICE;
 			kalP2PSetRole(prGlueInfo, 0);
 			break;

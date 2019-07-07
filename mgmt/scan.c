@@ -2562,10 +2562,6 @@ VOID scanReportBss2Cfg80211(IN P_ADAPTER_T prAdapter, IN ENUM_BSS_TYPE_T eBSSTyp
 
 	DBGLOG(SCN, TRACE, "scanReportBss2Cfg80211\n");
 	if (prSpecificBssDesc) {
-		/* check BSSID is legal channel */
-		if (!scanCheckBssIsLegal(prAdapter, prSpecificBssDesc))
-			return;
-
 		/* Check BSSID is legal channel */
 		if (!scanCheckBssIsLegal(prAdapter, prSpecificBssDesc)) {
 			DBGLOG(SCN, TRACE, "Remove specific SSID[%s] on channel %d\n",
@@ -3031,9 +3027,11 @@ static BOOLEAN scanNeedReplaceCandidate(P_ADAPTER_T prAdapter, P_BSS_DESC_T prCa
 	return TRUE;
 }
 
-static BOOLEAN scanSanityCheckBssDesc(P_ADAPTER_T prAdapter,
-	P_BSS_DESC_T prBssDesc, ENUM_BAND_T eBand, UINT_8 ucChannel, BOOLEAN fgIsFixedChannel)
+static BOOLEAN scanSanityCheckBssDesc(P_ADAPTER_T prAdapter, P_BSS_DESC_T prBssDesc)
 {
+	ENUM_BAND_T eBand = BAND_2G4;
+	UINT_8 ucChannel = 0;
+
 	if (!(prBssDesc->ucPhyTypeSet & (prAdapter->rWifiVar.ucAvailablePhyTypeSet))) {
 		DBGLOG(SCN, WARN, "BSS %pM, Ignore unsupported ucPhyTypeSet = %x\n",
 			prBssDesc->aucBSSID, prBssDesc->ucPhyTypeSet);
@@ -3043,10 +3041,10 @@ static BOOLEAN scanSanityCheckBssDesc(P_ADAPTER_T prAdapter,
 		DBGLOG(SCN, WARN, "BSS %pM, fgIsUnknownBssBasicRate\n", prBssDesc->aucBSSID);
 		return FALSE;
 	}
-	if (fgIsFixedChannel &&
+	if (cnmAisInfraChannelFixed(prAdapter, &eBand, &ucChannel) == TRUE &&
 		(eBand != prBssDesc->eBand || ucChannel != prBssDesc->ucChannelNum)) {
-		DBGLOG(SCN, INFO, "BSS %pM, Fix channel required band %d, channel %d\n",
-			prBssDesc->aucBSSID, eBand, ucChannel);
+		DBGLOG(SCN, INFO, "BSS %pM, Band %d channel %d, fix channel required band %d channel %d\n",
+			prBssDesc->aucBSSID, prBssDesc->eBand, prBssDesc->ucChannelNum, eBand, ucChannel);
 		return FALSE;
 	}
 	if (!rlmDomainIsLegalChannel(prAdapter, prBssDesc->eBand, prBssDesc->ucChannelNum)) {
@@ -3171,9 +3169,6 @@ P_BSS_DESC_T scanSearchBssDescByScoreForAis(P_ADAPTER_T prAdapter)
 	UINT_16 u2CandBssScore = 0;
 	UINT_16 u2BlackListScore = 0;
 	BOOLEAN fgSearchBlackList = FALSE;
-	BOOLEAN fgIsFixedChannel = FALSE;
-	ENUM_BAND_T eBand = BAND_2G4;
-	UINT_8 ucChannel = 0;
 	INT_8 cRssi = -128;
 	INT_16 i2CandPreference = 0;
 	INT_16 i2Preference = 0;
@@ -3189,11 +3184,7 @@ P_BSS_DESC_T scanSearchBssDescByScoreForAis(P_ADAPTER_T prAdapter)
 	prAisSpecificBssInfo = &prAdapter->rWifiVar.rAisSpecificBssInfo;
 	prConnSettings = &(prAdapter->rWifiVar.rConnSettings);
 	prEssLink = &prAisSpecificBssInfo->rCurEssLink;
-#if CFG_SUPPORT_CHNL_CONFLICT_REVISE
-	fgIsFixedChannel = cnmAisDetectP2PChannel(prAdapter, &eBand, &ucChannel);
-#else
-	fgIsFixedChannel = cnmAisInfraChannelFixed(prAdapter, &eBand, &ucChannel);
-#endif
+
 	aisRemoveTimeoutBlacklist(prAdapter);
 
 #if CFG_SUPPORT_802_11V_BSS_TRANSITION_MGT
@@ -3219,19 +3210,19 @@ try_again:
 		if (prConnSettings->eConnectionPolicy == CONNECT_BY_BSSID) {
 			if (!EQUAL_MAC_ADDR(prBssDesc->aucBSSID, prConnSettings->aucBSSID))
 				continue;
-			if (!scanSanityCheckBssDesc(prAdapter, prBssDesc, eBand, ucChannel, fgIsFixedChannel))
+			if (!scanSanityCheckBssDesc(prAdapter, prBssDesc))
 				continue;
 			DBGLOG(SCN, INFO,
-			       "Selected %pM base on bssid, when find %s, %pM in %d BSSes, fix channel %d.\n",
+			       "Selected %pM base on bssid, when find %s, %pM in %d BSSes\n",
 			       prBssDesc->aucBSSID, prConnSettings->aucSSID,
-			       prConnSettings->aucBSSID, prEssLink->u4NumElem, ucChannel);
+			       prConnSettings->aucBSSID, prEssLink->u4NumElem);
 			return prBssDesc;
 		} else if (!fgSearchBlackList) {
 			prBssDesc->prBlack = aisQueryBlackList(prAdapter, prBssDesc);
 			if (prBssDesc->prBlack) {
 				if (prBssDesc->prBlack->blackListSource & AIS_BLACK_LIST_FROM_FWK)
 					DBGLOG(SCN, INFO, "%s(%pM) is in FWK blacklist, skip it\n",
-								prBssDesc->aucSSID, prBssDesc->aucBSSID);
+					       prBssDesc->aucSSID, prBssDesc->aucBSSID);
 				continue;
 			}
 		} else if (!prBssDesc->prBlack)
@@ -3240,7 +3231,7 @@ try_again:
 			/* never search FWK blacklist even if we are trying blacklist */
 			if (prBssDesc->prBlack->blackListSource	& AIS_BLACK_LIST_FROM_FWK) {
 				DBGLOG(SCN, INFO, "Although trying blacklist, %s(%pM) is in FWK blacklist, skip it\n",
-							prBssDesc->aucSSID, prBssDesc->aucBSSID);
+				       prBssDesc->aucSSID, prBssDesc->aucBSSID);
 				continue;
 			}
 			u2BlackListScore = WEIGHT_IDX_BLACK_LIST *
@@ -3260,7 +3251,7 @@ try_again:
 			continue;
 #endif
 
-		if (!scanSanityCheckBssDesc(prAdapter, prBssDesc, eBand, ucChannel, fgIsFixedChannel))
+		if (!scanSanityCheckBssDesc(prAdapter, prBssDesc))
 			continue;
 
 #if CFG_SUPPORT_802_11V_BSS_TRANSITION_MGT
@@ -3343,17 +3334,18 @@ try_again:
 #endif
 		}
 	} /* end of LINK_FOR_EACH */
+
 	if (prConnSettings->eConnectionPolicy == CONNECT_BY_BSSID) {
-		DBGLOG(SCN, INFO, "Selected None base on bssid %pM in %d BSSes, fix channel %d\n",
-				prConnSettings->aucBSSID, prEssLink->u4NumElem, ucChannel);
+		DBGLOG(SCN, INFO, "Selected None base on bssid %pM in %d BSSes\n",
+		       prConnSettings->aucBSSID, prEssLink->u4NumElem);
 		return NULL;
 	}
 
 	if (prCandBssDesc) {
 		DBGLOG(SCN, INFO,
-			"Selected %pM, Score %d when find %s, %pM in %d BSSes, fix channel %d, blacklist %d\n",
-			prCandBssDesc->aucBSSID, u2CandBssScore, prConnSettings->aucSSID,
-			prConnSettings->aucBSSID, prEssLink->u4NumElem, ucChannel, fgSearchBlackList);
+		       "Selected %pM, Score %d when find %s, %pM in %d BSSes, blacklist %d\n",
+		       prCandBssDesc->aucBSSID, u2CandBssScore, prConnSettings->aucSSID,
+		       prConnSettings->aucBSSID, prEssLink->u4NumElem, fgSearchBlackList);
 		return prCandBssDesc;
 	}
 	/* if No Candidate BSS is found, try BSSes which are in blacklist */
@@ -3383,9 +3375,10 @@ try_again:
 		}
 	}
 #endif
-	DBGLOG(SCN, INFO, "Selected None when find %s, %pM in %d BSSes, fix channel %d, blacklist %d\n",
-				prConnSettings->aucSSID, prConnSettings->aucBSSID,
-				prEssLink->u4NumElem, ucChannel, fgSearchBlackList);
+	DBGLOG(SCN, INFO, "Selected None when find %s, %pM in %d BSSes, blacklist %d\n",
+	       prConnSettings->aucSSID, prConnSettings->aucBSSID,
+	       prEssLink->u4NumElem, fgSearchBlackList);
+
 	return NULL;
 }
 

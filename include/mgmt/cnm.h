@@ -184,14 +184,14 @@ UINT_8 cnmGetBssMaxBw(P_ADAPTER_T prAdapter, UINT_8 ucBssIndex);
 P_BSS_INFO_T cnmGetBssInfoAndInit(P_ADAPTER_T prAdapter, ENUM_NETWORK_TYPE_T eNetworkType, BOOLEAN fgIsP2pDevice);
 
 VOID cnmFreeBssInfo(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo);
-#if CFG_SUPPORT_CHNL_CONFLICT_REVISE
-BOOLEAN cnmAisDetectP2PChannel(P_ADAPTER_T prAdapter, P_ENUM_BAND_T prBand, PUINT_8 pucPrimaryChannel);
-#endif
+
 VOID cnmRunEventReqChnlUtilTimeout(IN P_ADAPTER_T prAdapter, ULONG ulParamPtr);
 VOID cnmHandleChannelUtilization(P_ADAPTER_T prAdapter,
 				 struct EVENT_RSP_CHNL_UTILIZATION *prChnlUtil);
 VOID cnmRequestChannelUtilization(P_ADAPTER_T prAdapter, P_MSG_HDR_T prMsgHdr);
 BOOLEAN cnmChUtilIsRunning(P_ADAPTER_T prAdapter);
+
+BOOLEAN cnmSapIsActive(P_ADAPTER_T prAdapter);
 
 /*******************************************************************************
 *                              F U N C T I O N S

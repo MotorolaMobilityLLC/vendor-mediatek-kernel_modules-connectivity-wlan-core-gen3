@@ -81,6 +81,8 @@
 
 #define WLAN_STATUS_JOIN_FAILURE                ((WLAN_STATUS) 0xc0010018L)
 
+#define WLAN_STATUS_BSS_CH_SWITCH               ((WLAN_STATUS) 0xc0010019L)
+
 /* NIC status flags */
 #define ADAPTER_FLAG_HW_ERR                     0x00400000
 

@@ -637,6 +637,8 @@
 
 #define CFG_AUTO_CHANNEL_SEL_SUPPORT            1
 
+#define CFG_SAP_LIMIT_AIS_CHNL                  0 /* Restrict AIS operation channel in STA+SAP concurrent mode */
+
 /*------------------------------------------------------------------------------
  * Configuration Flags (Linux Only)
  *------------------------------------------------------------------------------

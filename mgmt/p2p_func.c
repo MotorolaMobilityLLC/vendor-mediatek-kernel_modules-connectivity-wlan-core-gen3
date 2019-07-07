@@ -972,7 +972,7 @@ p2pFuncStartGO(IN P_ADAPTER_T prAdapter,
 						(prP2pConnReqInfo->eConnRequest ==
 						 P2P_CONNECTION_TYPE_PURE_AP) ? TRUE : FALSE, prBssInfo);
 
-		DBGLOG(P2P, INFO, "AP Channel=%d, Band=%d, SCO=%d, Phy=%d\n",
+		DBGLOG(P2P, INFO, "AP Channel=%d, Band=%d, SCO=%d, Phy=0x%02x\n",
 		       prBssInfo->ucPrimaryChannel,
 		       prBssInfo->eBand,
 		       prBssInfo->eBssSCO,
@@ -989,6 +989,8 @@ p2pFuncStartGO(IN P_ADAPTER_T prAdapter,
 			ASSERT(prP2pConnReqInfo->eConnRequest == P2P_CONNECTION_TYPE_PURE_AP);
 			if (kalP2PGetCipher(prAdapter->prGlueInfo))
 				prBssInfo->fgIsProtection = TRUE;
+			else
+				prBssInfo->fgIsProtection = FALSE;
 		}
 
 		bssInitForAP(prAdapter, prBssInfo, TRUE);
@@ -1090,7 +1092,7 @@ p2pFuncSwitchOPMode(IN P_ADAPTER_T prAdapter,
 		ASSERT_BREAK((prAdapter != NULL) && (prP2pBssInfo != NULL) && (eOpMode < OP_MODE_NUM));
 
 		if (prP2pBssInfo->eCurrentOPMode != eOpMode) {
-			DBGLOG(P2P, TRACE,
+			DBGLOG(P2P, INFO,
 			       "Switch OP mode from %d to %d\n",
 			       prP2pBssInfo->eCurrentOPMode, eOpMode);
 
@@ -1259,23 +1261,14 @@ p2pFuncProcessBeacon(IN P_ADAPTER_T prAdapter,
 
 		prBcnMsduInfo = prP2pBssInfo->prBeacon;
 		prBcnFrame = (P_WLAN_BEACON_FRAME_T) ((ULONG) prBcnMsduInfo->prPacket + MAC_TX_RESERVED_FIELD);
-#if DBG
-		if (prBcnUpdateInfo->pucBcnHdr != NULL) {
-			ASSERT(prBcnUpdateInfo->pucBcnHdr == (PUINT_8)prBcnFrame);
-		}
 
-		if (prBcnUpdateInfo->pucBcnBody != NULL) {
+		if (!pucNewBcnBody) {
+			/* If no Beacon body update, cache the old body to use */
 			ASSERT(prBcnUpdateInfo->pucBcnBody ==
 			       (prBcnUpdateInfo->pucBcnHdr + prBcnUpdateInfo->u4BcnHdrLen));
-		}
-#endif
-		if (!pucNewBcnBody) {
-			/* Old body. */
 			pucNewBcnBody = prBcnUpdateInfo->pucBcnBody;
 			ASSERT(u4NewBodyLen == 0);
 			u4NewBodyLen = prBcnUpdateInfo->u4BcnBodyLen;
-		} else {
-			prBcnUpdateInfo->u4BcnBodyLen = u4NewBodyLen;
 		}
 
 		pucCachedIEBuf = kalMemAlloc(MAX_IE_LENGTH, VIR_MEM_TYPE);
@@ -1284,14 +1277,15 @@ p2pFuncProcessBeacon(IN P_ADAPTER_T prAdapter,
 			return WLAN_STATUS_FAILURE;
 		}
 
-
-		/* Temp buffer body part. */
 		kalMemCopy(pucCachedIEBuf, pucNewBcnBody, u4NewBodyLen);
 
 		if (pucNewBcnHdr) {
 			kalMemCopy(prBcnFrame, pucNewBcnHdr, u4NewHdrLen);
 			prBcnUpdateInfo->pucBcnHdr = (PUINT_8) prBcnFrame;
 			prBcnUpdateInfo->u4BcnHdrLen = u4NewHdrLen;
+		} else {
+			/* If no Beacon header update, should have the old header */
+			ASSERT(prBcnUpdateInfo->pucBcnHdr == (PUINT_8) prBcnFrame);
 		}
 
 		prBcnUpdateInfo->pucBcnBody = prBcnUpdateInfo->pucBcnHdr + prBcnUpdateInfo->u4BcnHdrLen;
