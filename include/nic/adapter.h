@@ -589,7 +589,7 @@ typedef struct _WIFI_VAR_T {
 	AIS_FSM_INFO_T rAisFsmInfo;
 
 	/* memory should be matched with max of _BssIndex to avoid buffer overflow. */
-	ENUM_PWR_STATE_T aePwrState[MAX_BSS_INDEX];
+	ENUM_PWR_STATE_T aePwrState[MAX_BSS_INDEX + 1];
 
 	BSS_INFO_T arBssInfoPool[BSS_INFO_NUM];
 
