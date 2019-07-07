@@ -1171,6 +1171,10 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 							prGlueInfo->aucRspIe,
 							prGlueInfo->u4RspIeLength, WLAN_STATUS_SUCCESS, GFP_KERNEL);
 			}
+
+			/*workaround sta dfs channel + sap turn on fail issue.*/
+			wlanUpdateDfsChannelTable(prGlueInfo, ucChannelNum);
+
 		}
 
 		break;
@@ -1209,6 +1213,7 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 					u2DeauthReason = prBssInfo->u2DeauthReason;
 				glNotifyDrvStatus(DISCONNECT_AP, (PVOID)prBssInfo);
 			}
+
 			/* CFG80211 Indication */
 			DBGLOG(INIT, INFO, "[wifi]Indicate disconnection: Reason=%d Locally[%d]\n", u2DeauthReason,
 						(eStatus == WLAN_STATUS_MEDIA_DISCONNECT_LOCALLY));
@@ -1233,6 +1238,9 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 		}
 
 		prGlueInfo->eParamMediaStateIndicated = PARAM_MEDIA_STATE_DISCONNECTED;
+
+		/*workaround sta dfs channel + sap turn on fail issue.*/
+		wlanUpdateDfsChannelTable(prGlueInfo, 0);
 
 		break;
 
@@ -1380,6 +1388,9 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 						prGlueInfo->u4ReqIeLength,
 						prGlueInfo->aucRspIe,
 						prGlueInfo->u4RspIeLength, WLAN_STATUS_AUTH_TIMEOUT, GFP_KERNEL);
+			/*workaround sta dfs channel + sap turn on fail issue.*/
+			wlanUpdateDfsChannelTable(prGlueInfo, 0);
+
 			prGlueInfo->eParamMediaStateIndicated = PARAM_MEDIA_STATE_DISCONNECTED;
 			break;
 		}
