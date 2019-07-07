@@ -2424,8 +2424,8 @@ mtk_cfg80211_sched_scan_start(IN struct wiphy *wiphy,
 	ASSERT(prGlueInfo);
 
 	/* check if there is any pending scan/sched_scan not yet finished */
-	if (prGlueInfo->prScanRequest != NULL || prGlueInfo->prSchedScanRequest != NULL) {
-		DBGLOG(SCN, ERROR, "(prGlueInfo->prScanRequest != NULL || prGlueInfo->prSchedScanRequest != NULL)\n");
+	if (prGlueInfo->prSchedScanRequest != NULL) {
+		DBGLOG(SCN, ERROR, "prGlueInfo->prSchedScanRequest != NULL\n");
 		return -EBUSY;
 	} else if (request == NULL || request->n_match_sets > CFG_SCAN_SSID_MATCH_MAX_NUM) {
 		DBGLOG(SCN, ERROR, "(request == NULL || request->n_match_sets > CFG_SCAN_SSID_MATCH_MAX_NUM)\n");
