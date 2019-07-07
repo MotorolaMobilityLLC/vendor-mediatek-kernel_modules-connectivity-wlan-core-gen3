@@ -1099,6 +1099,14 @@ struct _ADAPTER_T {
 #if CFG_DBG_MGT_BUF
 	LINK_T rMemTrackLink;
 #endif
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+	/* link quality monitor */
+	UINT_32 u4LastLinkQuality;
+	struct WIFI_LINK_QUALITY_INFO rLinkQualityInfo;
+	PARAM_GET_STA_STA_STATISTICS rQueryStaStatistics;
+	PARAM_802_11_STATISTICS_STRUCT_T rStat;
+	UINT_32 u4BufLen;
+#endif
 };				/* end of _ADAPTER_T */
 
 /*******************************************************************************

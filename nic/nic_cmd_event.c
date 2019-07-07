@@ -634,46 +634,81 @@ VOID nicCmdEventQueryStatistics(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdI
 	P_EVENT_STATISTICS prEventStatistics;
 	P_GLUE_INFO_T prGlueInfo;
 	UINT_32 u4QueryInfoLen;
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+	/* link quality monitor */
+	struct WIFI_LINK_QUALITY_INFO *prLinkQualityInfo;
+#endif
 
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
 
 	prEventStatistics = (P_EVENT_STATISTICS) pucEventBuf;
 
-	if (prCmdInfo->fgIsOid) {
-		prGlueInfo = prAdapter->prGlueInfo;
+	prGlueInfo = prAdapter->prGlueInfo;
 
-		u4QueryInfoLen = sizeof(PARAM_802_11_STATISTICS_STRUCT_T);
-		prStatistics = (P_PARAM_802_11_STATISTICS_STRUCT_T) prCmdInfo->pvInformationBuffer;
+	u4QueryInfoLen = sizeof(PARAM_802_11_STATISTICS_STRUCT_T);
+	prStatistics = (P_PARAM_802_11_STATISTICS_STRUCT_T) prCmdInfo->pvInformationBuffer;
 
-		prStatistics->u4Length = sizeof(PARAM_802_11_STATISTICS_STRUCT_T);
-		prStatistics->rTransmittedFragmentCount = prEventStatistics->rTransmittedFragmentCount;
-		prStatistics->rMulticastTransmittedFrameCount = prEventStatistics->rMulticastTransmittedFrameCount;
-		prStatistics->rFailedCount = prEventStatistics->rFailedCount;
-		prStatistics->rRetryCount = prEventStatistics->rRetryCount;
-		prStatistics->rMultipleRetryCount = prEventStatistics->rMultipleRetryCount;
-		prStatistics->rRTSSuccessCount = prEventStatistics->rRTSSuccessCount;
-		prStatistics->rRTSFailureCount = prEventStatistics->rRTSFailureCount;
-		prStatistics->rACKFailureCount = prEventStatistics->rACKFailureCount;
-		prStatistics->rFrameDuplicateCount = prEventStatistics->rFrameDuplicateCount;
-		prStatistics->rReceivedFragmentCount = prEventStatistics->rReceivedFragmentCount;
-		prStatistics->rMulticastReceivedFrameCount = prEventStatistics->rMulticastReceivedFrameCount;
-		prStatistics->rFCSErrorCount = prEventStatistics->rFCSErrorCount;
-		prStatistics->rTKIPLocalMICFailures.QuadPart = 0;
-		prStatistics->rTKIPICVErrors.QuadPart = 0;
-		prStatistics->rTKIPCounterMeasuresInvoked.QuadPart = 0;
-		prStatistics->rTKIPReplays.QuadPart = 0;
-		prStatistics->rCCMPFormatErrors.QuadPart = 0;
-		prStatistics->rCCMPReplays.QuadPart = 0;
-		prStatistics->rCCMPDecryptErrors.QuadPart = 0;
-		prStatistics->rFourWayHandshakeFailures.QuadPart = 0;
-		prStatistics->rWEPUndecryptableCount.QuadPart = 0;
-		prStatistics->rWEPICVErrorCount.QuadPart = 0;
-		prStatistics->rDecryptSuccessCount.QuadPart = 0;
-		prStatistics->rDecryptFailureCount.QuadPart = 0;
+	prStatistics->u4Length = sizeof(PARAM_802_11_STATISTICS_STRUCT_T);
+	prStatistics->rTransmittedFragmentCount = prEventStatistics->rTransmittedFragmentCount;
+	prStatistics->rMulticastTransmittedFrameCount = prEventStatistics->rMulticastTransmittedFrameCount;
+	prStatistics->rFailedCount = prEventStatistics->rFailedCount;
+	prStatistics->rRetryCount = prEventStatistics->rRetryCount;
+	prStatistics->rMultipleRetryCount = prEventStatistics->rMultipleRetryCount;
+	prStatistics->rRTSSuccessCount = prEventStatistics->rRTSSuccessCount;
+	prStatistics->rRTSFailureCount = prEventStatistics->rRTSFailureCount;
+	prStatistics->rACKFailureCount = prEventStatistics->rACKFailureCount;
+	prStatistics->rFrameDuplicateCount = prEventStatistics->rFrameDuplicateCount;
+	prStatistics->rReceivedFragmentCount = prEventStatistics->rReceivedFragmentCount;
+	prStatistics->rMulticastReceivedFrameCount = prEventStatistics->rMulticastReceivedFrameCount;
+	prStatistics->rFCSErrorCount = prEventStatistics->rFCSErrorCount;
+	prStatistics->rTKIPLocalMICFailures.QuadPart = 0;
+	prStatistics->rTKIPICVErrors.QuadPart = 0;
+	prStatistics->rTKIPCounterMeasuresInvoked.QuadPart = 0;
+	prStatistics->rTKIPReplays.QuadPart = 0;
+	prStatistics->rCCMPFormatErrors.QuadPart = 0;
+	prStatistics->rCCMPReplays.QuadPart = 0;
+	prStatistics->rCCMPDecryptErrors.QuadPart = 0;
+	prStatistics->rFourWayHandshakeFailures.QuadPart = 0;
+	prStatistics->rWEPUndecryptableCount.QuadPart = 0;
+	prStatistics->rWEPICVErrorCount.QuadPart = 0;
+	prStatistics->rDecryptSuccessCount.QuadPart = 0;
+	prStatistics->rDecryptFailureCount.QuadPart = 0;
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+	prStatistics->rMdrdyCnt = prEventStatistics->rMdrdyCnt;
+	prStatistics->rChnlIdleCnt = prEventStatistics->rChnlIdleCnt;
 
+	/* link quality monitor */
+	prLinkQualityInfo =
+		&(prAdapter->rLinkQualityInfo);
+
+	prLinkQualityInfo->u8TxRetryCount =
+		prStatistics->rRetryCount.QuadPart;
+
+	prLinkQualityInfo->u8TxRtsFailCount =
+		prStatistics->rRTSFailureCount.QuadPart;
+	prLinkQualityInfo->u8TxAckFailCount =
+		prStatistics->rACKFailureCount.QuadPart;
+	prLinkQualityInfo->u8TxFailCount = prLinkQualityInfo->u8TxRtsFailCount
+									 + prLinkQualityInfo->u8TxAckFailCount;
+	prLinkQualityInfo->u8TxTotalCount =
+		prStatistics->rTransmittedFragmentCount.QuadPart;
+
+	prLinkQualityInfo->u8RxTotalCount =
+		prStatistics->rReceivedFragmentCount.QuadPart;
+	/* FW report is diff, driver count total */
+	prLinkQualityInfo->u8RxErrCount +=
+		prStatistics->rFCSErrorCount.QuadPart;
+	prLinkQualityInfo->u8MdrdyCount =
+		prStatistics->rMdrdyCnt.QuadPart;
+	prLinkQualityInfo->u8IdleSlotCount =
+		prStatistics->rChnlIdleCnt.QuadPart;
+
+	wlanFinishCollectingLinkQuality(prGlueInfo);
+#endif
+	if (prCmdInfo->fgIsOid)
 		kalOidComplete(prGlueInfo, prCmdInfo->fgSetQuery, u4QueryInfoLen, WLAN_STATUS_SUCCESS);
-	}
+
 }
 
 VOID nicCmdEventEnterRfTest(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
@@ -1912,6 +1947,10 @@ VOID nicCmdEventQueryStaStatistics(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prC
 	P_PARAM_GET_STA_STATISTICS prStaStatistics;
 	ENUM_WMM_ACI_T eAci;
 	P_STA_RECORD_T prStaRec;
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+	/* link quality monitor */
+	struct WIFI_LINK_QUALITY_INFO *prLinkQualityInfo;
+#endif
 
 	ASSERT(prAdapter);
 	ASSERT(prCmdInfo);
@@ -1932,6 +1971,9 @@ VOID nicCmdEventQueryStaStatistics(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prC
 
 		prStaStatistics->u4TxFailCount = prEvent->u4TxFailCount;
 		prStaStatistics->u4TxLifeTimeoutCount = prEvent->u4TxLifeTimeoutCount;
+
+		prStaStatistics->u4TransmitCount = prEvent->u4TransmitCount;
+		prStaStatistics->u4TransmitFailCount = prEvent->u4TransmitFailCount;
 
 		prStaRec = cnmGetStaRecByIndex(prAdapter, prEvent->ucStaRecIdx);
 
@@ -1993,6 +2035,11 @@ VOID nicCmdEventQueryStaStatistics(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prC
 			       prStaStatistics->u4TxLifeTimeoutCount, prStaStatistics->u4TxAverageProcessTime,
 			       prStaStatistics->u4TxAverageAirTime, prStaStatistics->u4TxTotalCount);
 		}
+#endif
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+		/* link quality monitor */
+		prLinkQualityInfo = &(prAdapter->rLinkQualityInfo);
+		prLinkQualityInfo->u4CurTxRate = prEvent->u2LinkSpeed * 5;
 #endif
 	}
 

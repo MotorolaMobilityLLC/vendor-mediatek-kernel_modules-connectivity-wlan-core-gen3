@@ -1404,6 +1404,26 @@ VOID nicRxProcessDataPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb)
 	prRetSwRfb = qmHandleRxPackets(prAdapter, prSwRfb);
 
 	while (prRetSwRfb) {
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+		if (prRetSwRfb->ucGroupVLD
+			& BIT(RX_GROUP_VLD_3)) {
+			prAdapter->arStaRec[prRetSwRfb->ucStaRecIdx].u4RxVector0 =
+				HAL_RX_VECTOR_GET_RX_VECTOR(
+					prRetSwRfb->prRxStatusGroup3, 0);
+			prAdapter->arStaRec[prRetSwRfb->ucStaRecIdx].u4RxVector1 =
+				HAL_RX_VECTOR_GET_RX_VECTOR(
+					prRetSwRfb->prRxStatusGroup3, 1);
+			prAdapter->arStaRec[prRetSwRfb->ucStaRecIdx].u4RxVector2 =
+				HAL_RX_VECTOR_GET_RX_VECTOR(
+					prRetSwRfb->prRxStatusGroup3, 2);
+			prAdapter->arStaRec[prRetSwRfb->ucStaRecIdx].u4RxVector3 =
+				HAL_RX_VECTOR_GET_RX_VECTOR(
+					prRetSwRfb->prRxStatusGroup3, 3);
+			prAdapter->arStaRec[prRetSwRfb->ucStaRecIdx].u4RxVector4 =
+				HAL_RX_VECTOR_GET_RX_VECTOR(
+					prRetSwRfb->prRxStatusGroup3, 4);
+		}
+#endif
 		/* save next first */
 		prNextSwRfb = (P_SW_RFB_T) QUEUE_GET_NEXT_ENTRY((P_QUE_ENTRY_T) prRetSwRfb);
 

@@ -115,11 +115,13 @@ static UINT_8 gatewayIp[4];
 */
 
 #if CFG_RX_REORDERING_ENABLED
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
 #define qmHandleRxPackets_AOSP_1 \
 do { \
 	/* ToDo[6630]: duplicate removal */ \
 	if (!fgIsBMC && nicRxIsDuplicateFrame(prCurrSwRfb) == TRUE) { \
-		DBGLOG(QM, TRACE, "Duplicated packet is detected\n"); \
+		DBGLOG(QM, TRACE, "Duplicated packet is detected\n");\
+		RX_INC_CNT(&prAdapter->rRxCtrl, RX_DUPICATE_DROP_COUNT);\
 		prCurrSwRfb->eDst = RX_PKT_DESTINATION_NULL; \
 	} \
 	/* ToDo[6630]: defragmentation */ \
@@ -166,6 +168,59 @@ do { \
 		QUEUE_INSERT_TAIL(prReturnedQue, (P_QUE_ENTRY_T)prCurrSwRfb); \
 	} \
 } while (0)
+#else
+#define qmHandleRxPackets_AOSP_1 \
+do { \
+	/* ToDo[6630]: duplicate removal */ \
+	if (!fgIsBMC && nicRxIsDuplicateFrame(prCurrSwRfb) == TRUE) { \
+		DBGLOG(QM, TRACE, "Duplicated packet is detected\n");\
+		prCurrSwRfb->eDst = RX_PKT_DESTINATION_NULL; \
+	} \
+	/* ToDo[6630]: defragmentation */ \
+	if (prCurrSwRfb->fgFragFrame) { \
+		prCurrSwRfb = nicRxDefragMPDU(prAdapter, prCurrSwRfb, prReturnedQue); \
+		if (prCurrSwRfb) { \
+			prRxStatus = prCurrSwRfb->prRxStatus; \
+			DBGLOG(QM, TRACE, "defragmentation RxStatus=%p\n", prRxStatus); \
+		} \
+	} \
+	if (prCurrSwRfb) { \
+		fgMicErr = FALSE; \
+		if (HAL_RX_STATUS_GET_SEC_MODE(prRxStatus) == CIPHER_SUITE_TKIP_WO_MIC) { \
+			if (prCurrSwRfb->prStaRec) { \
+				UINT_8 ucBssIndex; \
+				P_BSS_INFO_T prBssInfo = NULL; \
+				PUINT_8      pucMicKey = NULL; \
+				ucBssIndex = prCurrSwRfb->prStaRec->ucBssIndex; \
+				ASSERT(ucBssIndex < BSS_INFO_NUM); \
+				prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex); \
+				ASSERT(prBssInfo); \
+				if (prBssInfo && prBssInfo->eCurrentOPMode == OP_MODE_INFRASTRUCTURE) { \
+					pucMicKey = &(prAdapter->rWifiVar.rAisSpecificBssInfo.aucRxMicKey[0]); \
+				} \
+				else { \
+					ASSERT(FALSE); \
+					/* pucMicKey = &prCurrSwRfb->prStaRec->aucRxMicKey[0]; */ \
+				} \
+				/* SW TKIP MIC verify */ \
+				/* TODO:[6630] Need to Check Header Translation Case */ \
+				if (pucMicKey == NULL) { \
+					DBGLOG(RX, ERROR, "No TKIP Mic Key\n"); \
+					fgMicErr = TRUE; \
+				} \
+				else if (tkipMicDecapsulate(prCurrSwRfb, pucMicKey) == FALSE) { \
+					fgMicErr = TRUE; \
+				} \
+			} \
+			if (fgMicErr) { \
+				DBGLOG(RX, ERROR, "Mark NULL the Packet for TKIP Mic Error\n"); \
+				prCurrSwRfb->eDst = RX_PKT_DESTINATION_NULL; \
+			} \
+		} \
+		QUEUE_INSERT_TAIL(prReturnedQue, (P_QUE_ENTRY_T)prCurrSwRfb); \
+	} \
+} while (0)
+#endif
 #endif
 
 /*******************************************************************************
@@ -2910,8 +2965,11 @@ VOID qmProcessPktWithReordering(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb,
 	     || ((u4WinEnd < u4WinStart) && (u4WinStart <= u4SeqNo))
 	     /* 0 - sn - end - start - 4095 */
 	     || ((u4SeqNo <= u4WinEnd) && (u4WinEnd < u4WinStart))) {
-
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+		qmInsertFallWithinReorderPkt(prAdapter, prSwRfb, prReorderQueParm, prReturnedQue);
+#else
 		qmInsertFallWithinReorderPkt(prSwRfb, prReorderQueParm, prReturnedQue);
+#endif
 
 #if QM_RX_WIN_SSN_AUTO_ADVANCING
 		if (prReorderQueParm->fgIsWaitingForPktWithSsn) {
@@ -3060,8 +3118,13 @@ VOID qmProcessBarFrame(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, OUT P_QU
 		DBGLOG(QM, TRACE, "QM:(BAR)(%hhu)(%u){%u,%u}\n", prSwRfb->ucTid, u4SSN, u4WinStart, u4WinEnd);
 	}
 }
-
-VOID qmInsertFallWithinReorderPkt(IN P_SW_RFB_T prSwRfb, IN P_RX_BA_ENTRY_T prReorderQueParm, OUT P_QUE_T prReturnedQue)
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+VOID qmInsertFallWithinReorderPkt(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb,
+	IN P_RX_BA_ENTRY_T prReorderQueParm, OUT P_QUE_T prReturnedQue)
+#else
+VOID qmInsertFallWithinReorderPkt(IN P_SW_RFB_T prSwRfb,
+	IN P_RX_BA_ENTRY_T prReorderQueParm, OUT P_QUE_T prReturnedQue)
+#endif
 {
 	P_SW_RFB_T prExaminedQueuedSwRfb;
 	P_QUE_T prReorderQue;
@@ -3089,6 +3152,9 @@ VOID qmInsertFallWithinReorderPkt(IN P_SW_RFB_T prSwRfb, IN P_RX_BA_ENTRY_T prRe
 			if ((prExaminedQueuedSwRfb->u2SSN) == (prSwRfb->u2SSN)) {
 				prSwRfb->eDst = RX_PKT_DESTINATION_NULL;
 				QUEUE_INSERT_TAIL(prReturnedQue, (P_QUE_ENTRY_T) prSwRfb);
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+				RX_INC_CNT(&prAdapter->rRxCtrl, RX_DUPICATE_DROP_COUNT);
+#endif
 				return;
 			}
 

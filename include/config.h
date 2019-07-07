@@ -907,6 +907,15 @@
 #define CFG_SUPPORT_SCAN_RANDOM_MAC     0
 #endif
 
+/*------------------------------------------------------------------------------
+ * Link Quality Monitor
+ * Link quality monitor execution period base on performance monitor timer
+ *------------------------------------------------------------------------------
+ */
+#define CFG_SUPPORT_LINK_QUALITY_MONITOR
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+#define CFG_LINK_QUALITY_MONITOR_UPDATE_INTERVAL	1000
+#endif
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************

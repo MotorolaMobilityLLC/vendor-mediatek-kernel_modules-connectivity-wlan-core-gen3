@@ -1296,6 +1296,8 @@ typedef struct _PARAM_802_11_STATISTICS_STRUCT_T {
 	LARGE_INTEGER rWEPICVErrorCount;
 	LARGE_INTEGER rDecryptSuccessCount;
 	LARGE_INTEGER rDecryptFailureCount;
+	LARGE_INTEGER rMdrdyCnt;
+	LARGE_INTEGER rChnlIdleCnt;
 } PARAM_802_11_STATISTICS_STRUCT_T, *P_PARAM_802_11_STATISTICS_STRUCT_T;
 
 /* Linux Network Device Statistics Struct */
@@ -1696,6 +1698,11 @@ enum ENUM_WIFI_LOG_LEVEL_SUPPORT_T {
 	ENUM_WIFI_LOG_LEVEL_SUPPORT_DISABLE = 0,
 	ENUM_WIFI_LOG_LEVEL_SUPPORT_ENABLE,
 	ENUM_WIFI_LOG_LEVEL_SUPPORT_NUM
+};
+/* link quality monitor */
+struct PARAM_GET_LINK_QUALITY_INFO {
+	UINT_8 ucBssIdx;
+	struct WIFI_LINK_QUALITY_INFO *prLinkQualityInfo;
 };
 
 /*******************************************************************************
@@ -2446,11 +2453,16 @@ wlanoidGetWifiType(IN P_ADAPTER_T prAdapter,
 uint32_t
 wlanoidExternalAuthDone(IN struct _ADAPTER_T *prAdapter,
 		     IN void *pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT UINT_32 *pu4SetInfoLen);
-
 WLAN_STATUS
 wlanoidSetP2pRandomMac(P_ADAPTER_T prAdapter, void *pvSetBuffer,
 	UINT_32 u4SetBufferLen, UINT_32 *pu4SetInfoLen);
 
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+UINT_32 wlanoidGetLinkQualityInfo(IN P_ADAPTER_T prAdapter,
+				   IN void *pvSetBuffer,
+				   IN UINT_32 u4SetBufferLen,
+				   OUT UINT_32 *pu4SetInfoLen);
+#endif
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************

@@ -144,7 +144,8 @@ typedef enum {
 /* moved from wifi_logger.cpp */
 enum DEBUG_SUB_COMMAND {
 	LOGGER_START_LOGGING = ANDROID_NL80211_SUBCMD_DEBUG_RANGE_START,
-	LOGGER_GET_VER
+	LOGGER_GET_VER,
+	LOGGER_DRIVER_MEM_DUMP,
 };
 
 typedef enum {
@@ -900,5 +901,6 @@ int mtk_cfg80211_vendor_acs(struct wiphy *wiphy,
 
 int mtk_cfg80211_vendor_get_features(struct wiphy *wiphy,
 		struct wireless_dev *wdev, const void *data, int data_len);
-
+int mtk_cfg80211_vendor_driver_memory_dump(struct wiphy *wiphy,
+	struct wireless_dev *wdev, const void *data, int data_len);
 #endif /* _GL_VENDOR_H */

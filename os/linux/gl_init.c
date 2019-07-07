@@ -535,6 +535,17 @@ static const struct wiphy_vendor_command mtk_wlan_vendor_ops[] = {
 				WIPHY_VENDOR_CMD_NEED_NETDEV,
 		.doit = mtk_cfg80211_vendor_set_tx_power_scenario
 	},
+	/* Get Driver Memory Dump */
+	{
+		{
+			.vendor_id = GOOGLE_OUI,
+			.subcmd = LOGGER_DRIVER_MEM_DUMP
+		},
+		.flags = WIPHY_VENDOR_CMD_NEED_WDEV |
+				WIPHY_VENDOR_CMD_NEED_NETDEV,
+		.doit = mtk_cfg80211_vendor_driver_memory_dump
+	}
+
 };
 
 

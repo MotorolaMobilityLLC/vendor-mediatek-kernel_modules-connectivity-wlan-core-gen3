@@ -627,6 +627,34 @@ typedef enum _ENUM_TX_PROFILING_TAG_T {
 	TX_PROF_TAG_DRV_TX_DONE,
 	TX_PROF_TAG_MAC_TX_DONE
 } ENUM_TX_PROFILING_TAG_T, *P_ENUM_TX_PROFILING_TAG_T;
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+/* for link quality monitor */
+struct WIFI_LINK_QUALITY_INFO {
+	UINT_32 u4CurTxRate;		/* Tx rate for DATA packet */
+	UINT_64 u8TxTotalCount;	/* Tx total accumulated count */
+	UINT_64 u8TxRetryCount;
+	UINT_64 u8TxFailCount;
+	UINT_64 u8TxRtsFailCount;
+	UINT_64 u8TxAckFailCount;
+
+	UINT_32 u4CurRxRate;		/* Rx rate for DATA packet */
+	UINT_64 u8RxTotalCount;	/* Rx total accumulated count */
+	UINT_32 u4RxDupCount;
+	UINT_64 u8RxErrCount;
+
+	UINT_32 u4CurTxPer;
+	UINT_64 u8MdrdyCount;
+	UINT_64 u8IdleSlotCount;
+	UINT_64 u8DiffIdleSlotCount;
+
+	UINT_32 u4PhyMode;
+	UINT_16 u2LinkSpeed;
+
+	UINT_64 u8LastTxTotalCount;
+	UINT_32 u8LastTxFailCount;
+	UINT_64 u8LastIdleSlotCount;
+};
+#endif
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
@@ -907,7 +935,9 @@ wlanoidQueryStaStatistics(IN P_ADAPTER_T prAdapter,
 
 WLAN_STATUS wlanQueryStaStatistics(IN P_ADAPTER_T prAdapter, IN PVOID pvQueryBuffer,
 					IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen, BOOLEAN fgIsOid);
-
+WLAN_STATUS
+wlanQueryStatistics(IN P_ADAPTER_T prAdapter, IN PVOID pvQueryBuffer,
+	IN UINT_32 u4QueryBufferLen, OUT PUINT_32 pu4QueryInfoLen, BOOLEAN fgIsOid);
 /*----------------------------------------------------------------------------*/
 /* query NIC resource information from chip and reset Tx resource for normal operation        */
 /*----------------------------------------------------------------------------*/
@@ -1003,16 +1033,18 @@ VOID wlanReleasePendingCmdById(P_ADAPTER_T prAdapter, UINT_8 ucCid);
 UINT_32 wlanDecimalStr2Hexadecimals(PUINT_8 pucDecimalStr, PUINT_16 pu2Out);
 
 WLAN_STATUS wlanCfgParse(IN P_ADAPTER_T prAdapter, PUINT_8 pucConfigBuf, UINT_32 u4ConfigBufLen);
-
-
 UINT_32
 wlanQueryLteSafeChannel(IN P_ADAPTER_T prAdapter,
 		IN UINT_8 ucRoleIndex);
 
 UINT_8
 wlanGetChannelIndex(IN UINT_8 channel);
-
 extern INT_32 wlanUpdateDfsChannelTable(P_GLUE_INFO_T prGlueInfo, UINT_8 ucCurrChNo);
-
-
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+/* link quality monitor */
+void wlanLinkQualityMonitor(P_GLUE_INFO_T prGlueInfo);
+void wlanFinishCollectingLinkQuality(P_GLUE_INFO_T prGlueInfo);
+UINT_32 wlanGetStaIdxByWlanIdx(IN P_ADAPTER_T prAdapter,
+		       IN UINT_8 ucIndex, OUT UINT_8 *pucStaIdx);
+#endif
 #endif /* _WLAN_LIB_H */

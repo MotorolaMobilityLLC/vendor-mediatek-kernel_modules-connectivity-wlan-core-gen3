@@ -898,9 +898,15 @@ P_SW_RFB_T qmHandleRxPackets(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfbList
 VOID qmProcessPktWithReordering(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, OUT P_QUE_T prReturnedQue);
 
 VOID qmProcessBarFrame(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb, OUT P_QUE_T prReturnedQue);
-
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
 VOID
-qmInsertFallWithinReorderPkt(IN P_SW_RFB_T prSwRfb, IN P_RX_BA_ENTRY_T prReorderQueParm, OUT P_QUE_T prReturnedQue);
+qmInsertFallWithinReorderPkt(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb,
+		IN P_RX_BA_ENTRY_T prReorderQueParm, OUT P_QUE_T prReturnedQue);
+#else
+VOID
+qmInsertFallWithinReorderPkt(IN P_SW_RFB_T prSwRfb,
+		IN P_RX_BA_ENTRY_T prReorderQueParm, OUT P_QUE_T prReturnedQue);
+#endif
 
 VOID qmInsertFallAheadReorderPkt(IN P_SW_RFB_T prSwRfb, IN P_RX_BA_ENTRY_T prReorderQueParm, OUT P_QUE_T prReturnedQue);
 

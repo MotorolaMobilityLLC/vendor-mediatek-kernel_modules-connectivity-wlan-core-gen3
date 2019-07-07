@@ -473,6 +473,13 @@ struct _STA_RECORD_T {
 	UINT_16 u2MaxIdlePeriod;
 	UINT_8 ucIdleOption;
 	BOOLEAN fgSupportBTM; /* flag to indicate Capbility for Bss Transition Management */
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+	UINT_32 u4RxVector0;
+	UINT_32 u4RxVector1;
+	UINT_32 u4RxVector2;
+	UINT_32 u4RxVector3;
+	UINT_32 u4RxVector4;
+#endif
 };
 
 #if 0

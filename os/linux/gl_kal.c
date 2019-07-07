@@ -1037,6 +1037,10 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 	case WLAN_STATUS_ROAM_OUT_FIND_BEST:
 	case WLAN_STATUS_MEDIA_CONNECT:
 
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+		/* clear the Rx Err count */
+		prGlueInfo->prAdapter->rLinkQualityInfo.u8RxErrCount = 0;
+#endif
 		prGlueInfo->eParamMediaStateIndicated = PARAM_MEDIA_STATE_CONNECTED;
 
 		/* indicate assoc event */
@@ -1181,6 +1185,10 @@ kalIndicateStatusAndComplete(IN P_GLUE_INFO_T prGlueInfo, IN WLAN_STATUS eStatus
 
 	case WLAN_STATUS_MEDIA_DISCONNECT:
 	case WLAN_STATUS_MEDIA_DISCONNECT_LOCALLY:
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+				/* clear the Rx Err count */
+				prGlueInfo->prAdapter->rLinkQualityInfo.u8RxErrCount = 0;
+#endif
 		/* indicate disassoc event */
 		wext_indicate_wext_event(prGlueInfo, SIOCGIWAP, NULL, 0);
 		/*
@@ -5563,7 +5571,12 @@ VOID kalPerMonHandler(IN P_ADAPTER_T prAdapter, ULONG ulParam)
 		cnmTimerStartTimer(prGlueInfo->prAdapter, &prPerMonitor->rPerfMonTimer, prPerMonitor->u4UpdatePeriod);
 	}
 	prPerMonitor->u4CurrPerfLevel = prPerMonitor->u4TarPerfLevel;
-
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+	/* link quality monitor */
+	DBGLOG(SW4, TRACE, "new:%u, Link:%u\n", kalGetTimeTick(), prAdapter->u4LastLinkQuality);
+	if ((kalGetTimeTick() - prAdapter->u4LastLinkQuality) >= CFG_LINK_QUALITY_MONITOR_UPDATE_INTERVAL)
+		wlanLinkQualityMonitor(prGlueInfo);
+#endif
 	DBGLOG(SW4, TRACE, "exit kalPerMonHandler\n");
 }
 

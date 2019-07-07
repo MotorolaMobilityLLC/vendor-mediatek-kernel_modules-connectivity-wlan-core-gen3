@@ -293,6 +293,11 @@ int
 priv_ate_set(IN struct net_device *prNetDev,
 	     IN struct iw_request_info *prIwReqInfo, IN union iwreq_data *prIwReqData, IN char *pcExtra);
 #endif
+#ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
+int kalGetRxRate(IN P_GLUE_INFO_T prGlueInfo,
+		 IN UINT_32 *pu4CurRate, IN UINT_32 *pu4MaxRate);
+#endif
+
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************
