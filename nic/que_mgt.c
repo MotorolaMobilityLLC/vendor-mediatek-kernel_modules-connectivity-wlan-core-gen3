@@ -2486,6 +2486,7 @@ P_SW_RFB_T qmHandleRxPackets(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfbList
 
 		fgIsBMC = HAL_RX_STATUS_IS_BC(prRxStatus) | HAL_RX_STATUS_IS_MC(prRxStatus);
 		fgIsHTran = FALSE;
+
 		if (HAL_RX_STATUS_GET_HEADER_TRAN(prRxStatus) == TRUE) { /* (!HIF_RX_HDR_GET_80211_FLAG(prHifRxHdr)){ */
 
 			UINT_8 ucBssIndex;
@@ -2592,7 +2593,10 @@ P_SW_RFB_T qmHandleRxPackets(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfbList
 
 				/* search StaRec related info */
 				kalMemCopy(aucTaAddr, prWlanHeader->aucAddr2, MAC_ADDR_LEN); /* use A2 instead */
+
 				prCurrSwRfb->ucStaRecIdx = secLookupStaRecIndexFromTA(prAdapter, aucTaAddr);
+				DBGLOG(QM, INFO, "prCurrSwRfb->ucStaRecIdx %u\n", prCurrSwRfb->ucStaRecIdx);
+
 				if (prCurrSwRfb->ucStaRecIdx < CFG_NUM_OF_STA_RECORD) {
 					prCurrSwRfb->prStaRec =
 					    cnmGetStaRecByIndex(prAdapter, prCurrSwRfb->ucStaRecIdx);
@@ -2620,10 +2624,27 @@ P_SW_RFB_T qmHandleRxPackets(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfbList
 						QUEUE_INSERT_TAIL(prReturnedQue, (P_QUE_ENTRY_T) prCurrSwRfb);
 						continue;
 					}
+
 					prCurrSwRfb->pvHeader += u2MACLen; /* use prWlanHeader think deeply */
-					kalMemCopy(prCurrSwRfb->pvHeader, prWlanHeader->aucAddr1, MAC_ADDR_LEN);
-					kalMemCopy(prCurrSwRfb->pvHeader + MAC_ADDR_LEN, prWlanHeader->aucAddr3,
-						MAC_ADDR_LEN);
+
+					if (((u2FrameCtrl&0x0300) == 0x0100) /*to DS*/
+						&& (prCurrSwRfb->u2PacketLen > (sizeof(WLAN_MAC_HEADER_QOS_T) + 8))
+						&& (((unsigned char *)(prCurrSwRfb->pvHeader))[12] == 0x88)
+						&& (((unsigned char *)(prCurrSwRfb->pvHeader))[13] == 0x8e)) {
+
+						DBGLOG_MEM8(QM, WARN, (PUINT_8) prCurrSwRfb->pvHeader,
+							(*pu2PktLen > 120) ? 120 : *pu2PktLen);
+
+						kalMemCopy(prCurrSwRfb->pvHeader, prWlanHeader->aucAddr3, MAC_ADDR_LEN);
+						kalMemCopy(prCurrSwRfb->pvHeader + MAC_ADDR_LEN, prWlanHeader->aucAddr2,
+							MAC_ADDR_LEN);
+						DBGLOG(QM, INFO, " To ds case transfer header.\n");
+					} else {
+						kalMemCopy(prCurrSwRfb->pvHeader, prWlanHeader->aucAddr1, MAC_ADDR_LEN);
+						kalMemCopy(prCurrSwRfb->pvHeader + MAC_ADDR_LEN, prWlanHeader->aucAddr3,
+							MAC_ADDR_LEN);
+						DBGLOG(QM, INFO, " Old transfer header way.\n");
+					}
 					*pu2PktLen -= u2MACLen;
 
 					prCurrSwRfb->ucWlanIdx = prCurrSwRfb->prStaRec->ucWlanIndex;
