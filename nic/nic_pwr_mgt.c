@@ -246,7 +246,7 @@ BOOLEAN nicpmSetDriverOwn(IN P_ADAPTER_T prAdapter)
 				prAdapter->u4OwnFailedLogCount++;
 				if (prAdapter->u4OwnFailedLogCount > LP_OWN_BACK_FAILED_RESET_CNT) {
 					/* Trigger RESET */
-					GL_RESET_TRIGGER(prAdapter, RST_FLAG_CHIP_RESET);
+					GL_RESET_TRIGGER(prAdapter, RST_FLAG_DO_CORE_DUMP);
 				}
 				GET_CURRENT_SYSTIME(&prAdapter->rLastOwnFailedLogTime);
 			}
