@@ -399,7 +399,8 @@
 #endif
 
 /*! RX BA capability */
-#define CFG_NUM_OF_RX_BA_AGREEMENTS             8
+/* Each STA needs 8 TID; Hotspot supports 10 Clients */
+#define CFG_NUM_OF_RX_BA_AGREEMENTS             80
 #if CFG_M0VE_BA_TO_DRIVER
 #define CFG_RX_BA_MAX_WINSIZE                   8
 #else
