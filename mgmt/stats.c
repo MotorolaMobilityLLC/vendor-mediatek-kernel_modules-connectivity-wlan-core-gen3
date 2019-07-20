@@ -350,6 +350,10 @@ statsParsePktInfo(P_ADAPTER_T prAdapter, PUINT_8 pucPkt, struct sk_buff *skb, UI
 #if CFG_SUPPORT_REPORT_MISC
 				prBootp = (P_BOOTP_PROTOCOL_T)pucBootp;
 				udpLength = pucUdp[4] << 8 | pucUdp[5];
+				if (udpLength <= 248) {
+					DBGLOG(RX, INFO, "Length of DHCP less than 248!\n");
+					break;
+				}
 				while (i < udpLength - 248) {
 					if (prBootp->aucOptions[i + 4] == 53 &&
 						prBootp->aucOptions[i + 6] == 5 &&
