@@ -4264,11 +4264,6 @@ WLAN_STATUS wlanLoadManufactureData_5G(IN P_ADAPTER_T prAdapter, IN P_REG_INFO_T
 	}
 
 	/*3.set 5G AC power */
-#if CFG_MODIFY_TX_POWER_BY_BAT_VOLT
-	if (wlan_bat_volt == 3550)
-		kalDec5GAcPowerByBattVolt(prAdapter, prRegInfo);
-	else
-#endif
 	if (prRegInfo->prOldEfuseMapping->uc11AcTxPwrValid) {
 		CMD_TX_AC_PWR_T rCmdAcPwr;
 
@@ -4336,12 +4331,7 @@ WLAN_STATUS wlanLoadManufactureData(IN P_ADAPTER_T prAdapter, IN P_REG_INFO_T pr
 		/* 2. Load TX power gain parameters if valid */
 		if (prRegInfo->ucTxPwrValid != 0) {
 			/* send to F/W */
-#if CFG_MODIFY_TX_POWER_BY_BAT_VOLT
-			if (wlan_bat_volt == 3550)
-				kalDecTxPowerByBattVolt(prAdapter, prRegInfo);
-			else
-#endif
-				nicUpdateTxPower(prAdapter, (P_CMD_TX_PWR_T) (&(prRegInfo->rTxPwr)));
+			nicUpdateTxPower(prAdapter, (P_CMD_TX_PWR_T) (&(prRegInfo->rTxPwr)));
 		}
 	}
 
@@ -4474,11 +4464,6 @@ WLAN_STATUS wlanLoadManufactureData(IN P_ADAPTER_T prAdapter, IN P_REG_INFO_T pr
 	}
 	/*8. Set 2.4G AC power */
 	if (prRegInfo->prOldEfuseMapping) {
-#if CFG_MODIFY_TX_POWER_BY_BAT_VOLT
-		if (wlan_bat_volt == 3550)
-			kalDec2GAcPowerByBattVolt(prAdapter, prRegInfo);
-		else
-#endif
 		if (prRegInfo->prOldEfuseMapping->uc11AcTxPwrValid2G) {
 			CMD_TX_AC_PWR_T rCmdAcPwr;
 
@@ -4494,6 +4479,10 @@ WLAN_STATUS wlanLoadManufactureData(IN P_ADAPTER_T prAdapter, IN P_REG_INFO_T pr
 			/* dumpMemory8(&rCmdAcPwr,9); */
 		}
 	}
+#if CFG_MODIFY_TX_POWER_BY_BAT_VOLT
+	if (wlan_bat_volt == 3550)
+		kalSetTxPwrBackoffByBattVolt(prAdapter, TRUE);
+#endif
 	/* 9. Send the full Parameters of NVRAM to FW */
 
 #if CFG_SUPPORT_PCC

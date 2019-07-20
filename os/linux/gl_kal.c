@@ -5691,144 +5691,24 @@ VOID kalFbNotifierUnReg(VOID)
 }
 
 #if CFG_MODIFY_TX_POWER_BY_BAT_VOLT
-VOID kalDecTxPowerByBattVolt(P_ADAPTER_T prAdapter, P_REG_INFO_T prRegInfo)
+VOID kalSetTxPwrBackoffByBattVolt(P_ADAPTER_T prAdapter, BOOLEAN ucEnable)
 {
-	TX_PWR_PARAM_T rTxPwrDec;
+	struct CMD_TX_PWR_BACKOFF  rTxPwrBackoff;
 
 	ASSERT(prAdapter);
-	ASSERT(prRegInfo);
 
-	if ((!prAdapter) || (!prRegInfo))
+	if (!prAdapter)
 		return;
 
-	rTxPwrDec.cTxPwr2G4Cck = prRegInfo->rTxPwr.cTxPwr2G4Cck - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4Dsss = prRegInfo->rTxPwr.cTxPwr2G4Dsss - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4OFDM_BPSK = prRegInfo->rTxPwr.cTxPwr2G4OFDM_BPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4OFDM_QPSK = prRegInfo->rTxPwr.cTxPwr2G4OFDM_QPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4OFDM_16QAM = prRegInfo->rTxPwr.cTxPwr2G4OFDM_16QAM - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4OFDM_Reserved = prRegInfo->rTxPwr.cTxPwr2G4OFDM_Reserved;
-	rTxPwrDec.cTxPwr2G4OFDM_48Mbps = prRegInfo->rTxPwr.cTxPwr2G4OFDM_48Mbps - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4OFDM_54Mbps = prRegInfo->rTxPwr.cTxPwr2G4OFDM_54Mbps - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT20_BPSK = prRegInfo->rTxPwr.cTxPwr2G4HT20_BPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT20_QPSK = prRegInfo->rTxPwr.cTxPwr2G4HT20_QPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT20_16QAM = prRegInfo->rTxPwr.cTxPwr2G4HT20_16QAM - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT20_MCS5 = prRegInfo->rTxPwr.cTxPwr2G4HT20_MCS5 - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT20_MCS6 = prRegInfo->rTxPwr.cTxPwr2G4HT20_MCS6 - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT20_MCS7 = prRegInfo->rTxPwr.cTxPwr2G4HT20_MCS7 - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT40_BPSK = prRegInfo->rTxPwr.cTxPwr2G4HT40_BPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT40_QPSK = prRegInfo->rTxPwr.cTxPwr2G4HT40_QPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT40_16QAM = prRegInfo->rTxPwr.cTxPwr2G4HT40_16QAM - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT40_MCS5 = prRegInfo->rTxPwr.cTxPwr2G4HT40_MCS5 - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT40_MCS6 = prRegInfo->rTxPwr.cTxPwr2G4HT40_MCS6 - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr2G4HT40_MCS7 = prRegInfo->rTxPwr.cTxPwr2G4HT40_MCS7 - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GOFDM_BPSK = prRegInfo->rTxPwr.cTxPwr5GOFDM_BPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GOFDM_QPSK = prRegInfo->rTxPwr.cTxPwr5GOFDM_QPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GOFDM_16QAM = prRegInfo->rTxPwr.cTxPwr5GOFDM_16QAM - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GOFDM_Reserved = prRegInfo->rTxPwr.cTxPwr5GOFDM_Reserved;
-	rTxPwrDec.cTxPwr5GOFDM_48Mbps = prRegInfo->rTxPwr.cTxPwr5GOFDM_48Mbps - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GOFDM_54Mbps = prRegInfo->rTxPwr.cTxPwr5GOFDM_54Mbps - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT20_BPSK = prRegInfo->rTxPwr.cTxPwr5GHT20_BPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT20_QPSK = prRegInfo->rTxPwr.cTxPwr5GHT20_QPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT20_16QAM = prRegInfo->rTxPwr.cTxPwr5GHT20_16QAM - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT20_MCS5 = prRegInfo->rTxPwr.cTxPwr5GHT20_MCS5 - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT20_MCS6 = prRegInfo->rTxPwr.cTxPwr5GHT20_MCS6 - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT20_MCS7 = prRegInfo->rTxPwr.cTxPwr5GHT20_MCS7 - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT40_BPSK = prRegInfo->rTxPwr.cTxPwr5GHT40_BPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT40_QPSK = prRegInfo->rTxPwr.cTxPwr5GHT40_QPSK - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT40_16QAM = prRegInfo->rTxPwr.cTxPwr5GHT40_16QAM - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT40_MCS5 = prRegInfo->rTxPwr.cTxPwr5GHT40_MCS5 - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT40_MCS6 = prRegInfo->rTxPwr.cTxPwr5GHT40_MCS6 - TX_PWR_DEC_STEP;
-	rTxPwrDec.cTxPwr5GHT40_MCS7 = prRegInfo->rTxPwr.cTxPwr5GHT40_MCS7 - TX_PWR_DEC_STEP;
+	rTxPwrBackoff.ucEnable = ucEnable;
+	rTxPwrBackoff.ucBackoffPwr = 3;
 
-	nicUpdateTxPower(prAdapter, (P_CMD_TX_PWR_T) (&rTxPwrDec));
-}
-
-VOID kalDec5GAcPowerByBattVolt(P_ADAPTER_T prAdapter, P_REG_INFO_T prRegInfo)
-{
-	ASSERT(prAdapter);
-	ASSERT(prRegInfo);
-
-	if ((!prAdapter) || (!prRegInfo))
-		return;
-
-	if (prRegInfo->prOldEfuseMapping->uc11AcTxPwrValid) {
-		CMD_TX_AC_PWR_T rCmdAcPwr;
-
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_BPSK =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr.c11AcTxPwr_BPSK - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_QPSK =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr.c11AcTxPwr_QPSK - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_16QAM =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr.c11AcTxPwr_16QAM - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_MCS5_MCS6 =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr.c11AcTxPwr_MCS5_MCS6 - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_MCS7 =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr.c11AcTxPwr_MCS7 - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_MCS8 =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr.c11AcTxPwr_MCS8 - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_MCS9 =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr.c11AcTxPwr_MCS9 - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_Reserved =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr.c11AcTxPwr_Reserved;
-		rCmdAcPwr.rAcPwr.c11AcTxPwrVht40_OFFSET =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr.c11AcTxPwrVht40_OFFSET;
-		rCmdAcPwr.rAcPwr.c11AcTxPwrVht80_OFFSET =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr.c11AcTxPwrVht80_OFFSET;
-		rCmdAcPwr.rAcPwr.c11AcTxPwrVht160_OFFSET =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr.c11AcTxPwrVht160_OFFSET;
-
-		rCmdAcPwr.ucBand = BAND_5G;
-
-		wlanSendSetQueryCmd(prAdapter,
-				    CMD_ID_SET_80211AC_TX_PWR,
-				    TRUE,
-				    FALSE, FALSE, NULL, NULL, sizeof(CMD_TX_AC_PWR_T),
-				    (PUINT_8)&rCmdAcPwr, NULL, 0);
-	}
-}
-
-VOID kalDec2GAcPowerByBattVolt(P_ADAPTER_T prAdapter, P_REG_INFO_T prRegInfo)
-{
-	ASSERT(prAdapter);
-	ASSERT(prRegInfo);
-
-	if ((!prAdapter) || (!prRegInfo))
-		return;
-
-	if (prRegInfo->prOldEfuseMapping->uc11AcTxPwrValid2G) {
-		CMD_TX_AC_PWR_T rCmdAcPwr;
-
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_BPSK =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr2G.c11AcTxPwr_BPSK - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_QPSK =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr2G.c11AcTxPwr_QPSK - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_16QAM =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr2G.c11AcTxPwr_16QAM - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_MCS5_MCS6 =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr2G.c11AcTxPwr_MCS5_MCS6 - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_MCS7 =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr2G.c11AcTxPwr_MCS7 - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_MCS8 =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr2G.c11AcTxPwr_MCS8 - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_MCS9 =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr2G.c11AcTxPwr_MCS9 - TX_PWR_DEC_STEP;
-		rCmdAcPwr.rAcPwr.c11AcTxPwr_Reserved =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr2G.c11AcTxPwr_Reserved;
-		rCmdAcPwr.rAcPwr.c11AcTxPwrVht40_OFFSET =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr2G.c11AcTxPwrVht40_OFFSET;
-		rCmdAcPwr.rAcPwr.c11AcTxPwrVht80_OFFSET =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr2G.c11AcTxPwrVht80_OFFSET;
-		rCmdAcPwr.rAcPwr.c11AcTxPwrVht160_OFFSET =
-				prRegInfo->prOldEfuseMapping->r11AcTxPwr2G.c11AcTxPwrVht160_OFFSET;
-
-		rCmdAcPwr.ucBand = BAND_2G4;
-
-		wlanSendSetQueryCmd(prAdapter,
-				    CMD_ID_SET_80211AC_TX_PWR,
-				    TRUE,
-				    FALSE, FALSE, NULL, NULL, sizeof(CMD_TX_AC_PWR_T),
-				    (PUINT_8)&rCmdAcPwr, NULL, 0);
-	}
+	wlanSendSetQueryCmd(prAdapter,
+			    CMD_ID_TX_POWER_BACKOFF,
+			    TRUE,
+			    FALSE, FALSE, NULL, NULL,
+			    sizeof(struct CMD_TX_PWR_BACKOFF),
+			    (PUINT_8) & rTxPwrBackoff, NULL, 0);
 }
 
 static VOID kal_bat_volt_notifier_callback(unsigned int volt)
@@ -5857,37 +5737,10 @@ static VOID kal_bat_volt_notifier_callback(unsigned int volt)
 	}
 	DBGLOG(NIC, INFO, "volt = %d, fgIsTxPowerDecreased = %d\n", volt, fgIsTxPowerDecreased);
 	if (volt == 3650 && fgIsTxPowerDecreased == TRUE) {
-		nicUpdateTxPower(prAdapter, (P_CMD_TX_PWR_T) (&(prGlueInfo->rRegInfo.rTxPwr)));
-
-		if (prRegInfo->prOldEfuseMapping->uc11AcTxPwrValid) {
-			CMD_TX_AC_PWR_T rCmdAcPwr;
-
-			kalMemCopy(&rCmdAcPwr.rAcPwr,
-				   &prRegInfo->prOldEfuseMapping->r11AcTxPwr, sizeof(AC_PWR_SETTING_STRUCT));
-			rCmdAcPwr.ucBand = BAND_5G;
-			wlanSendSetQueryCmd(prAdapter,
-					    CMD_ID_SET_80211AC_TX_PWR,
-					    TRUE,
-					    FALSE, FALSE, NULL, NULL, sizeof(CMD_TX_AC_PWR_T),
-					    (PUINT_8)&rCmdAcPwr, NULL, 0);
-		}
-		if (prRegInfo->prOldEfuseMapping->uc11AcTxPwrValid2G) {
-			CMD_TX_AC_PWR_T rCmdAcPwr;
-
-			kalMemCopy(&rCmdAcPwr.rAcPwr, &prRegInfo->prOldEfuseMapping->r11AcTxPwr2G,
-				   sizeof(AC_PWR_SETTING_STRUCT));
-			rCmdAcPwr.ucBand = BAND_2G4;
-			wlanSendSetQueryCmd(prAdapter,
-					    CMD_ID_SET_80211AC_TX_PWR,
-					    TRUE,
-					    FALSE, FALSE, NULL, NULL, sizeof(CMD_TX_AC_PWR_T),
-					    (PUINT_8)&rCmdAcPwr, NULL, 0);
-		}
+		kalSetTxPwrBackoffByBattVolt(prAdapter, FALSE);
 		fgIsTxPowerDecreased = FALSE;
 	} else if (volt == 3550 && fgIsTxPowerDecreased == FALSE) {
-		kalDecTxPowerByBattVolt(prAdapter, prRegInfo);
-		kalDec5GAcPowerByBattVolt(prAdapter, prRegInfo);
-		kalDec2GAcPowerByBattVolt(prAdapter, prRegInfo);
+		kalSetTxPwrBackoffByBattVolt(prAdapter, TRUE);
 		fgIsTxPowerDecreased = TRUE;
 	}
 }

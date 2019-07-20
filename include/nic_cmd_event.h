@@ -428,6 +428,9 @@ typedef enum _ENUM_CMD_ID_T {
 	CMD_ID_CHIP_CONFIG = 0xCA,	/* 0xca (Set / Query) */
 	CMD_ID_STATS_LOG = 0xCB,	/* 0xcb (Set) */
 	CMD_ID_SET_SAR_ENABLE = 0xCC,
+#if CFG_MODIFY_TX_POWER_BY_BAT_VOLT
+	CMD_ID_TX_POWER_BACKOFF = 0xCD,
+#endif
 	CMD_ID_SET_RDD_CH = 0xE1,
 #if CFG_SUPPORT_QA_TOOL
 	CMD_ID_LAYER_0_EXT_MAGIC_NUM = 0xED,	/* magic number for Extending MT6630 original CMD header */
@@ -2370,6 +2373,13 @@ struct CMD_EVENT_LOG_LEVEL {
 	UINT_32 u4LogLevel;
 	UINT_8 aucReserved[3];
 };
+
+#if CFG_MODIFY_TX_POWER_BY_BAT_VOLT
+struct CMD_TX_PWR_BACKOFF {
+	UINT_8 ucEnable;    /* enable decreased tx power or not */
+	UINT_8 ucBackoffPwr;    /* tx power dec step  */
+};
+#endif
 
 /*******************************************************************************
 *                            P U B L I C   D A T A
