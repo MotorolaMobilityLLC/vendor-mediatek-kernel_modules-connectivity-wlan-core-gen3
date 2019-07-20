@@ -46,6 +46,7 @@
 
 #include "wlan_oid.h"
 
+
 /*******************************************************************************
 *                    E X T E R N A L   V A R I A B L E
 ********************************************************************************
@@ -65,6 +66,9 @@ extern const struct net_device_ops p2p_netdev_ops;
 */
 #define OID_SET_GET_STRUCT_LENGTH		4096	/* For SET_STRUCT/GET_STRUCT */
 
+#if CFG_SUPPORT_HOTSPOT_WPS_MANAGER
+#define P2P_BLACKLIST_MAX_COUNT                    32
+#endif
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -165,7 +169,7 @@ struct _GL_P2P_INFO_T {
 	 * dependent with  #define P2P_MAXIMUM_CLIENT_COUNT 10,
 	 * fix me to PARAM_MAC_ADDRESS aucblackMACList[P2P_MAXIMUM_CLIENT_COUNT];
 	 */
-	PARAM_MAC_ADDRESS aucblackMACList[10];
+	PARAM_MAC_ADDRESS aucblackMACList[P2P_BLACKLIST_MAX_COUNT];
 	UINT_8 ucMaxClients;
 #endif
 

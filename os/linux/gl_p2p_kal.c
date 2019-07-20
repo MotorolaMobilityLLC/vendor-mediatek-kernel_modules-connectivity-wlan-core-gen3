@@ -1306,7 +1306,7 @@ BOOLEAN kalP2PSetBlackList(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rbs
 	ASSERT(prGlueInfo->prP2PInfo);
 
 	if (fgIsblock) {
-		for (i = 0; i < P2P_MAXIMUM_CLIENT_COUNT; i++) {
+		for (i = 0; i < P2P_BLACKLIST_MAX_COUNT; i++) {
 			if (UNEQUAL_MAC_ADDR(rbssid, aucNullAddr)) {
 				if (UNEQUAL_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucblackMACList[i]), rbssid)) {
 					if (EQUAL_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucblackMACList[i]), aucNullAddr)) {
@@ -1318,7 +1318,7 @@ BOOLEAN kalP2PSetBlackList(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rbs
 			}
 		}
 	} else {
-		for (i = 0; i < P2P_MAXIMUM_CLIENT_COUNT; i++) {
+		for (i = 0; i < P2P_BLACKLIST_MAX_COUNT; i++) {
 			if (EQUAL_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucblackMACList[i]), rbssid)) {
 				COPY_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucblackMACList[i]), aucNullAddr);
 				fgIsValid = FALSE;
@@ -1350,7 +1350,7 @@ BOOLEAN kalP2PCmpBlackList(IN P_GLUE_INFO_T prGlueInfo, IN PARAM_MAC_ADDRESS rbs
 	ASSERT(prGlueInfo);
 	ASSERT(prGlueInfo->prP2PInfo);
 
-	for (i = 0; i < P2P_MAXIMUM_CLIENT_COUNT; i++) {
+	for (i = 0; i < P2P_BLACKLIST_MAX_COUNT; i++) {
 		if (UNEQUAL_MAC_ADDR(rbssid, aucNullAddr)) {
 			if (EQUAL_MAC_ADDR(&(prGlueInfo->prP2PInfo->aucblackMACList[i]), rbssid)) {
 				fgIsExsit = TRUE;
