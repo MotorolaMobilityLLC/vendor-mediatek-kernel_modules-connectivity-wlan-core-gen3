@@ -354,7 +354,12 @@ statsParsePktInfo(P_ADAPTER_T prAdapter, PUINT_8 pucPkt, struct sk_buff *skb, UI
 					DBGLOG(RX, INFO, "Length of DHCP less than 248!\n");
 					break;
 				}
-				while (i < udpLength - 248) {
+				while (i < (udpLength - 248) && i < (NORMAL_DHCP_UDP_LEN - 248)) {
+					/* option end */
+					if (prBootp->aucOptions[i + 4] == 255) {
+						DBGLOG(RX, WARN, "i:%d, udpLength:%d\n", i, udpLength);
+						break;
+					}
 					if (prBootp->aucOptions[i + 4] == 53 &&
 						prBootp->aucOptions[i + 6] == 5 &&
 						prAdapter->rReportMiscSet.eQueryNum == REPORT_DHCP_START) {
