@@ -2238,8 +2238,7 @@ VOID nicCmdEventReportMisc(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, 
 			/* don't break here */
 REPORT_MISC:
 			now = sched_clock();
-			DBGLOG(NIC, TRACE, "Ver=0x%x.%x.%04x,Time=%llu,Period=%s,MDRDY=%u,
-				SLOTIDLE=%u,MPDU=%u,RSSI=%d\n",
+			DBGLOG(NIC, TRACE, "Ver=0x%x.%x.%04x,Time=%llu,Period=%s,MDRDY=%u,SLOTID=%u,MPDU=%u,RSSI=%d\n",
 				prReportMisc->ucFwVerMajor,
 				prReportMisc->ucFwVerMinor,
 				prReportMisc->u2FwVerBeta,
