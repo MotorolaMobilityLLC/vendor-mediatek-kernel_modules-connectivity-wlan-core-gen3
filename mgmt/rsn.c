@@ -1313,7 +1313,11 @@ VOID rsnGenerateRSNIE(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo)
 	/* for Fast Bss Transition,  we reuse the RSN Element composed in userspace */
 	if ((prAdapter->rWifiVar.rConnSettings.eAuthMode == AUTH_MODE_WPA2_FT ||
 		prAdapter->rWifiVar.rConnSettings.eAuthMode == AUTH_MODE_WPA2_FT_PSK) &&
-		prAdapter->prGlueInfo->rFtIeForTx.prRsnIE) {
+		prAdapter->prGlueInfo->rFtIeForTx.prRsnIE
+#if CFG_ENABLE_WIFI_DIRECT
+		&& (GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex)->eNetworkType != NETWORK_TYPE_P2P)
+#endif
+		) {
 		authAddRSNIE(prAdapter, prMsduInfo);
 		return;
 	}
