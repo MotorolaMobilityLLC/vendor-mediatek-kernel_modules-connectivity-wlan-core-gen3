@@ -229,6 +229,10 @@ extern UINT_8 g_aucNvram[];
 #endif
 #define GLUE_FLAG_RESET_CONN_BIT  (18)
 
+#if CFG_SUPPORT_REPORT_MISC
+#define GLUE_FLAG_REPORT_MISC_BIT  (19)
+#endif
+
 #define GLUE_BOW_KFIFO_DEPTH        (1024)
 /* #define GLUE_BOW_DEVICE_NAME        "MT6620 802.11 AMP" */
 #define GLUE_BOW_DEVICE_NAME        "ampc0"

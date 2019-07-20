@@ -7515,3 +7515,55 @@ wlanGetChannelIndex(IN UINT_8 channel)
 	}
 	return ucIdx;
 }
+
+#if CFG_SUPPORT_REPORT_MISC
+UINT_32 wlanExtSrcReportMisc(P_GLUE_INFO_T prGlueInfo)
+{
+	if ((prGlueInfo == NULL) || (prGlueInfo->prAdapter == NULL)) {
+		DBGLOG(INIT, WARN, "Invalid parameter.\n");
+		return 1;
+	}
+	if (test_and_clear_bit(EXT_SRC_DHCP_BIT,
+		&(prGlueInfo->prAdapter->rReportMiscSet.ulExtSrcFlag))) {
+		if (prGlueInfo->prAdapter->rReportMiscSet.eQueryNum
+			!= REPORT_DHCP_START) {
+			wlanSendSetQueryCmd(prGlueInfo->prAdapter,
+						CMD_ID_GET_REPORT_MISC,
+						FALSE,
+						TRUE,
+						FALSE,
+						nicCmdEventReportMisc,
+						NULL,
+						0,
+						NULL,
+						NULL,
+						0);
+			prGlueInfo->prAdapter->rReportMiscSet.i4Rssi = 0;
+			prGlueInfo->prAdapter->rReportMiscSet.eQueryNum
+				= REPORT_DHCP_START;
+		}
+	}
+
+	if (test_and_clear_bit(EXT_SRC_DISCONNCT_BIT,
+		&(prGlueInfo->prAdapter->rReportMiscSet.ulExtSrcFlag))) {
+		if (prGlueInfo->prAdapter->rReportMiscSet.eQueryNum
+			== REPORT_4WAYHS_START) {
+			wlanSendSetQueryCmd(prGlueInfo->prAdapter,
+						CMD_ID_GET_REPORT_MISC,
+						FALSE,
+						TRUE,
+						FALSE,
+						nicCmdEventReportMisc,
+						NULL,
+						0,
+						NULL,
+						NULL,
+						0);
+			prGlueInfo->prAdapter->rReportMiscSet.eQueryNum
+				= REPORT_4WAYHS_END;
+		}
+	}
+	return 0;
+}
+#endif
+

@@ -1047,4 +1047,9 @@ void wlanFinishCollectingLinkQuality(P_GLUE_INFO_T prGlueInfo);
 UINT_32 wlanGetStaIdxByWlanIdx(IN P_ADAPTER_T prAdapter,
 		       IN UINT_8 ucIndex, OUT UINT_8 *pucStaIdx);
 #endif
+
+#if CFG_SUPPORT_REPORT_MISC
+UINT_32 wlanExtSrcReportMisc(P_GLUE_INFO_T prGlueInfo);
+#endif
+
 #endif /* _WLAN_LIB_H */

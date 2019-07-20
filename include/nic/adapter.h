@@ -865,6 +865,7 @@ struct REPORT_MISC_SET {
 	enum ENUM_REPORT_MISC eQueryNum;
 	INT_32 i4Rssi;
 	struct EVENT_REPORT_MISC reportMisc;
+	ULONG ulExtSrcFlag;
 };
 #endif
 /*
