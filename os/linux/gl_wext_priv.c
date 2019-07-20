@@ -3843,8 +3843,8 @@ int kalGetRxRate(IN P_GLUE_INFO_T prGlueInfo,
 		 IN UINT_32 *pu4CurRate, IN UINT_32 *pu4MaxRate)
 {
 	P_ADAPTER_T prAdapter;
-	UINT_32 txmode, rate, frmode, sgi, nsts, groupid;
-	UINT_32 u4RxVector0, u4RxVector1;
+	UINT_32 txmode = 0, rate = 0, frmode = 0, sgi = 0, nsts = 0, groupid = 0;
+	UINT_32 u4RxVector0 = 0, u4RxVector1 = 0;
 	UINT_8 ucWlanIdx, ucStaIdx;
 	int rv;
 

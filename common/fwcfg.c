@@ -196,7 +196,7 @@ WLAN_STATUS wlanFwFileCfg(IN P_ADAPTER_T prAdapter)
 WLAN_STATUS wlanFwCfgParse(IN P_ADAPTER_T prAdapter, PUINT_8 pucConfigBuf)
 {
 	/* here return a list should be better */
-	char *saveptr1, *saveptr2;
+	char *saveptr1 = NULL, *saveptr2 = NULL;
 	char *cfgItems = pucConfigBuf;
 	UINT_8 cmdNum = 0;
 

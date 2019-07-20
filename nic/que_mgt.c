@@ -3025,7 +3025,7 @@ VOID qmProcessPktWithReordering(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb,
 			UINT_16 u2Etype = (pucData[ETH_TYPE_LEN_OFFSET] << 8) | (pucData[ETH_TYPE_LEN_OFFSET + 1]);
 			UINT_8 ucBssIndex = secGetBssIdxByWlanIdx(prAdapter, prSwRfb->ucWlanIdx);
 
-			if ((prAdapter->fgEnOshareMode) &&
+			if ((prAdapter->fgEnOshareMode) && (ucBssIndex != 0xff) &&
 			    (GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex)->eNetworkType == NETWORK_TYPE_P2P)) {
 				if (u2Etype == ETH_P_IP) {
 					PUINT_8 pucEthBody = &pucData[ETH_HLEN];
