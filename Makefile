@@ -248,9 +248,7 @@ ifneq ($(wildcard $(FWCFG_DIR)fw_config.c),)
 endif
     COMMON_OBJS += $(COMMON_DIR)fwcfg.o
     ccflags-y += -DFW_CFG_SUPPORT
-ifneq ($(TARGET_BUILD_VARIANT), user)
     ccflags-y += -DENABLED_IN_ENGUSERDEBUG
-endif
 endif
 # ---------------------------------------------------
 
