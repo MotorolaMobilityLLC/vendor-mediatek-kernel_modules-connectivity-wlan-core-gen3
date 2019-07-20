@@ -1306,7 +1306,9 @@ VOID rsnGenerateRSNIE(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo)
 	/* Todo:: network id */
 	ucBssIndex = prMsduInfo->ucBssIndex;
 
-	if (prAdapter->rWifiVar.rConnSettings.assocIeLen != 0) {
+	if (prAdapter->rWifiVar.rConnSettings.assocIeLen != 0 &&
+		GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex)->eNetworkType ==
+		NETWORK_TYPE_AIS) {
 		DBGLOG(RSN, INFO, "Use RSN IE from supplicant\n");
 		return;
 	}
