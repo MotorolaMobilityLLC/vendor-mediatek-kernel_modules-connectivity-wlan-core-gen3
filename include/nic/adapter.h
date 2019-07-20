@@ -859,6 +859,14 @@ struct PERF_MONITOR_T {
 	UINT32 u4CurrPerfLevel;
 };
 
+#if CFG_SUPPORT_REPORT_MISC
+struct REPORT_MISC_SET {
+	UINT_64 u8Ts;
+	enum ENUM_REPORT_MISC eQueryNum;
+	INT_32 i4Rssi;
+	struct EVENT_REPORT_MISC reportMisc;
+};
+#endif
 /*
  * Major ADAPTER structure
  * Major data structure for driver operation
@@ -1109,6 +1117,9 @@ struct _ADAPTER_T {
 	struct WLAN_DEBUG_INFO rDebugInfo;
 #if CFG_DBG_MGT_BUF
 	LINK_T rMemTrackLink;
+#endif
+#if CFG_SUPPORT_REPORT_MISC
+	struct REPORT_MISC_SET rReportMiscSet;
 #endif
 #ifdef CFG_SUPPORT_LINK_QUALITY_MONITOR
 	/* link quality monitor */

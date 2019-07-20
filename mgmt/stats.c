@@ -331,6 +331,9 @@ statsParsePktInfo(P_ADAPTER_T prAdapter, PUINT_8 pucPkt, struct sk_buff *skb, UI
 			/* the number of DHCP packets is seldom so we print log here */
 			PUINT_8 pucUdp = &pucEthBody[20];
 			PUINT_8 pucBootp = &pucUdp[8];
+			P_BOOTP_PROTOCOL_T prBootp = NULL;
+			UINT_32 udpLength = 0;
+			UINT_32 i = 0;
 			UINT_16 u2UdpDstPort;
 			UINT_16 u2UdpSrcPort;
 			UINT_32 u4TransID;
@@ -341,9 +344,33 @@ statsParsePktInfo(P_ADAPTER_T prAdapter, PUINT_8 pucPkt, struct sk_buff *skb, UI
 			u4TransID = pucBootp[4]<<24  | pucBootp[5]<<16 | pucBootp[6]<<8  | pucBootp[7];
 			switch (eventType) {
 			case EVENT_RX:
-					GLUE_SET_INDEPENDENT_PKT(skb, TRUE);
-					DBGLOG(RX, INFO, "<RX> DHCP: IPID 0x%02x, MsgType 0x%x, TransID 0x%04x\n",
+				GLUE_SET_INDEPENDENT_PKT(skb, TRUE);
+				DBGLOG(RX, INFO, "<RX> DHCP: IPID 0x%02x, MsgType 0x%x, TransID 0x%04x\n",
 								u2IpId, pucBootp[0], u4TransID);
+#if CFG_SUPPORT_REPORT_MISC
+				prBootp = (P_BOOTP_PROTOCOL_T)pucBootp;
+				udpLength = pucUdp[4] << 8 | pucUdp[5];
+				while (i < udpLength - 248) {
+					if (prBootp->aucOptions[i + 4] == 53 &&
+						prBootp->aucOptions[i + 6] == 5 &&
+						prAdapter->rReportMiscSet.eQueryNum == REPORT_DHCP_START) {
+						wlanSendSetQueryCmd(prAdapter,
+								    CMD_ID_GET_REPORT_MISC,
+								    FALSE,
+								    TRUE,
+								    FALSE,
+								    nicCmdEventReportMisc,
+								    NULL,
+								    0,
+								    NULL,
+								    NULL,
+								    0);
+						prAdapter->rReportMiscSet.eQueryNum = REPORT_DHCP_END;
+						break;
+					}
+					i += prBootp->aucOptions[i + 5] + 2;
+				}
+#endif
 				break;
 			case EVENT_TX:
 					DBGLOG(TX, INFO, "<TX> DHCP: IPID 0x%02x, MsgType 0x%x, TransID 0x%04x\n",
@@ -481,6 +508,7 @@ statsParsePktInfo(P_ADAPTER_T prAdapter, PUINT_8 pucPkt, struct sk_buff *skb, UI
 		PUINT_8 pucEapol = pucEthBody;
 		UINT_8 ucEapolType = pucEapol[1];
 		UINT_8 ucAisBssIndex;
+		UINT_16 u2KeyInfo = 0;
 
 		switch (ucEapolType) {
 		case 0: /* eap packet */
@@ -519,6 +547,24 @@ statsParsePktInfo(P_ADAPTER_T prAdapter, PUINT_8 pucPkt, struct sk_buff *skb, UI
 			case EVENT_RX:
 				DBGLOG(RX, INFO, "<RX> EAPOL: key, KeyInfo 0x%04x\n",
 						*((PUINT_16)(&pucEapol[5])));
+#if CFG_SUPPORT_REPORT_MISC
+				WLAN_GET_FIELD_BE16(&pucEapol[5], &u2KeyInfo);
+				if ((u2KeyInfo & 0x388) == 0x88) { /* 1/4 key, init report */
+					if (prAdapter->rReportMiscSet.eQueryNum != REPORT_4WAYHS_START) {
+						wlanSendSetQueryCmd(prAdapter, CMD_ID_GET_REPORT_MISC,
+								    FALSE,
+								    TRUE,
+								    FALSE,
+								    nicCmdEventReportMisc,
+								    NULL,
+								    0,
+								    NULL,
+								    NULL,
+								    0);
+						prAdapter->rReportMiscSet.eQueryNum = REPORT_4WAYHS_START;
+					}
+				}
+#endif
 				break;
 			case EVENT_TX:
 				DBGLOG(TX, INFO, "<TX> EAPOL: key, KeyInfo 0x%04x\n",

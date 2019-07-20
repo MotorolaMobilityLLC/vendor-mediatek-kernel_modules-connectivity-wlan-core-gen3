@@ -406,6 +406,7 @@ typedef enum _ENUM_CMD_ID_T {
 
 	CMD_ID_GET_LTE_CHN = 0x87,	/* 0x87 (Query) */
 	CMD_ID_GET_CHN_LOADING = 0x88,	/* 0x88 (Query) */
+	CMD_ID_GET_REPORT_MISC = 0x8A,	/* 0x88 (Query) */
 	CMD_ID_ENABLE_LOW_LATENCEY_MODE = 0x8B,  /* 0x8B (Set) */
 #if CFG_SUPPORT_OSHARE
 	CMD_ID_SET_OSHARE_MODE = 0x8C,
@@ -529,6 +530,7 @@ typedef enum _ENUM_EVENT_ID_T {
 	EVENT_ID_RSP_CHNL_UTILIZATION = 0x59, /* 0x59 (Query - CMD_ID_REQ_CHNL_UTILIZATION) */
 
 	EVENT_ID_TDLS = 0x80,	/* TDLS event_id */
+	EVENT_ID_REPORT_MISC = 0x8A,	/* Report_misc event_id */
 	EVENT_ID_WIFI_LOG_LEVEL  = 0x8D,
 	EVENT_ID_UPDATE_FW_INFO = 0x90, /* 0x90 (Unsolicited) */
 	EVENT_ID_RSSI_MONITOR = 0xA1,
@@ -2087,6 +2089,17 @@ typedef enum _ENUM_NLO_AUTH_ALGORITHM {
 	NLO_AUTH_ALGO_RSNA_PSK = 7,
 } ENUM_NLO_AUTH_ALGORITHM, *P_ENUM_NLO_AUTH_ALGORITHM;
 
+#if CFG_SUPPORT_REPORT_MISC
+enum ENUM_REPORT_MISC {
+	REPORT_AUTHASSOC_START = 0x01,
+	REPORT_AUTHASSOC_END,
+	REPORT_4WAYHS_START,
+	REPORT_4WAYHS_END,
+	REPORT_DHCP_START,
+	REPORT_DHCP_END,
+};
+#endif
+
 struct NLO_SSID_MATCH_SETS {
 	INT_8 cRssiThresold;
 	UINT_8 ucSSIDLength;
@@ -2381,6 +2394,17 @@ struct CMD_TX_PWR_BACKOFF {
 };
 #endif
 
+#if CFG_SUPPORT_REPORT_MISC
+struct EVENT_REPORT_MISC {
+	UINT_8 ucFwVerMajor;
+	UINT_8 ucFwVerMinor;
+	UINT_16 u2FwVerBeta;
+	UINT_32 u4MdrdyCnt;
+	UINT_32 u4RxMpduCnt;
+	UINT_32 u4ChannelIdleCnt;
+	INT_8 cRssi;
+};
+#endif
 /*******************************************************************************
 *                            P U B L I C   D A T A
 ********************************************************************************
@@ -2505,6 +2529,9 @@ VOID nicCmdEventSetAddKey(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, I
 VOID nicOidCmdTimeoutSetAddKey(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo);
 #endif
 
+#if CFG_SUPPORT_REPORT_MISC
+VOID nicCmdEventReportMisc(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf);
+#endif
 /*******************************************************************************
 *                              F U N C T I O N S
 ********************************************************************************

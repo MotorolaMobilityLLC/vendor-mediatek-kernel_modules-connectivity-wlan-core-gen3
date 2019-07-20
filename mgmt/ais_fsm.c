@@ -1720,6 +1720,21 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 			prAdapter->rWifiVar.rConnSettings.eReConnectLevel = RECONNECT_LEVEL_MIN;
 			prConnSettings->fgIsDisconnectedByNonRequest = TRUE;
 			prConnSettings->ucSSIDLen = 0;
+#if CFG_SUPPORT_REPORT_MISC
+			if (prAdapter->rReportMiscSet.eQueryNum == REPORT_AUTHASSOC_START) {
+				wlanSendSetQueryCmd(prAdapter, CMD_ID_GET_REPORT_MISC,
+						    FALSE,
+						    TRUE,
+						    FALSE,
+						    nicCmdEventReportMisc,
+						    NULL,
+						    0,
+						    NULL,
+						    NULL,
+						    0);
+				prAdapter->rReportMiscSet.eQueryNum = REPORT_AUTHASSOC_END;
+			}
+#endif
 #if CFG_SUPPORT_RN
 			if (prAisBssInfo->fgDisConnReassoc == TRUE) {
 				nicMediaJoinFailure(prAdapter, prAdapter->prAisBssInfo->ucBssIndex,

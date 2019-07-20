@@ -1449,6 +1449,21 @@ VOID nicRxProcessDataPacket(IN P_ADAPTER_T prAdapter, IN OUT P_SW_RFB_T prSwRfb)
 				/* STA has install key,and AP encrypted 3/4 Eapol frame
 				 * We will set key after AP reply ACK for 4/4
 				 */
+#if CFG_SUPPORT_REPORT_MISC
+				if (prAdapter->rReportMiscSet.eQueryNum == REPORT_4WAYHS_START) {
+					wlanSendSetQueryCmd(prAdapter, CMD_ID_GET_REPORT_MISC,
+							    FALSE,
+							    TRUE,
+							    FALSE,
+							    nicCmdEventReportMisc,
+							    NULL,
+							    0,
+							    NULL,
+							    NULL,
+							    0);
+					prAdapter->rReportMiscSet.eQueryNum = REPORT_4WAYHS_END;
+				}
+#endif
 				if (HAL_RX_STATUS_GET_SEC_MODE(prRxStatus) != 0 &&
 					HAL_RX_STATUS_IS_CIPHER_MISMATCH(prRxStatus) == 0)
 					ucKeyCmdAction = SEC_QUEUE_KEY_COMMAND;

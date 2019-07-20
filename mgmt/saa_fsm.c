@@ -168,6 +168,21 @@ saaFsmSteps(IN P_ADAPTER_T prAdapter,
 						fgIsTransition = TRUE;
 					}
 				}
+#if CFG_SUPPORT_REPORT_MISC
+				if (prAdapter->rReportMiscSet.eQueryNum == REPORT_AUTHASSOC_START) {
+					wlanSendSetQueryCmd(prAdapter, CMD_ID_GET_REPORT_MISC,
+							    FALSE,
+							    TRUE,
+							    FALSE,
+							    nicCmdEventReportMisc,
+							    NULL,
+							    0,
+							    NULL,
+							    NULL,
+							    0);
+					prAdapter->rReportMiscSet.eQueryNum = REPORT_AUTHASSOC_END;
+				}
+#endif
 
 			}
 
@@ -215,6 +230,21 @@ saaFsmSteps(IN P_ADAPTER_T prAdapter,
 							   &prStaRec->rTxReqDoneOrRxRespTimer,
 							   TU_TO_MSEC(TX_AUTHENTICATION_RETRY_TIMEOUT_TU));
 				}
+#if CFG_SUPPORT_REPORT_MISC
+				if (prAdapter->rReportMiscSet.eQueryNum != REPORT_AUTHASSOC_START) {
+					wlanSendSetQueryCmd(prAdapter, CMD_ID_GET_REPORT_MISC,
+							    FALSE,
+							    TRUE,
+							    FALSE,
+							    nicCmdEventReportMisc,
+							    NULL,
+							    0,
+							    NULL,
+							    NULL,
+							    0);
+					prAdapter->rReportMiscSet.eQueryNum = REPORT_AUTHASSOC_START;
+				}
+#endif
 			}
 
 			break;
@@ -1013,7 +1043,24 @@ WLAN_STATUS saaFsmRunEventRxAssoc(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRf
 			/* update RCPI */
 			ASSERT(prSwRfb->prRxStatusGroup3);
 			prStaRec->ucRCPI = (UINT_8) HAL_RX_STATUS_GET_RCPI(prSwRfb->prRxStatusGroup3);
-
+#if CFG_SUPPORT_REPORT_MISC
+			DBGLOG(RX, ERROR, "reportmisc assocEnd prAdapter->rReportMiscSet.eQueryNum %d\n",
+					prAdapter->rReportMiscSet.eQueryNum);
+			if (prAdapter->rReportMiscSet.eQueryNum == REPORT_AUTHASSOC_START) {
+				prAdapter->rReportMiscSet.i4Rssi = RCPI_TO_dBm(prStaRec->ucRCPI);
+				wlanSendSetQueryCmd(prAdapter, CMD_ID_GET_REPORT_MISC,
+						    FALSE,
+						    TRUE,
+						    FALSE,
+						    nicCmdEventReportMisc,
+						    NULL,
+						    0,
+						    NULL,
+						    NULL,
+						    0);
+				prAdapter->rReportMiscSet.eQueryNum = REPORT_AUTHASSOC_END;
+			}
+#endif
 			eNextState = AA_STATE_IDLE;
 
 #if CFG_SUPPORT_RN

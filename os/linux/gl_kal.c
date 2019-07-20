@@ -1885,6 +1885,22 @@ kalIPv4FrameClassifier(IN P_GLUE_INFO_T prGlueInfo,
 						   ucSeqNo);
 
 				prTxPktInfo->u2Flag |= BIT(ENUM_PKT_DHCP);
+#if CFG_SUPPORT_REPORT_MISC
+				if (prGlueInfo->prAdapter->rReportMiscSet.eQueryNum != REPORT_DHCP_START) {
+					wlanSendSetQueryCmd(prGlueInfo->prAdapter, CMD_ID_GET_REPORT_MISC,
+							    FALSE,
+							    TRUE,
+							    FALSE,
+							    nicCmdEventReportMisc,
+							    NULL,
+							    0,
+							    NULL,
+							    NULL,
+							    0);
+					prGlueInfo->prAdapter->rReportMiscSet.i4Rssi = 0;
+					prGlueInfo->prAdapter->rReportMiscSet.eQueryNum = REPORT_DHCP_START;
+				}
+#endif
 			}
 		} else if (u2DstPort == UDP_PORT_DNS) {
 			UINT_16 u2IpId = *(UINT_16 *) &pucIpHdr[IPV4_ADDR_LEN];

@@ -2200,3 +2200,65 @@ VOID nicOidCmdTimeoutSetAddKey(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdIn
 		kalOidComplete(prAdapter->prGlueInfo, prCmdInfo->fgSetQuery, 0, WLAN_STATUS_FAILURE);
 }
 #endif
+
+#if CFG_SUPPORT_REPORT_MISC
+VOID nicCmdEventReportMisc(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T prCmdInfo, IN PUINT_8 pucEventBuf)
+{
+	ASSERT(prAdapter);
+
+	if (pucEventBuf) {
+		UINT_64 now = 0;
+		struct EVENT_REPORT_MISC *prEvent = (struct EVENT_REPORT_MISC *)pucEventBuf;
+		struct EVENT_REPORT_MISC *prReportMisc = &prAdapter->rReportMiscSet.reportMisc;
+		char *periodStr = NULL;
+
+		switch (prAdapter->rReportMiscSet.eQueryNum) {
+		case REPORT_AUTHASSOC_START:
+		case REPORT_4WAYHS_START:
+		case REPORT_DHCP_START:
+			prReportMisc->ucFwVerMajor = prEvent->ucFwVerMajor;
+			prReportMisc->ucFwVerMinor = prEvent->ucFwVerMinor;
+			prReportMisc->u2FwVerBeta = prEvent->u2FwVerBeta;
+			prReportMisc->u4MdrdyCnt = prEvent->u4RxMpduCnt;
+			prReportMisc->u4ChannelIdleCnt = prEvent->u4ChannelIdleCnt;
+			prAdapter->rReportMiscSet.u8Ts = sched_clock();
+			break;
+		case REPORT_AUTHASSOC_END:
+			periodStr = "auth to assoc";
+			goto REPORT_MISC;
+		case REPORT_4WAYHS_END:
+			periodStr = "4-way flow";
+			if (prEvent->cRssi)
+				prAdapter->rReportMiscSet.i4Rssi = prEvent->cRssi;
+			goto REPORT_MISC;
+		case REPORT_DHCP_END:
+			periodStr = "dhcp flow";
+			if (prEvent->cRssi)
+				prAdapter->rReportMiscSet.i4Rssi = prEvent->cRssi;
+			/* don't break here */
+REPORT_MISC:
+			now = sched_clock();
+			DBGLOG(NIC, TRACE, "Ver=0x%x.%x.%04x,Time=%llu,Period=%s,MDRDY=%u,
+				SLOTIDLE=%u,MPDU=%u,RSSI=%d\n",
+				prReportMisc->ucFwVerMajor,
+				prReportMisc->ucFwVerMinor,
+				prReportMisc->u2FwVerBeta,
+				now - prAdapter->rReportMiscSet.u8Ts,
+				periodStr,
+				prEvent->u4MdrdyCnt - prReportMisc->u4MdrdyCnt,
+				prEvent->u4ChannelIdleCnt - prReportMisc->u4ChannelIdleCnt,
+				prEvent->u4RxMpduCnt - prReportMisc->u4RxMpduCnt,
+				prAdapter->rReportMiscSet.i4Rssi);
+			prAdapter->rReportMiscSet.eQueryNum = 0;
+			break;
+		default:
+			DBGLOG(NIC, WARN, "Report Misc Error, prAdapter->rReportMiscSet.eQueryNum: %d\n",
+			       prAdapter->rReportMiscSet.eQueryNum);
+			break;
+
+		}
+	}
+	if (prCmdInfo->fgIsOid)
+		kalOidComplete(prAdapter->prGlueInfo, prCmdInfo->u4InformationBufferLength, 0, WLAN_STATUS_SUCCESS);
+}
+#endif
