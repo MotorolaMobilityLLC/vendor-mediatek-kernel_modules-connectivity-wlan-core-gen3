@@ -612,10 +612,17 @@ saaFsmRunEventTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN E
 
 				cnmTimerInitTimer(prAdapter, &prStaRec->rTxReqDoneOrRxRespTimer, (PFN_MGMT_TIMEOUT_FUNC)
 						  saaFsmRunEventRxRespTimeOut, (ULONG) prStaRec);
+#if CFG_SUPPORT_OSHARE
+				if (prAdapter->fgEnOshareMode)
+					cnmTimerStartTimer(prAdapter,
+							   &prStaRec->rTxReqDoneOrRxRespTimer,
+							   TU_TO_MSEC(2 * DOT11_AUTHENTICATION_RESPONSE_TIMEOUT_TU));
 
-				cnmTimerStartTimer(prAdapter,
-						   &prStaRec->rTxReqDoneOrRxRespTimer,
-						   TU_TO_MSEC(DOT11_AUTHENTICATION_RESPONSE_TIMEOUT_TU));
+				else
+#endif
+					cnmTimerStartTimer(prAdapter,
+							   &prStaRec->rTxReqDoneOrRxRespTimer,
+							   TU_TO_MSEC(DOT11_AUTHENTICATION_RESPONSE_TIMEOUT_TU));
 			}
 
 			/* if TX was successful, change to next state.
@@ -638,10 +645,16 @@ saaFsmRunEventTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN E
 
 				cnmTimerInitTimer(prAdapter, &prStaRec->rTxReqDoneOrRxRespTimer, (PFN_MGMT_TIMEOUT_FUNC)
 						  saaFsmRunEventRxRespTimeOut, (ULONG) prStaRec);
-
-				cnmTimerStartTimer(prAdapter,
-						   &prStaRec->rTxReqDoneOrRxRespTimer,
-						   TU_TO_MSEC(DOT11_AUTHENTICATION_RESPONSE_TIMEOUT_TU));
+#if CFG_SUPPORT_OSHARE
+				if (prAdapter->fgEnOshareMode)
+					cnmTimerStartTimer(prAdapter,
+							   &prStaRec->rTxReqDoneOrRxRespTimer,
+							   TU_TO_MSEC(2 * DOT11_AUTHENTICATION_RESPONSE_TIMEOUT_TU));
+				else
+#endif
+					cnmTimerStartTimer(prAdapter,
+							   &prStaRec->rTxReqDoneOrRxRespTimer,
+							   TU_TO_MSEC(DOT11_AUTHENTICATION_RESPONSE_TIMEOUT_TU));
 			}
 
 			/* if TX was successful, change to next state.
@@ -664,10 +677,16 @@ saaFsmRunEventTxDone(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsduInfo, IN E
 
 				cnmTimerInitTimer(prAdapter, &prStaRec->rTxReqDoneOrRxRespTimer, (PFN_MGMT_TIMEOUT_FUNC)
 						  saaFsmRunEventRxRespTimeOut, (ULONG) prStaRec);
-
-				cnmTimerStartTimer(prAdapter,
-						   &(prStaRec->rTxReqDoneOrRxRespTimer),
-						   TU_TO_MSEC(DOT11_ASSOCIATION_RESPONSE_TIMEOUT_TU));
+#if CFG_SUPPORT_OSHARE
+				if (prAdapter->fgEnOshareMode)
+					cnmTimerStartTimer(prAdapter,
+							   &(prStaRec->rTxReqDoneOrRxRespTimer),
+							   TU_TO_MSEC(2 * DOT11_ASSOCIATION_RESPONSE_TIMEOUT_TU));
+				else
+#endif
+					cnmTimerStartTimer(prAdapter,
+							   &(prStaRec->rTxReqDoneOrRxRespTimer),
+							   TU_TO_MSEC(DOT11_ASSOCIATION_RESPONSE_TIMEOUT_TU));
 			}
 
 			/* if TX was successful, change to next state.
