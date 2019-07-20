@@ -61,6 +61,10 @@ extern int allocatedMemSize;
 #endif
 
 extern struct delayed_work sched_workq;
+#if CFG_MODIFY_TX_POWER_BY_BAT_VOLT
+extern unsigned int wlan_bat_volt;
+#define TX_PWR_DEC_STEP    3
+#endif
 
 /*******************************************************************************
 *                              C O N S T A N T S
@@ -1151,6 +1155,14 @@ INT_32 kalSetCpuNumFreq(UINT_32 core_num, UINT_32 u4Freq);
 INT_32 kalPerMonSetForceEnableFlag(UINT_8 uFlag);
 INT_32 kalFbNotifierReg(IN P_GLUE_INFO_T prGlueInfo);
 VOID kalFbNotifierUnReg(VOID);
+
+#if CFG_MODIFY_TX_POWER_BY_BAT_VOLT
+INT_32 kalBatNotifierReg(IN P_GLUE_INFO_T prGlueInfo);
+VOID kalDecTxPowerByBattVolt(P_ADAPTER_T prAdapter, P_REG_INFO_T prRegInfo);
+VOID kalDec5GAcPowerByBattVolt(P_ADAPTER_T prAdapter, P_REG_INFO_T prRegInfo);
+VOID kalDec2GAcPowerByBattVolt(P_ADAPTER_T prAdapter, P_REG_INFO_T prRegInfo);
+VOID kalBatNotifierUnReg(VOID);
+#endif
 
 UINT_8 kalGetEapolKeyType(P_NATIVE_PACKET prPacket);
 

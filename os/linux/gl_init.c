@@ -2904,6 +2904,10 @@ static int initWlan(void)
 #endif
 
 	kalFbNotifierReg(prGlueInfo);
+#if CFG_MODIFY_TX_POWER_BY_BAT_VOLT
+	kalBatNotifierReg(prGlueInfo);
+#endif
+
 #if defined(MT6631)
 	/* Set WIFI EMI protection to consys permitted on system boot up */
 	kalSetEmiMpuProtection(gConEmiPhyBase, WIFI_EMI_MEM_SIZE, TRUE);
@@ -2926,6 +2930,9 @@ static VOID exitWlan(void)
 {
 
 	kalFbNotifierUnReg();
+#if CFG_MODIFY_TX_POWER_BY_BAT_VOLT
+	kalBatNotifierUnReg();
+#endif
 #if CFG_CHIP_RESET_SUPPORT
 	glResetUninit();
 #endif

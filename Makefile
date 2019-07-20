@@ -74,7 +74,8 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/emi/$(MTK_PLATFORM)
 ccflags-y += -I$(srctree)/drivers/misc/mediatek/emi/submodule
-ccflags-y += -I$(srctree)/drivers/devfreq/
+ccflags-y += -I$(srctree)/drivers/devfreq
+ccflags-y += -I$(srctree)/drivers/misc/mediatek/pmic/include/
 
 ifeq ($(WLAN_CHIP_ID), MT6631)
 # temp disable emi_mpu on these platforms since it is not ready
