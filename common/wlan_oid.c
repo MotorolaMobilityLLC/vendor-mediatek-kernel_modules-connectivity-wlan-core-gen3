@@ -8507,13 +8507,7 @@ wlanoidSetWapiAssocInfo(IN P_ADAPTER_T prAdapter,
 			IN PVOID pvSetBuffer, IN UINT_32 u4SetBufferLen, OUT PUINT_32 pu4SetInfoLen)
 {
 	P_WAPI_INFO_ELEM_T prWapiInfo;
-	PUINT_8 cp;
-	UINT_16 u2AuthSuiteCount = 0;
-	UINT_16 u2PairSuiteCount = 0;
-	UINT_32 u4AuthKeyMgtSuite = 0;
-	UINT_32 u4PairSuite = 0;
-	UINT_32 u4GroupSuite = 0;
-	UINT_16 u2IeLength = 0;
+	P_CONNECTION_SETTINGS_T prConnSettings;
 
 	ASSERT(prAdapter);
 	ASSERT(pvSetBuffer);
@@ -8522,7 +8516,8 @@ wlanoidSetWapiAssocInfo(IN P_ADAPTER_T prAdapter,
 	DEBUGFUNC("wlanoidSetWapiAssocInfo");
 	DBGLOG(OID, LOUD, "\r\n");
 
-	prAdapter->rWifiVar.rConnSettings.fgWapiMode = FALSE;
+	prConnSettings = &prAdapter->rWifiVar.rConnSettings;
+	prConnSettings->fgWapiMode = FALSE;
 
 	if (u4SetBufferLen < 20 /* From EID to Group cipher */)
 		return WLAN_STATUS_INVALID_LENGTH;
@@ -8533,59 +8528,48 @@ wlanoidSetWapiAssocInfo(IN P_ADAPTER_T prAdapter,
 	if (!prWapiInfo || prWapiInfo->ucLength < 18)
 		return WLAN_STATUS_INVALID_LENGTH;
 
-	u2IeLength = prWapiInfo->ucLength + 2;
-
 	/* Skip Version check */
-	cp = (PUINT_8) &prWapiInfo->u2AuthKeyMgtSuiteCount;
 
-	WLAN_GET_FIELD_16(cp, &u2AuthSuiteCount);
-
-	if (u2AuthSuiteCount > 1)
+	/*Cipher suite count check, only one of each for now*/
+	if (prWapiInfo->u2AKMSuiteCount > 1 ||
+	    prWapiInfo->u2PairSuiteCount > 1)
 		return WLAN_STATUS_INVALID_LENGTH;
-
-	cp += 2;
-	WLAN_GET_FIELD_32(cp, &u4AuthKeyMgtSuite);
 
 	DBGLOG(SEC, TRACE, "WAPI: Assoc Info auth mgt suite [%d]: %02x-%02x-%02x-%02x\n",
-	       u2AuthSuiteCount,
-	       (UCHAR) (u4AuthKeyMgtSuite & 0x000000FF),
-	       (UCHAR) ((u4AuthKeyMgtSuite >> 8) & 0x000000FF),
-	       (UCHAR) ((u4AuthKeyMgtSuite >> 16) & 0x000000FF), (UCHAR) ((u4AuthKeyMgtSuite >> 24) & 0x000000FF));
+	       prWapiInfo->u2AKMSuiteCount,
+	       (UCHAR) (prWapiInfo->u4AKMSuite & 0x000000FF),
+	       (UCHAR) ((prWapiInfo->u4AKMSuite >> 8) & 0x000000FF),
+	       (UCHAR) ((prWapiInfo->u4AKMSuite >> 16) & 0x000000FF),
+	       (UCHAR) ((prWapiInfo->u4AKMSuite >> 24) & 0x000000FF));
 
-	if (u4AuthKeyMgtSuite != WAPI_AKM_SUITE_802_1X && u4AuthKeyMgtSuite != WAPI_AKM_SUITE_PSK)
-		ASSERT(FALSE);
+	if (prWapiInfo->u4AKMSuite != WAPI_AKM_SUITE_802_1X &&
+	    prWapiInfo->u4AKMSuite != WAPI_AKM_SUITE_PSK)
+		return WLAN_STATUS_NOT_SUPPORTED;
 
-	cp += 4;
-	WLAN_GET_FIELD_16(cp, &u2PairSuiteCount);
-	if (u2PairSuiteCount > 1)
-		return WLAN_STATUS_INVALID_LENGTH;
-
-	cp += 2;
-	WLAN_GET_FIELD_32(cp, &u4PairSuite);
 	DBGLOG(SEC, TRACE, "WAPI: Assoc Info pairwise cipher suite [%d]: %02x-%02x-%02x-%02x\n",
-	       u2PairSuiteCount,
-	       (UCHAR) (u4PairSuite & 0x000000FF),
-	       (UCHAR) ((u4PairSuite >> 8) & 0x000000FF),
-	       (UCHAR) ((u4PairSuite >> 16) & 0x000000FF), (UCHAR) ((u4PairSuite >> 24) & 0x000000FF));
+	       prWapiInfo->u2PairSuiteCount,
+	       (UCHAR) (prWapiInfo->u4PairSuite & 0x000000FF),
+	       (UCHAR) ((prWapiInfo->u4PairSuite >> 8) & 0x000000FF),
+	       (UCHAR) ((prWapiInfo->u4PairSuite >> 16) & 0x000000FF),
+	       (UCHAR) ((prWapiInfo->u4PairSuite >> 24) & 0x000000FF));
 
-	if (u4PairSuite != WAPI_CIPHER_SUITE_WPI)
-		ASSERT(FALSE);
+	if (prWapiInfo->u4PairSuite != WAPI_CIPHER_SUITE_WPI)
+		return WLAN_STATUS_NOT_SUPPORTED;
 
-	cp += 4;
-	WLAN_GET_FIELD_32(cp, &u4GroupSuite);
 	DBGLOG(SEC, TRACE, "WAPI: Assoc Info group cipher suite : %02x-%02x-%02x-%02x\n",
-	       (UCHAR) (u4GroupSuite & 0x000000FF),
-	       (UCHAR) ((u4GroupSuite >> 8) & 0x000000FF),
-	       (UCHAR) ((u4GroupSuite >> 16) & 0x000000FF), (UCHAR) ((u4GroupSuite >> 24) & 0x000000FF));
+	       (UCHAR) (prWapiInfo->u4GroupSuite & 0x000000FF),
+	       (UCHAR) ((prWapiInfo->u4GroupSuite >> 8) & 0x000000FF),
+	       (UCHAR) ((prWapiInfo->u4GroupSuite >> 16) & 0x000000FF),
+	       (UCHAR) ((prWapiInfo->u4GroupSuite >> 24) & 0x000000FF));
 
-	if (u4GroupSuite != WAPI_CIPHER_SUITE_WPI)
-		ASSERT(FALSE);
+	if (prWapiInfo->u4GroupSuite != WAPI_CIPHER_SUITE_WPI)
+		return WLAN_STATUS_NOT_SUPPORTED;
 
-	prAdapter->rWifiVar.rConnSettings.u4WapiSelectedAKMSuite = u4AuthKeyMgtSuite;
-	prAdapter->rWifiVar.rConnSettings.u4WapiSelectedPairwiseCipher = u4PairSuite;
-	prAdapter->rWifiVar.rConnSettings.u4WapiSelectedGroupCipher = u4GroupSuite;
+	prConnSettings->u4WapiSelectedAKMSuite = prWapiInfo->u4AKMSuite;
+	prConnSettings->u4WapiSelectedPairwiseCipher = prWapiInfo->u4PairSuite;
+	prConnSettings->u4WapiSelectedGroupCipher = prWapiInfo->u4GroupSuite;
 
-	prAdapter->rWifiVar.rConnSettings.fgWapiMode = TRUE;
+	prConnSettings->fgWapiMode = TRUE;
 
 	return WLAN_STATUS_SUCCESS;
 

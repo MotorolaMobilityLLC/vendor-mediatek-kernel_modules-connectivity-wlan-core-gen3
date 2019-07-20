@@ -115,7 +115,7 @@ BOOLEAN wapiParseWapiIE(IN P_WAPI_INFO_ELEM_T prInfoElem, OUT P_WAPI_INFO_T prWa
 		return FALSE;
 	}
 
-	cp = (PUCHAR) &prInfoElem->u2AuthKeyMgtSuiteCount;
+	cp = (PUCHAR) & prInfoElem->u2AKMSuiteCount;
 	u4RemainWapiIeLen = (INT_32) prInfoElem->ucLength - 2;
 
 	do {

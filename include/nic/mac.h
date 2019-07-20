@@ -2585,8 +2585,11 @@ typedef struct _WAPI_INFO_ELEM_T {
 	UCHAR ucElemId;
 	UCHAR ucLength;
 	UINT_16 u2Version;
-	UINT_16 u2AuthKeyMgtSuiteCount;
-	UCHAR aucAuthKeyMgtSuite1[4];
+	UINT_16 u2AKMSuiteCount;
+	UINT_32 u4AKMSuite;
+	UINT_16 u2PairSuiteCount;
+	UINT_32 u4PairSuite;
+	UINT_32 u4GroupSuite;
 } __KAL_ATTRIB_PACKED__ WAPI_INFO_ELEM_T, *P_WAPI_INFO_ELEM_T;
 
 /* Information Elements from MTK Synergies.*/
