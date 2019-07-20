@@ -30,6 +30,12 @@ ccflags-y += -DCFG_SUPPORT_AGPS_ASSIST=1
 ccflags-y += -DCFG_SUPPORT_TSF_USING_BOOTTIME=1
 ccflags-y += -DARP_MONITER_ENABLE=1
 
+ifeq ($(CONFIG_MTK_WIFI_MCC_SUPPORT), y)
+    ccflags-y += -DCFG_SUPPORT_CHNL_CONFLICT_REVISE=0
+else
+    ccflags-y += -DCFG_SUPPORT_CHNL_CONFLICT_REVISE=1
+endif
+
 ifeq ($(CONFIG_MTK_AEE_FEATURE), y)
     ccflags-y += -DCFG_SUPPORT_AEE=1
 else
@@ -247,9 +253,7 @@ ifneq ($(wildcard $(FWCFG_DIR)fw_config.c),)
 endif
     COMMON_OBJS += $(COMMON_DIR)fwcfg.o
     ccflags-y += -DFW_CFG_SUPPORT
-ifneq ($(TARGET_BUILD_VARIANT), user)
     ccflags-y += -DENABLED_IN_ENGUSERDEBUG
-endif
 endif
 # ---------------------------------------------------
 
