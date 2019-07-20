@@ -1115,6 +1115,9 @@ struct _ADAPTER_T {
 	BOOLEAN fgAbortScan;
 #endif
 	struct WLAN_DEBUG_INFO rDebugInfo;
+#if CFG_SUPPORT_OSHARE
+	BOOLEAN fgEnOshareMode;
+#endif
 #if CFG_DBG_MGT_BUF
 	LINK_T rMemTrackLink;
 #endif

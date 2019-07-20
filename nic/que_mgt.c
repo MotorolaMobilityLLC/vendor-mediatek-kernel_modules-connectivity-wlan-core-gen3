@@ -3018,6 +3018,31 @@ VOID qmProcessPktWithReordering(IN P_ADAPTER_T prAdapter, IN P_SW_RFB_T prSwRfb,
 	}
 	/* Case 3: Fall behind */
 	else {
+#if CFG_SUPPORT_OSHARE
+		if (prSwRfb->u2PacketLen > ETHER_HEADER_LEN) {
+
+			PUINT_8 pucData = (PUINT_8) prSwRfb->pvHeader;
+			UINT_16 u2Etype = (pucData[ETH_TYPE_LEN_OFFSET] << 8) | (pucData[ETH_TYPE_LEN_OFFSET + 1]);
+			UINT_8 ucBssIndex = secGetBssIdxByWlanIdx(prAdapter, prSwRfb->ucWlanIdx);
+
+			if ((prAdapter->fgEnOshareMode) &&
+			    (GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex)->eNetworkType == NETWORK_TYPE_P2P)) {
+				if (u2Etype == ETH_P_IP) {
+					PUINT_8 pucEthBody = &pucData[ETH_HLEN];
+					UINT_8 ucIpProto = pucEthBody[9];
+
+					if (ucIpProto == IP_PRO_UDP || ucIpProto == IP_PRO_TCP) {
+						DBGLOG(QM, LOUD,
+						       "QM: Don't drop packet:Tid[%u]SeqNo(%u){Start%u,End%u}\n",
+						       prSwRfb->ucTid, u4SeqNo, u4WinStart, u4WinEnd);
+
+						QUEUE_INSERT_TAIL(prReturnedQue, (P_QUE_ENTRY_T) prSwRfb);
+						return;
+					}
+				}
+			}
+		}
+#endif
 
 #if QM_RX_WIN_SSN_AUTO_ADVANCING
 #if QM_RX_INIT_FALL_BEHIND_PASS

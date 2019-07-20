@@ -3180,6 +3180,8 @@ INT_32 mtk_cfg80211_process_str_cmd(P_GLUE_INFO_T prGlueInfo, PUINT_8 cmd, INT_3
 				   FALSE,
 				   TRUE,
 				   &u4SetInfoLen);
+		if (rStatus == WLAN_STATUS_SUCCESS)
+			prGlueInfo->prAdapter->fgEnOshareMode = pCmdData->osharemode;
 #else
 		DBGLOG(REQ, WARN, "not support OSHAREMOD\n");
 		return -EOPNOTSUPP;
