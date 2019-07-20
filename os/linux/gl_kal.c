@@ -394,7 +394,6 @@ WLAN_STATUS kalFirmwareSize(IN P_GLUE_INFO_T prGlueInfo, OUT PUINT_32 pu4Size)
 	ASSERT(pu4Size);
 
 	*pu4Size = filp->f_path.dentry->d_inode->i_size;
-
 	return WLAN_STATUS_SUCCESS;
 }
 
@@ -1886,20 +1885,10 @@ kalIPv4FrameClassifier(IN P_GLUE_INFO_T prGlueInfo,
 
 				prTxPktInfo->u2Flag |= BIT(ENUM_PKT_DHCP);
 #if CFG_SUPPORT_REPORT_MISC
-				if (prGlueInfo->prAdapter->rReportMiscSet.eQueryNum != REPORT_DHCP_START) {
-					wlanSendSetQueryCmd(prGlueInfo->prAdapter, CMD_ID_GET_REPORT_MISC,
-							    FALSE,
-							    TRUE,
-							    FALSE,
-							    nicCmdEventReportMisc,
-							    NULL,
-							    0,
-							    NULL,
-							    NULL,
-							    0);
-					prGlueInfo->prAdapter->rReportMiscSet.i4Rssi = 0;
-					prGlueInfo->prAdapter->rReportMiscSet.eQueryNum = REPORT_DHCP_START;
-				}
+				set_bit(EXT_SRC_DHCP_BIT,
+				&(prGlueInfo->prAdapter->rReportMiscSet.ulExtSrcFlag));
+
+				kalSetReportMiscEvent(prGlueInfo);
 #endif
 			}
 		} else if (u2DstPort == UDP_PORT_DNS) {
@@ -3169,6 +3158,12 @@ int tx_thread(void *data)
 #endif
 		}
 
+#if CFG_SUPPORT_REPORT_MISC
+		if (test_and_clear_bit(GLUE_FLAG_REPORT_MISC_BIT, &prGlueInfo->ulFlag))
+			wlanExtSrcReportMisc(prGlueInfo);
+
+#endif
+
 #if CFG_DBG_GPIO_PINS
 		/* TX thread go to sleep */
 		if (!prGlueInfo->ulFlag)
@@ -3678,6 +3673,14 @@ VOID kalSetResetConnEvent(P_GLUE_INFO_T pr)
 	set_bit(GLUE_FLAG_RESET_CONN_BIT, &pr->ulFlag);
 	wake_up_interruptible(&pr->waitq);
 }
+
+#if CFG_SUPPORT_REPORT_MISC
+VOID kalSetReportMiscEvent(P_GLUE_INFO_T pr)
+{
+	set_bit(GLUE_FLAG_REPORT_MISC_BIT, &pr->ulFlag);
+	wake_up_interruptible(&pr->waitq);
+}
+#endif
 
 #if CFG_SUPPORT_MULTITHREAD
 VOID kalSetTxEvent2Hif(P_GLUE_INFO_T pr)

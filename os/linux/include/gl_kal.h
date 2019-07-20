@@ -147,6 +147,10 @@ extern unsigned int wlan_bat_volt;
 #define TRAFFIC_RHRESHOLD      150
 #endif
 
+#if CFG_SUPPORT_REPORT_MISC
+#define EXT_SRC_DHCP_BIT 1
+#define EXT_SRC_DISCONNCT_BIT 2
+#endif
 /*******************************************************************************
 *                             D A T A   T Y P E S
 ********************************************************************************
@@ -985,6 +989,10 @@ VOID kalTimeoutHandler(unsigned long arg);
 VOID kalSetEvent(P_GLUE_INFO_T pr);
 
 VOID kalSetResetConnEvent(P_GLUE_INFO_T pr);
+
+#if CFG_SUPPORT_REPORT_MISC
+VOID kalSetReportMiscEvent(P_GLUE_INFO_T pr);
+#endif
 
 #if CFG_SUPPORT_MULTITHREAD
 VOID kalSetTxEvent2Hif(P_GLUE_INFO_T pr);
