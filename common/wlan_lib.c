@@ -1300,7 +1300,10 @@ WLAN_STATUS wlanProcessCommandQueue(IN P_ADAPTER_T prAdapter, IN P_QUE_T prCmdQu
 	QUEUE_REMOVE_HEAD(prTempCmdQue, prQueueEntry, P_QUE_ENTRY_T);
 	while (prQueueEntry) {
 		prCmdInfo = (P_CMD_INFO_T) prQueueEntry;
-
+		DBGLOG(TX, TRACE,
+			"CMD: CID=0x%x, SEQ=%d, CMD type=%d\n",
+			prCmdInfo->ucCID, prCmdInfo->ucCmdSeqNum,
+			prCmdInfo->eCmdType);
 		switch (prCmdInfo->eCmdType) {
 		case COMMAND_TYPE_NETWORK_IOCTL:
 			if (prCmdInfo->ucCID == CMD_ID_ADD_REMOVE_KEY) {
@@ -1387,7 +1390,11 @@ WLAN_STATUS wlanProcessCommandQueue(IN P_ADAPTER_T prAdapter, IN P_QUE_T prCmdQu
 				cmdBufFreeCmdInfo(prAdapter, prCmdInfo);
 				DBGLOG(TX, WARN, "TX CMD FAILED, Status[%u] TYPE[%u] ID[0x%02X] SEQ[%u]\n",
 				       rStatus, prCmdInfo->eCmdType, prCmdInfo->ucCID, prCmdInfo->ucCmdSeqNum);
-			}
+			} else
+				DBGLOG(TX, TRACE,
+					"Send CMD, status=%u, CID=0x%x, SEQ=%d, CMD type=%d, OID=%d\n",
+					rStatus, prCmdInfo->ucCID, prCmdInfo->ucCmdSeqNum,
+					prCmdInfo->eCmdType, prCmdInfo->fgIsOid);
 #else
 			rStatus = wlanSendCommand(prAdapter, prCmdInfo);
 
