@@ -1772,8 +1772,18 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 					DBGLOG(AIS, INFO, "Pending scan request, removed\n");
 #endif
 			} else {
-				/* 1. Process for pending scan */
-				if (aisFsmIsRequestPending(prAdapter, AIS_REQUEST_SCAN, TRUE) == TRUE) {
+				/* 1. Process for pending roaming scan */
+				if (aisFsmIsRequestPending(prAdapter, AIS_REQUEST_ROAMING_SEARCH, TRUE) == TRUE) {
+					eNextState = AIS_STATE_LOOKING_FOR;
+					fgIsTransition = TRUE;
+				}
+				/* 2. Process for pending roaming connect */
+				else if (aisFsmIsRequestPending(prAdapter, AIS_REQUEST_ROAMING_CONNECT, TRUE) == TRUE) {
+					eNextState = AIS_STATE_COLLECT_ESS_INFO;
+					fgIsTransition = TRUE;
+				}
+				/* 3. Process for pending scan */
+				else if (aisFsmIsRequestPending(prAdapter, AIS_REQUEST_SCAN, TRUE) == TRUE) {
 #if CFG_SUPPORT_ABORT_SCAN
 					if (prAdapter->fgAbortScan) {
 						DBGLOG(INIT, INFO,
@@ -1791,17 +1801,8 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 #endif
 					fgIsTransition = TRUE;
 				}
-				/* 2. Process for pending roaming scan */
-				else if (aisFsmIsRequestPending(prAdapter, AIS_REQUEST_ROAMING_SEARCH, TRUE) == TRUE) {
-					eNextState = AIS_STATE_LOOKING_FOR;
-					fgIsTransition = TRUE;
-				}
-				/* 3. Process for pending roaming scan */
-				else if (aisFsmIsRequestPending(prAdapter, AIS_REQUEST_ROAMING_CONNECT, TRUE) == TRUE) {
-					eNextState = AIS_STATE_COLLECT_ESS_INFO;
-					fgIsTransition = TRUE;
-				} else
-				    if (aisFsmIsRequestPending
+				/* 4. Process for pending remain on channel*/
+				else if (aisFsmIsRequestPending
 					(prAdapter, AIS_REQUEST_REMAIN_ON_CHANNEL, TRUE) == TRUE) {
 					eNextState = AIS_STATE_REQ_REMAIN_ON_CHANNEL;
 					fgIsTransition = TRUE;
