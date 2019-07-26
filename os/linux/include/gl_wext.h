@@ -296,6 +296,95 @@ extern const struct iw_handler_def wext_handler_def;
 ********************************************************************************
 */
 /* wireless extensions' ioctls */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
+int std_wext_get_name(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_freq(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_freq(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_mode(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_mode(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_range(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_country(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_priv(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_ap(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_ap(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_mlme(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_scan(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_scan(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_essid(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_essid(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_rate(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_rts(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_rts(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_rts(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_txpow(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_txpow(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_encode(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_encode(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_power(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_get_power(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_SIOCSIWGENIE_Action(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_auth(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_set_encode_ext(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+
+int std_wext_SIOCSIWPMKSA_Action(struct net_device *prDev,
+	struct iw_request_info *prIwrInfo, union iwreq_data *wru, char *pcExtra);
+#endif
+
 int wext_support_ioctl(IN struct net_device *prDev, IN struct ifreq *prIfReq, IN int i4Cmd);
 
 int

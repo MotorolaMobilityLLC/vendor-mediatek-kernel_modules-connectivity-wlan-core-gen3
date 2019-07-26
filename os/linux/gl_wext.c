@@ -176,11 +176,55 @@ static const iw_handler rIwPrivHandler[] = {
 #endif
 };
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
+static const iw_handler rIwStdHandler[] = {
+	[SIOCGIWNAME - SIOCIWFIRST] = std_wext_get_name,
+	[SIOCSIWFREQ - SIOCIWFIRST] = std_wext_set_freq,
+	[SIOCGIWFREQ - SIOCIWFIRST] = std_wext_get_freq,
+	[SIOCSIWMODE - SIOCIWFIRST] = std_wext_set_mode,
+	[SIOCGIWMODE - SIOCIWFIRST] = std_wext_get_mode,
+	[SIOCGIWRANGE - SIOCIWFIRST] = std_wext_get_range,
+	[SIOCSIWPRIV - SIOCIWFIRST] = std_wext_set_country,
+	[SIOCGIWPRIV - SIOCIWFIRST] = std_wext_get_priv,
+	[SIOCSIWAP - SIOCIWFIRST] = std_wext_set_ap,
+	[SIOCGIWAP - SIOCIWFIRST] = std_wext_get_ap,
+	[SIOCSIWMLME - SIOCIWFIRST] = std_wext_set_mlme,
+	[SIOCSIWSCAN - SIOCIWFIRST] = std_wext_set_scan,
+	[SIOCGIWSCAN - SIOCIWFIRST] = std_wext_get_scan,
+	[SIOCSIWESSID - SIOCIWFIRST] = std_wext_set_essid,
+	[SIOCGIWESSID - SIOCIWFIRST] = std_wext_get_essid,
+	[SIOCGIWRATE - SIOCIWFIRST] = std_wext_get_rate,
+	[SIOCSIWRTS - SIOCIWFIRST] = std_wext_set_rts,
+	[SIOCGIWRTS - SIOCIWFIRST] = std_wext_get_rts,
+	[SIOCGIWFRAG - SIOCIWFIRST] = std_wext_set_rts,
+	[SIOCSIWTXPOW - SIOCIWFIRST] = std_wext_set_txpow,
+	[SIOCGIWTXPOW - SIOCIWFIRST] = std_wext_get_txpow,
+	[SIOCSIWENCODE - SIOCIWFIRST] = std_wext_set_encode,
+	[SIOCGIWENCODE - SIOCIWFIRST] = std_wext_get_encode,
+	[SIOCSIWPOWER - SIOCIWFIRST] = std_wext_set_power,
+	[SIOCGIWPOWER - SIOCIWFIRST] = std_wext_get_power,
+#if WIRELESS_EXT > 17
+	[SIOCSIWGENIE - SIOCIWFIRST] = std_wext_SIOCSIWGENIE_Action,
+#endif
+	[SIOCSIWAUTH - SIOCIWFIRST] = std_wext_set_auth,
+	[SIOCSIWENCODEEXT - SIOCIWFIRST] = std_wext_set_encode_ext,
+	[SIOCSIWPMKSA - SIOCIWFIRST] = std_wext_SIOCSIWPMKSA_Action
+};
+#endif
+
 const struct iw_handler_def wext_handler_def = {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
+	.num_standard = (__u16) sizeof(rIwStdHandler) / sizeof(iw_handler),
+#else
 	.num_standard = 0,
+#endif
 	.num_private = (__u16) sizeof(rIwPrivHandler) / sizeof(iw_handler),
 	.num_private_args = (__u16) sizeof(rIwPrivTable) / sizeof(struct iw_priv_args),
-	.standard = (iw_handler *) NULL,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
+	.standard = rIwStdHandler,
+#else
+	.standard = (iw_handler *)NULL,
+#endif
 	.private = rIwPrivHandler,
 	.private_args = rIwPrivTable,
 	.get_wireless_stats = wext_get_wireless_stats,
@@ -2950,6 +2994,473 @@ static int wext_get_priv(IN struct net_device *prNetDev, OUT struct iw_point *pr
 
 	return 0;
 }				/* wext_get_priv */
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
+
+int std_wext_get_name(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_get_name(prDev, prIwrInfo, (char *)&wru->name, sizeof(wru->name), NULL);
+
+}
+
+int std_wext_set_freq(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wrqu, char *pcExtra)
+{
+	return wext_set_freq(prDev, NULL, &wrqu->freq, NULL);
+}
+
+int std_wext_get_freq(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_get_freq(prDev, NULL, &wru->freq, NULL);
+
+}
+
+int std_wext_set_mode(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_set_mode(prDev, NULL, &wru->mode, NULL);
+}
+
+int std_wext_get_mode(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_get_mode(prDev, NULL, &wru->mode, NULL);
+}
+
+int std_wext_get_range(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	int ret = 0;
+
+	if (!pcExtra) {
+		ret = -ENOMEM;
+		return ret;
+	}
+	if (wru->data.pointer != NULL) {
+		/* Buffer size should be large enough */
+		if (wru->data.length < sizeof(struct iw_range)) {
+			ret = -E2BIG;
+			return ret;
+		}
+
+		ret = wext_get_range(prDev, NULL, &wru->data, pcExtra);
+	} else {
+		ret = -EINVAL;
+	}
+
+	return ret;
+}
+
+int std_wext_set_ap(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	int ret = 0;
+
+	if (wru->ap_addr.sa_data[0] == 0 &&
+		wru->ap_addr.sa_data[1] == 0 &&
+		wru->ap_addr.sa_data[2] == 0 &&
+		wru->ap_addr.sa_data[3] == 0 &&
+		wru->ap_addr.sa_data[4] == 0 &&
+		wru->ap_addr.sa_data[5] == 0) {
+		/* WPA Supplicant will set 000000000000 in
+		* wpa_driver_wext_deinit(), do nothing here or disassoc again?
+		*/
+		ret = 0;
+	} else {
+		ret = wext_set_ap(prDev, NULL, &wru->ap_addr, NULL);
+	}
+
+	return ret;
+}
+
+int std_wext_get_ap(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_get_ap(prDev, NULL, &wru->ap_addr, NULL);
+}
+
+int std_wext_set_mlme(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	int ret = 0;
+
+	if (!pcExtra) {
+		ret = -ENOMEM;
+		return ret;
+	}
+
+	if (!wru->data.pointer) {
+		ret = -EINVAL;
+		return ret;
+	}
+
+	if (wru->data.length < sizeof(struct iw_mlme)) {
+		DBGLOG(INIT, INFO, "MLME buffer strange:%d\n", wru->data.length);
+		ret = -EINVAL;
+		return ret;
+	}
+
+	ret = wext_set_mlme(prDev, NULL, &(wru->data), pcExtra);
+
+	return ret;
+}
+
+int std_wext_set_scan(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	int ret = 0;
+	struct iw_scan_req *prIwScanReq = NULL;
+
+	if (!pcExtra) {
+		ret = -EINVAL;
+		return ret;
+	}
+
+	if (wru->data.pointer == NULL)
+		ret = wext_set_scan(prDev, NULL, NULL, NULL);
+#if WIRELESS_EXT > 17
+	else if (wru->data.length == sizeof(struct iw_scan_req)) {
+		prIwScanReq = (struct iw_scan_req *)pcExtra;
+
+		if (prIwScanReq->essid_len > IW_ESSID_MAX_SIZE)
+			prIwScanReq->essid_len = IW_ESSID_MAX_SIZE;
+		ret = wext_set_scan(prDev, NULL, prIwScanReq, &(prIwScanReq->essid[0]));
+	}
+#endif
+	else
+		ret = -EINVAL;
+
+	return ret;
+}
+
+int std_wext_get_scan(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	int ret = 0;
+	UINT_32 u4ExtraSize = 0;
+
+	if (!pcExtra) {
+		ret = -ENOMEM;
+		return ret;
+	}
+
+	if (!wru->data.pointer) {
+		ret = -EINVAL;
+		return ret;
+	}
+
+	u4ExtraSize = wru->data.length;
+	/* iwr->u.data.length may be updated by wext_get_scan() */
+	ret = wext_get_scan(prDev, NULL, &wru->data, pcExtra);
+	if (ret != 0) {
+		if (ret == -E2BIG)
+			DBGLOG(INIT, INFO, "[wifi] wext_get_scan -E2BIG\n");
+	} else {
+		/* check updated length is valid */
+		ASSERT(wru->data.length <= u4ExtraSize);
+		if (wru->data.length > u4ExtraSize) {
+			DBGLOG(INIT, INFO,
+				"Updated result length is larger than allocated (%u > %u)\n",
+					wru->data.length, u4ExtraSize);
+					wru->data.length = u4ExtraSize;
+		}
+	}
+
+	return ret;
+}
+
+int std_wext_set_essid(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	int ret = 0;
+	UINT_32 u4ExtraSize = 0;
+
+	u4ExtraSize = wru->essid.length;
+
+	if (!pcExtra) {
+		ret = -ENOMEM;
+		return ret;
+	}
+	if (u4ExtraSize > IW_ESSID_MAX_SIZE) {
+		ret = -E2BIG;
+		return ret;
+	}
+	if (!wru->essid.pointer) {
+		ret = -EINVAL;
+		return ret;
+	}
+
+	ret = wext_set_essid(prDev, NULL, &wru->essid, pcExtra);
+	return ret;
+}
+
+int std_wext_get_essid(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	int ret = 0;
+	UINT_32 u4ExtraSize = 0;
+
+	u4ExtraSize = wru->essid.length;
+
+	if (!pcExtra) {
+		ret = -ENOMEM;
+		return ret;
+	}
+	if (!wru->essid.pointer) {
+		ret = -EINVAL;
+		return ret;
+	}
+
+	if (u4ExtraSize != IW_ESSID_MAX_SIZE && u4ExtraSize != IW_ESSID_MAX_SIZE + 1) {
+		DBGLOG(INIT, INFO, "[wifi] iwr->u.essid.length:%d error\n", wru->essid.length);
+		ret = -E2BIG;	/* let caller try larger buffer */
+		return ret;
+	}
+
+	/* iwr->u.essid.length is updated by wext_get_essid() */
+	ret = wext_get_essid(prDev, NULL, &wru->essid, pcExtra);
+	return ret;
+}
+
+int std_wext_get_rate(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_get_rate(prDev, NULL, &wru->bitrate, NULL);
+}
+
+int std_wext_set_rts(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_set_rts(prDev, NULL, &wru->rts, NULL);
+}
+
+int std_wext_get_rts(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_get_rts(prDev, NULL, &wru->rts, NULL);
+}
+
+int std_wext_get_frag(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_get_frag(prDev, NULL, &wru->frag, NULL);
+}
+
+int std_wext_set_txpow(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_set_txpow(prDev, NULL, &wru->txpower, NULL);
+}
+
+int std_wext_get_txpow(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_get_txpow(prDev, NULL, &wru->txpower, NULL);
+}
+
+int std_wext_set_encode(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	int ret = 0;
+	UINT_32 u4ExtraSize = 0;
+
+	if (!pcExtra) {
+		ret = -ENOMEM;
+		return ret;
+	}
+
+	u4ExtraSize = wru->encoding.length;
+	if (wru->encoding.pointer) {
+		if (u4ExtraSize > IW_ENCODING_TOKEN_MAX) {
+			ret = -E2BIG;
+			return ret;
+		}
+	} else
+		return -EINVAL;
+
+	ret = wext_set_encode(prDev, NULL, &wru->encoding, pcExtra);
+	return ret;
+}
+
+int std_wext_get_encode(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_get_encode(prDev, NULL, &wru->encoding, NULL);
+}
+
+int std_wext_set_power(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_set_power(prDev, NULL, &wru->power, NULL);
+}
+
+int std_wext_get_power(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_get_power(prDev, NULL, &wru->power, NULL);
+}
+
+int std_wext_set_auth(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_set_auth(prDev, NULL, &wru->param, NULL);
+}
+
+int std_wext_set_encode_ext(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	int ret = 0;
+	UINT_32 u4ExtraSize = 0;
+
+	if (!pcExtra) {
+		ret = -ENOMEM;
+		return ret;
+	}
+
+	if (wru->encoding.pointer) {
+		u4ExtraSize = wru->encoding.length;
+		if (!u4ExtraSize || u4ExtraSize > (sizeof(struct iw_encode_ext) + 32)) {
+			ret = -EINVAL;
+			return ret;
+		}
+		ret = wext_set_encode_ext(prDev, NULL, &wru->encoding, pcExtra);
+	} else if (wru->encoding.length != 0)
+		ret = -EINVAL;
+
+	return ret;
+}
+
+int std_wext_set_country(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	return wext_set_country(prDev, &wru->data);
+}
+
+int std_wext_get_priv(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	UINT_16 u2TblSize = 0;
+
+	/* Update our private args table size */
+	u2TblSize = (__u16)sizeof(rIwPrivTable)/sizeof(struct iw_priv_args);
+	if (!pcExtra)
+		return -ENOMEM;
+
+	if (wru->data.length < u2TblSize)
+		return -E2BIG;
+
+	if (memcpy(pcExtra, rIwPrivTable, sizeof(rIwPrivTable)))
+		return -EFAULT;
+
+	return 0;
+}
+
+int std_wext_SIOCSIWPMKSA_Action(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	int ret = 0;
+	UINT_32 u4ExtraSize = 0;
+
+	if (!pcExtra) {
+		ret = -ENOMEM;
+		return ret;
+	}
+
+	if (wru->data.pointer) {
+			/* Fixed length structure */
+		if (wru->data.length != sizeof(struct iw_pmksa)) {
+			ret = -EINVAL;
+			return ret;
+		}
+
+		u4ExtraSize = sizeof(struct iw_pmksa);
+		switch (((struct iw_pmksa *)pcExtra)->cmd) {
+		case IW_PMKSA_ADD:
+			wext_support_ioctl_SIOCSIWPMKSA_Action(prDev, pcExtra, IW_PMKSA_ADD,
+									&ret);
+			break;
+		case IW_PMKSA_REMOVE:
+			break;
+		case IW_PMKSA_FLUSH:
+				wext_support_ioctl_SIOCSIWPMKSA_Action(prDev, pcExtra,
+									IW_PMKSA_FLUSH, &ret);
+			break;
+		default:
+			DBGLOG(INIT, INFO, "UNKNOWN iw_pmksa command:%d\n",
+						((struct iw_pmksa *)pcExtra)->cmd);
+			ret = -EFAULT;
+			break;
+		}
+	} else if (wru->data.length != 0) {
+		ret = -EINVAL;
+		return ret;
+	}
+
+	return ret;
+}
+
+int std_wext_SIOCSIWGENIE_Action(struct net_device *prDev,
+		struct iw_request_info *prIwrInfo,
+		union iwreq_data *wru, char *pcExtra)
+{
+	int ret = 0;
+#if WIRELESS_EXT > 17
+	UINT_32 u4ExtraSize = 0;
+
+	if (!pcExtra) {
+		ret = -ENOMEM;
+		return ret;
+	}
+
+	if (wru->data.pointer) {
+		P_GLUE_INFO_T prGlueInfo = *((P_GLUE_INFO_T *) netdev_priv(prDev));
+
+		u4ExtraSize = wru->data.length;
+#if CFG_SUPPORT_WAPI
+		if (u4ExtraSize > 42 /* The max wapi ie buffer */) {
+			ret = -EINVAL;
+			return ret;
+		}
+#endif
+		if (u4ExtraSize)
+			wext_support_ioctl_SIOCSIWGENIE(prGlueInfo, pcExtra, u4ExtraSize);
+	}
+#endif
+
+	return ret;
+}
+
+#endif
 
 /*----------------------------------------------------------------------------*/
 /*!
