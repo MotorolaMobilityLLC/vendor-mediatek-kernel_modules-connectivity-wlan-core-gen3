@@ -115,7 +115,8 @@ BOOLEAN wapiParseWapiIE(IN P_WAPI_INFO_ELEM_T prInfoElem, OUT P_WAPI_INFO_T prWa
 		return FALSE;
 	}
 
-	cp = (PUCHAR) & prInfoElem->u2AKMSuiteCount;
+	cp = (PUCHAR) prInfoElem;
+	cp += OFFSET_OF(struct _WAPI_INFO_ELEM_T, u2AKMSuiteCount);
 	u4RemainWapiIeLen = (INT_32) prInfoElem->ucLength - 2;
 
 	do {
