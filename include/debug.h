@@ -304,7 +304,7 @@ enum DRV_STATUS_T {
 #define UNICODE_TEXT(_msg)  TEXT(_msg)
 #define ASSERT(_exp) \
 	do { \
-		if (!(_exp) && !fgIsBusAccessFailed) { \
+		if (!(_exp)) { \
 			TCHAR rUbuf[256]; \
 			kalBreakPoint(); \
 			_stprintf(rUbuf, TEXT("Assertion failed: %s:%d %s\n"), \
@@ -315,7 +315,7 @@ enum DRV_STATUS_T {
 
 #define ASSERT_REPORT(_exp, _fmt) \
 	do { \
-		if (!(_exp) && !fgIsBusAccessFailed) { \
+		if (!(_exp)) { \
 			TCHAR rUbuf[256]; \
 			kalBreakPoint(); \
 			_stprintf(rUbuf, TEXT("Assertion failed: %s:%d %s\n"), \
@@ -333,7 +333,7 @@ enum DRV_STATUS_T {
 
 #define ASSERT(_exp) \
 	do { \
-		if (!(_exp) && !fgIsBusAccessFailed) { \
+		if (!(_exp)) { \
 			LOG_FUNC("Assertion failed: %s:%d (%s)\n", __FILE__, __LINE__, #_exp); \
 			kalBreakPoint(); \
 		} \
@@ -341,7 +341,7 @@ enum DRV_STATUS_T {
 
 #define ASSERT_REPORT(_exp, _fmt) \
 	do { \
-		if (!(_exp) && !fgIsBusAccessFailed) { \
+		if (!(_exp)) { \
 			LOG_FUNC("Assertion failed: %s:%d (%s)\n", __FILE__, __LINE__, #_exp); \
 			LOG_FUNC(_fmt); \
 			kalBreakPoint(); \
@@ -352,7 +352,7 @@ enum DRV_STATUS_T {
 #define ASSERT_NOMEM()
 #define ASSERT(_exp) \
 	do { \
-		if (!(_exp) && !fgIsBusAccessFailed) { \
+		if (!(_exp)) { \
 			LOG_FUNC("Assertion failed: %s:%d (%s)\n", __FILE__, __LINE__, #_exp); \
 		} \
 	} while (0)
