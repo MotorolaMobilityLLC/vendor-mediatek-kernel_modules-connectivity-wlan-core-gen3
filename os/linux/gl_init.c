@@ -2400,7 +2400,7 @@ static INT_32 wlanProbe(PVOID pvData)
 
 		prGlueInfo->u4ReadyFlag = 0;
 
-		prGlueInfo->u4FWRoamingEnable = 1;
+		prGlueInfo->u4FWRoamingEnable = 0;
 
 #if CFG_TCP_IP_CHKSUM_OFFLOAD
 		prAdapter->u4CSUMFlags = (CSUM_OFFLOAD_EN_TX_TCP | CSUM_OFFLOAD_EN_TX_UDP | CSUM_OFFLOAD_EN_TX_IP);
