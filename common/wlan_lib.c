@@ -5910,7 +5910,7 @@ VOID wlanInitFeatureOption(IN P_ADAPTER_T prAdapter)
 	prWifiVar->ePowerMode = (PARAM_POWER_MODE) wlanCfgGetUint32(prAdapter, "PowerSave", Param_PowerModeMax);
 	prWifiVar->rScanInfo.rScanParam.u2DefaultDwellTime =
 	    (UINT_16)wlanCfgGetUint32(prAdapter, "DefaultDwellTime", 0);
-#if CFG_SUPPORT_DATA_STALL
+#ifdef CFG_SUPPORT_DATA_STALL
 	prWifiVar->u4PerHighThreshold = (uint32_t) wlanCfgGetUint32(
 			prAdapter, "PerHighThreshold",
 			EVENT_PER_HIGH_THRESHOLD);
@@ -7407,7 +7407,7 @@ void wlanFinishCollectingLinkQuality(P_GLUE_INFO_T prGlueInfo)
 	prLinkQualityInfo->u8LastTxFailCount = prLinkQualityInfo->u8TxFailCount;
 	prLinkQualityInfo->u8LastTxTotalCount = prLinkQualityInfo->u8TxTotalCount;
 	prLinkQualityInfo->u8LastIdleSlotCount = prLinkQualityInfo->u8IdleSlotCount;
-#if CFG_SUPPORT_DATA_STALL
+#ifdef CFG_SUPPORT_DATA_STALL
 	/* Just for Station mode */
 	if (!(prAdapter->prAisBssInfo->prStaRecOfAP))
 		return;

@@ -912,9 +912,9 @@
 #define CFG_SUPPORT_SCAN_RANDOM_MAC     0
 #endif
 
-#if __BITS_PER_LONG == 64
+#if defined(__LP64__) || defined(LP64)
 #if defined(MT6631)
-#define CFG_SUPPORT_DATA_STALL			1
+#define CFG_SUPPORT_DATA_STALL
 #define CFG_SUPPORT_LINK_QUALITY_MONITOR
 #endif
 #endif

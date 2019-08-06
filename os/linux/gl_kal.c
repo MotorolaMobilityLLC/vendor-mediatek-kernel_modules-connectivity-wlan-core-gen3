@@ -3157,7 +3157,7 @@ int tx_thread(void *data)
 #endif
 		if (test_and_clear_bit(GLUE_FLAG_RESET_CONN_BIT, &prGlueInfo->ulFlag)) {
 			aisBssBeaconTimeout(prGlueInfo->prAdapter);
-#if CFG_SUPPORT_DATA_STALL
+#ifdef CFG_SUPPORT_DATA_STALL
 			mtk_cfg80211_vendor_event_driver_error(prGlueInfo->prAdapter,
 				EVENT_ARP_NO_RESPONSE, (UINT_16)sizeof(UINT_8));
 #endif
@@ -5529,7 +5529,7 @@ VOID kalPerMonHandler(IN P_ADAPTER_T prAdapter, ULONG ulParam)
 	struct net_device *prNetDev = NULL;
 	UINT_32 u4Idx = 0;
 	P_BSS_INFO_T prP2pBssInfo = (P_BSS_INFO_T) NULL;
-#if CFG_SUPPORT_DATA_STALL
+#ifdef CFG_SUPPORT_DATA_STALL
 	P_WIFI_VAR_T prWifiVar = &prAdapter->rWifiVar;
 #endif
 
@@ -5584,7 +5584,7 @@ VOID kalPerMonHandler(IN P_ADAPTER_T prAdapter, ULONG ulParam)
 	prPerMonitor->ulLastRxBytes = latestRxBytes;
 	prPerMonitor->ulP2PLastTxBytes = p2pLatestTxBytes;
 	prPerMonitor->ulP2PLastRxBytes = p2pLatestRxBytes;
-#if CFG_SUPPORT_DATA_STALL
+#ifdef CFG_SUPPORT_DATA_STALL
 	/* test mode */
 	if (prWifiVar->u4ReportEventInterval == 0)
 		mtk_cfg80211_vendor_event_driver_error(prAdapter,

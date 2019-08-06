@@ -768,7 +768,7 @@ typedef struct _WIFI_VAR_T {
 	UINT_8 ucArpTxDone;
 	UINT_8 ucIcmpTxDone;
 	PARAM_POWER_MODE ePowerMode;
-#if CFG_SUPPORT_DATA_STALL
+#ifdef CFG_SUPPORT_DATA_STALL
 	UINT_32 u4PerHighThreshold;
 	UINT_32 u4TxLowRateThreshold;
 	UINT_32 u4RxLowRateThreshold;
@@ -1133,7 +1133,7 @@ struct _ADAPTER_T {
 	PARAM_802_11_STATISTICS_STRUCT_T rStat;
 	UINT_32 u4BufLen;
 #endif
-#if CFG_SUPPORT_DATA_STALL
+#ifdef CFG_SUPPORT_DATA_STALL
 	OS_SYSTIME tmReportinterval;
 #endif
 #ifdef CFG_SUPPORT_COEX_IOT_AP

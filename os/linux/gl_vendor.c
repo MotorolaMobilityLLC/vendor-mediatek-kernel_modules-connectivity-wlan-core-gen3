@@ -2367,7 +2367,7 @@ nla_put_failure:
 	kfree_skb(reply_skb);
 	return -EINVAL;
 }
-#if CFG_SUPPORT_DATA_STALL
+#ifdef CFG_SUPPORT_DATA_STALL
 int mtk_cfg80211_vendor_event_driver_error(struct _ADAPTER_T *prAdapter,
 					enum ENUM_VENDOR_DRIVER_EVENT event, UINT_32 dataLen)
 {
