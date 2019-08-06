@@ -3876,7 +3876,9 @@ UINT_8 p2pFunGetAcsBestCh(IN P_ADAPTER_T prAdapter,
 				(aucChannelList[i].ucChannelNum - 149) / 4)))
 				continue;
 		}
-
+		if (eBand == BAND_5G && eChnlBw >= MAX_BW_80MHZ &&
+				nicGetVhtS1(aucChannelList[i].ucChannelNum) == 0)
+			continue;
 		if (rPreferChannel.u2APNumScore > prEachChnLoad->u2APNumScore) {
 			rPreferChannel.u2APNumScore =
 				prEachChnLoad->u2APNumScore;
