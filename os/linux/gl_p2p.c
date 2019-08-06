@@ -915,6 +915,10 @@ BOOLEAN glP2pCreateWirelessDevice(P_GLUE_INFO_T prGlueInfo)
 	prWiphy->wowlan = &mtk_p2p_wowlan_support;
 #endif
 
+#if KERNEL_VERSION(3, 14, 0) < LINUX_VERSION_CODE
+	prWiphy->max_ap_assoc_sta = P2P_MAXIMUM_CLIENT_COUNT;
+#endif
+
 	/* 2.1 set priv as pointer to glue structure */
 	*((P_GLUE_INFO_T *) wiphy_priv(prWiphy)) = prGlueInfo;
 	/* Here are functions which need rtnl_lock */
