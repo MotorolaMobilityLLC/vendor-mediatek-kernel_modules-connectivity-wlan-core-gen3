@@ -390,10 +390,15 @@ error_read:
 
 WLAN_STATUS kalFirmwareSize(IN P_GLUE_INFO_T prGlueInfo, OUT PUINT_32 pu4Size)
 {
+	loff_t len;
 	ASSERT(prGlueInfo);
 	ASSERT(pu4Size);
-
-	*pu4Size = filp->f_path.dentry->d_inode->i_size;
+	len = vfs_llseek(filp, 0, SEEK_END);
+	if (len >= 0)
+		*pu4Size = (unsigned int)len;
+	else
+		return len;
+	vfs_llseek(filp, 0, SEEK_SET);
 	return WLAN_STATUS_SUCCESS;
 }
 
