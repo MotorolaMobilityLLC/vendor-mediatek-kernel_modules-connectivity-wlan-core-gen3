@@ -47,9 +47,9 @@ UINT_8 p2pRoleFsmInit(IN P_ADAPTER_T prAdapter, IN UINT_8 ucRoleIdx)
 
 		P2P_ROLE_INDEX_2_ROLE_FSM_INFO(prAdapter, ucRoleIdx) = prP2pRoleFsmInfo;
 
-		prP2pRoleFsmInfo->ucRoleIndex = ucRoleIdx;
-
 		ASSERT_BREAK(prP2pRoleFsmInfo != NULL);
+
+		prP2pRoleFsmInfo->ucRoleIndex = ucRoleIdx;
 
 		kalMemZero(prP2pRoleFsmInfo, sizeof(P2P_ROLE_FSM_INFO_T));
 
