@@ -1341,11 +1341,51 @@ int mtk_cfg80211_external_auth(struct wiphy *wiphy,
 int mtk_cfg80211_disconnect(struct wiphy *wiphy, struct net_device *ndev, u16 reason_code)
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
+	struct wireless_dev *wdev = NULL;
+	P_BSS_INFO_T prAisBssInfo = NULL;
 	WLAN_STATUS rStatus;
 	UINT_32 u4BufLen;
 
+	if (ndev == NULL) {
+		DBGLOG(REQ, ERROR, "ndev is NULL\n");
+		return -EINVAL;
+	}
+	wdev = ndev->ieee80211_ptr;
+
 	prGlueInfo = (P_GLUE_INFO_T) wiphy_priv(wiphy);
-	ASSERT(prGlueInfo);
+	if ((prGlueInfo == NULL) || (prGlueInfo->prAdapter == NULL)) {
+		DBGLOG(REQ, ERROR,
+			"mtk_cfg80211_disconnect, prGlueInfo ==NULL!!\n");
+		return -EFAULT;
+	}
+
+	prAisBssInfo = (prGlueInfo->prAdapter)->prAisBssInfo;
+	if (prAisBssInfo == NULL) {
+		DBGLOG(REQ, ERROR,
+			"mtk_cfg80211_disconnect, prAisBssInfo ==NULL!!\n");
+		return -EFAULT;
+	}
+
+	DBGLOG(REQ, INFO, "Current_bss %d ssid_len %d StateIndicated %d %d\n",
+	       (wdev->current_bss == NULL) ? 0 : 1, wdev->ssid_len,
+	       prAisBssInfo->eConnectionStateIndicated,
+	       prGlueInfo->eParamMediaStateIndicated);
+
+	/* Check if kernel state = connected but driver state = disconnected.
+	 * If yes, report disconnected to kernel directly since driver has
+	 * already stayed in disconnected state.
+	 */
+	if ((wdev->current_bss && wdev->ssid_len > 0) &&
+		prAisBssInfo->eConnectionStateIndicated
+			== PARAM_MEDIA_STATE_DISCONNECTED) {
+		DBGLOG(REQ, ERROR,
+			"Kernel & driver have differnet conn state!!\n");
+		cfg80211_disconnected(prGlueInfo->prDevHandler, reason_code,
+				NULL, 0,
+				WLAN_STATUS_MEDIA_DISCONNECT_LOCALLY,
+				GFP_KERNEL);
+		return 0;
+	}
 
 	rStatus = kalIoctl(prGlueInfo, wlanoidSetDisassociate, NULL, 0, FALSE, FALSE, TRUE, &u4BufLen);
 
