@@ -900,7 +900,7 @@
 
 #define CFG_SUPPORT_ABORT_SCAN			1
 
-#define CFG_SUPPORT_REPORT_MISC		1
+#define CFG_SUPPORT_REPORT_MISC		0
 
 /*------------------------------------------------------------------------------
  * Flags of driver support scan random mac
