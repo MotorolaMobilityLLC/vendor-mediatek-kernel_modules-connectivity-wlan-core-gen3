@@ -331,9 +331,11 @@ statsParsePktInfo(P_ADAPTER_T prAdapter, PUINT_8 pucPkt, struct sk_buff *skb, UI
 			/* the number of DHCP packets is seldom so we print log here */
 			PUINT_8 pucUdp = &pucEthBody[20];
 			PUINT_8 pucBootp = &pucUdp[8];
+#if CFG_SUPPORT_REPORT_MISC
 			P_BOOTP_PROTOCOL_T prBootp = NULL;
 			UINT_32 udpLength = 0;
 			UINT_32 i = 0;
+#endif
 			UINT_16 u2UdpDstPort;
 			UINT_16 u2UdpSrcPort;
 			UINT_32 u4TransID;
@@ -517,7 +519,9 @@ statsParsePktInfo(P_ADAPTER_T prAdapter, PUINT_8 pucPkt, struct sk_buff *skb, UI
 		PUINT_8 pucEapol = pucEthBody;
 		UINT_8 ucEapolType = pucEapol[1];
 		UINT_8 ucAisBssIndex;
+#if CFG_SUPPORT_REPORT_MISC
 		UINT_16 u2KeyInfo = 0;
+#endif
 
 		switch (ucEapolType) {
 		case 0: /* eap packet */
