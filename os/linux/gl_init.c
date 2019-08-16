@@ -2100,7 +2100,11 @@ VOID wlanSetSuspendMode(P_GLUE_INFO_T prGlueInfo, BOOLEAN fgEnable)
 			}
 
 			prMCAddrList = kalMemAlloc(MAX_NUM_GROUP_ADDR * ETH_ALEN, VIR_MEM_TYPE);
-
+			if (!prMCAddrList) {
+				DBGLOG(INIT, ERROR, "allocate prMCAddrList failed\n");
+				kalHaltUnlock();
+				return;
+			}
 			netdev_for_each_mc_addr(ha, prDev) {
 				if (i < MAX_NUM_GROUP_ADDR) {
 					kalMemCopy((prMCAddrList + i * ETH_ALEN), ha->addr, ETH_ALEN);
