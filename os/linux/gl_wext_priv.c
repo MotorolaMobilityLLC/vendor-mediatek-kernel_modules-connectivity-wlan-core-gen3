@@ -2582,6 +2582,10 @@ static int priv_driver_set_efuse_buffer_mode(IN struct net_device *prNetDev, IN 
 	wlanCfgParseArgument(pcCommand, &i4Argc, apcArgv);
 
 	pucConfigBuf = (PUINT_8) kalMemAlloc(2048, VIR_MEM_TYPE);
+	if (!pucConfigBuf) {
+		DBGLOG(INIT, INFO, "allocate pucConfigBuf failed\n");
+		return -ENOMEM;
+	}
 	kalMemZero(pucConfigBuf, 2048);
 	u4ConfigReadLen = 0;
 
