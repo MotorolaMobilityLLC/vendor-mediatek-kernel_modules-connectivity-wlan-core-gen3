@@ -784,7 +784,12 @@ VOID kalPacketFree(IN P_GLUE_INFO_T prGlueInfo, IN PVOID pvPacket)
 /*----------------------------------------------------------------------------*/
 PVOID kalPacketAlloc(IN P_GLUE_INFO_T prGlueInfo, IN UINT_32 u4Size, OUT PUINT_8 *ppucData)
 {
-	struct sk_buff *prSkb = dev_alloc_skb(u4Size);
+	struct sk_buff *prSkb = NULL;
+
+	if (in_interrupt())
+		prSkb = __dev_alloc_skb(u4Size, GFP_ATOMIC);
+	else
+		prSkb = __dev_alloc_skb(u4Size, GFP_KERNEL);
 
 	if (prSkb) {
 		*ppucData = (PUINT_8) (prSkb->data);
