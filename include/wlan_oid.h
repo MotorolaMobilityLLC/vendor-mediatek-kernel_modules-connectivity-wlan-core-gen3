@@ -161,6 +161,7 @@ typedef enum _ENUM_PARAM_AUTH_MODE_T {
 	AUTH_MODE_WPA2_FT, /* Fast Bss Transition for 802.1x */
 	AUTH_MODE_WPA2_FT_PSK, /* Fast Bss Transition for WPA2 PSK */
 	AUTH_MODE_WPA3_SAE,
+	AUTH_MODE_WPA3_OWE,
 	AUTH_MODE_NUM		/*!< Upper bound, not real case */
 } ENUM_PARAM_AUTH_MODE_T, *P_ENUM_PARAM_AUTH_MODE_T;
 

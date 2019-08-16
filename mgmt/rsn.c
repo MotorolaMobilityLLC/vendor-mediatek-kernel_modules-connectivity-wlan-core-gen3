@@ -784,7 +784,8 @@ BOOLEAN rsnPerformPolicySelection(IN P_ADAPTER_T prAdapter, IN P_BSS_DESC_T prBs
 		   prConnSettings->eAuthMode == AUTH_MODE_WPA2_PSK ||
 		   prConnSettings->eAuthMode == AUTH_MODE_WPA2_FT_PSK ||
 		   prConnSettings->eAuthMode == AUTH_MODE_WPA2_FT ||
-		   prConnSettings->eAuthMode == AUTH_MODE_WPA3_SAE) {
+		   prConnSettings->eAuthMode == AUTH_MODE_WPA3_SAE ||
+		   prConnSettings->eAuthMode == AUTH_MODE_WPA3_OWE) {
 
 		if (prBss->fgIERSN)
 			prBssRsnInfo = &prBss->rRSNInfo;

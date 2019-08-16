@@ -1080,7 +1080,7 @@ int mtk_cfg80211_connect(struct wiphy *wiphy, struct net_device *ndev, struct cf
 				break;
 			case WLAN_AKM_SUITE_OWE:
 				DBGLOG(REQ, WARN, "Akm Suite = OWE 0x000FAC12\n");
-				eAuthMode = AUTH_MODE_OPEN;
+				eAuthMode = AUTH_MODE_WPA3_OWE;
 				u4AkmSuite = RSN_CIPHER_SUITE_OWE;
 				break;
 			default:

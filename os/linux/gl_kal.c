@@ -1540,8 +1540,8 @@ kalUpdateReAssocReqInfo(IN P_GLUE_INFO_T prGlueInfo,
 /*----------------------------------------------------------------------------*/
 VOID kalUpdateReAssocRspInfo(IN P_GLUE_INFO_T prGlueInfo, IN PUINT_8 pucFrameBody, IN UINT_32 u4FrameBodyLen)
 {
-	UINT_32 u4IEOffset = 6;	/* cap_info, status_code & assoc_id */
-	UINT_32 u4IELength = u4FrameBodyLen - u4IEOffset;
+	UINT_32 u4IEOffset = 6; /* cap_info, status_code & assoc_id */
+	UINT_32 u4IELength = u4FrameBodyLen - u4IEOffset - WLAN_MAC_MGMT_HEADER_LEN;
 
 	ASSERT(prGlueInfo);
 
