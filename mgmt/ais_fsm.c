@@ -1050,6 +1050,8 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 					/* reset trial count */
 					prAisFsmInfo->ucConnTrialCount = 0;
 
+					prBtmParam->fgUnsolicitedReq = FALSE;
+
 					eNextState = AIS_STATE_COLLECT_ESS_INFO;
 					fgIsTransition = TRUE;
 				} else {

@@ -3363,6 +3363,9 @@ try_again:
 #endif
 		}
 	} /* end of LINK_FOR_EACH */
+
+	prBtmParam->fgUnsolicitedReq = FALSE;
+
 	if (prConnSettings->eConnectionPolicy == CONNECT_BY_BSSID) {
 		DBGLOG(SCN, INFO, "Selected None base on bssid %pM in %d BSSes, fix channel %d\n",
 				prConnSettings->aucBSSID, prEssLink->u4NumElem, ucChannel);
@@ -3371,9 +3374,9 @@ try_again:
 
 	if (prCandBssDesc) {
 		DBGLOG(SCN, INFO,
-			"Selected %pM, Score %d when find %s, %pM in %d BSSes, fix channel %d, blacklist %d\n",
+			"Selected %pM, Score %d when find %s, %pM in %d BSSes, fix channel %d, blacklist %d-%d\n",
 			prCandBssDesc->aucBSSID, u2CandBssScore, prConnSettings->aucSSID,
-			prConnSettings->aucBSSID, prEssLink->u4NumElem, ucChannel, fgSearchBlackList);
+			prConnSettings->aucBSSID, prEssLink->u4NumElem, ucChannel, fgSearchBlackList,  prBtmParam->fgUnsolicitedReq);
 		return prCandBssDesc;
 	}
 	/* if No Candidate BSS is found, try BSSes which are in blacklist */
@@ -3403,9 +3406,9 @@ try_again:
 		}
 	}
 #endif
-	DBGLOG(SCN, INFO, "Selected None when find %s, %pM in %d BSSes, fix channel %d, blacklist %d\n",
+	DBGLOG(SCN, INFO, "Selected None when find %s, %pM in %d BSSes, fix channel %d, blacklist %d-%d\n",
 				prConnSettings->aucSSID, prConnSettings->aucBSSID,
-				prEssLink->u4NumElem, ucChannel, fgSearchBlackList);
+				prEssLink->u4NumElem, ucChannel, fgSearchBlackList, prBtmParam->fgUnsolicitedReq);
 	return NULL;
 }
 
