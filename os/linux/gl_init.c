@@ -1510,7 +1510,7 @@ VOID wlanUpdateChannelTable(P_GLUE_INFO_T prGlueInfo)
 {
 	UINT_8 i, j;
 	UINT_8 ucNumOfChannel;
-	RF_CHANNEL_INFO_T aucChannelList[ARRAY_SIZE(mtk_2ghz_channels) + ARRAY_SIZE(mtk_5ghz_channels)];
+	RF_CHANNEL_INFO_T aucChannelList[ARRAY_SIZE(mtk_2ghz_channels) + ARRAY_SIZE(mtk_5ghz_channels)] = { {0} };
 
 	/* 1. Disable all channels */
 	for (i = 0; i < ARRAY_SIZE(mtk_2ghz_channels); i++) {

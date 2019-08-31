@@ -249,7 +249,7 @@ int mtk_cfg80211_vendor_get_channel_list(struct wiphy *wiphy, struct wireless_de
 	struct nlattr *attr;
 	UINT_32 band = 0;
 	UINT_8 ucNumOfChannel, i, j;
-	RF_CHANNEL_INFO_T aucChannelList[64];
+	RF_CHANNEL_INFO_T aucChannelList[64] = { {0} };
 	UINT_32 num_channels;
 	wifi_channel channels[64];
 	struct sk_buff *skb;

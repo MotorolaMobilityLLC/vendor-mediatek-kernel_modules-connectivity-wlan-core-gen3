@@ -3220,7 +3220,7 @@ VOID nicTxSetPktLowestFixedRate(IN P_ADAPTER_T prAdapter, IN P_MSDU_INFO_T prMsd
 	P_BSS_INFO_T prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, prMsduInfo->ucBssIndex);
 	P_STA_RECORD_T prStaRec = cnmGetStaRecByIndex(prAdapter, prMsduInfo->ucStaRecIndex);
 	UINT_8 ucRateSwIndex, ucRateIndex, ucRatePreamble;
-	UINT_16 u2RateCode, u2RateCodeLimit, u2OperationalRateSet;
+	UINT_16 u2RateCode, u2RateCodeLimit = 0, u2OperationalRateSet;
 	UINT_32 u4CurrentPhyRate, u4Status;
 
 	prMsduInfo->fgIsTXDTemplateValid = FALSE;

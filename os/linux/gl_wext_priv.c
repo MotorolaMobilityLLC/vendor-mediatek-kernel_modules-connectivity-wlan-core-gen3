@@ -2469,7 +2469,7 @@ static int priv_driver_get_sw_ctrl(IN struct net_device *prNetDev, IN char *pcCo
 	UINT_32 u4BufLen = 0;
 	INT_32 i4BytesWritten = 0;
 	INT_32 i4Argc = 0;
-	PCHAR apcArgv[WLAN_CFG_ARGV_MAX];
+	PCHAR apcArgv[WLAN_CFG_ARGV_MAX] = {0};
 	INT_32 u4Ret = 0;
 
 	PARAM_CUSTOM_SW_CTRL_STRUCT_T rSwCtrlInfo;
@@ -2635,7 +2635,7 @@ static int priv_driver_get_rx_statistics(IN struct net_device *prNetDev, IN char
 	UINT_32 u4BufLen = 0;
 	INT_32 i4BytesWritten = 0;
 	INT_32 i4Argc = 0;
-	PCHAR apcArgv[WLAN_CFG_ARGV_MAX];
+	PCHAR apcArgv[WLAN_CFG_ARGV_MAX] = {0};
 	INT_32 u4Ret = 0;
 	PARAM_CUSTOM_ACCESS_RX_STAT rRxStatisticsTest;
 
@@ -2975,7 +2975,7 @@ int priv_driver_set_band(IN struct net_device *prNetDev, IN char *pcCommand, IN 
 	UINT_32 ucBand = 0;
 	UINT_8 ucBssIndex;
 	ENUM_BAND_T eBand = BAND_NULL;
-	PCHAR apcArgv[WLAN_CFG_ARGV_MAX];
+	PCHAR apcArgv[WLAN_CFG_ARGV_MAX] = {0};
 	INT_32 u4Ret = 0;
 
 	ASSERT(prNetDev);
@@ -3166,7 +3166,7 @@ int priv_driver_set_miracast(IN struct net_device *prNetDev, IN char *pcCommand,
 	UINT_32 ucMode = 0;
 	P_WFD_CFG_SETTINGS_T prWfdCfgSettings = (P_WFD_CFG_SETTINGS_T) NULL;
 	P_MSG_WFD_CONFIG_SETTINGS_CHANGED_T prMsgWfdCfgUpdate = (P_MSG_WFD_CONFIG_SETTINGS_CHANGED_T) NULL;
-	PCHAR apcArgv[WLAN_CFG_ARGV_MAX];
+	PCHAR apcArgv[WLAN_CFG_ARGV_MAX] = {0};
 	INT_32 u4Ret = 0;
 
 	ASSERT(prNetDev);
@@ -3232,9 +3232,9 @@ int priv_driver_set_suspend_mode(IN struct net_device *prNetDev, IN char *pcComm
 {
 	P_GLUE_INFO_T prGlueInfo = NULL;
 	INT_32 i4Argc = 0;
-	PCHAR apcArgv[WLAN_CFG_ARGV_MAX];
+	PCHAR apcArgv[WLAN_CFG_ARGV_MAX] = {0};
 	BOOLEAN fgEnable;
-	UINT_32 u4Enable;
+	UINT_32 u4Enable = 0;
 	INT_32 u4Ret = 0;
 
 	ASSERT(prNetDev);
@@ -3323,7 +3323,7 @@ int priv_driver_set_monitor(IN struct net_device *prNetDev, IN char *pcCommand, 
 	UINT_32 u4BufLen = 0;
 	INT_32 i4Argc = 0;
 	INT_32 i4BytesWritten = 0;
-	PCHAR apcArgv[WLAN_CFG_ARGV_MAX];
+	PCHAR apcArgv[WLAN_CFG_ARGV_MAX] = {0};
 	PARAM_CUSTOM_MONITOR_SET_STRUCT_T rMonitorSetInfo;
 	UINT_8 ucEnable = 0;
 	UINT_8 ucPriChannel = 0;
