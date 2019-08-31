@@ -11577,6 +11577,13 @@ wlanoidUpdateFtIes(P_ADAPTER_T prAdapter, PVOID pvSetBuffer, UINT_32 u4SetBuffer
 		prFtIes->pucIEBuf = kalMemAlloc(ftie->ie_len, VIR_MEM_TYPE);
 		prFtIes->u4IeLength = ftie->ie_len;
 	}
+
+	if (!prFtIes->pucIEBuf) {
+		DBGLOG(OID, ERROR, "FT: prFtIes->pucIEBuf memory allocation failed, ft ie_len=%u\n", ftie->ie_len);
+		prFtIes->u4IeLength = 0;
+		return WLAN_STATUS_FAILURE;
+	}
+
 	pucIEStart = prFtIes->pucIEBuf;
 	u4IeLen = prFtIes->u4IeLength;
 	prFtIes->u2MDID = ftie->md;
