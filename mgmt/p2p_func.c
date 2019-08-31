@@ -4114,7 +4114,7 @@ void p2pFunCalAcsChnScores(IN P_ADAPTER_T prAdapter,
 				aucChannelList);
 
 #define CHN_DIRTY_WEIGHT_UPPERBOUND 4
-		for (i = 0; i < ucNumOfChannel; i++) {
+		for (i = 0; i < ucNumOfChannel && i < MAX_2G_BAND_CHN_NUM; i++) {
 			P_PARAM_CHN_LOAD_INFO prEachChnLoad;
 
 			ucIdx = wlanGetChannelIndex(
