@@ -3829,7 +3829,7 @@ UINT_8 p2pFunGetAcsBestCh(IN P_ADAPTER_T prAdapter,
 		IN UINT_32 u4LteSafeChnMask_5G_1,
 		IN UINT_32 u4LteSafeChnMask_5G_2)
 {
-	RF_CHANNEL_INFO_T aucChannelList[MAX_CHN_NUM];
+	RF_CHANNEL_INFO_T aucChannelList[MAX_CHN_NUM] = { { 0 } };
 	UINT_8 ucNumOfChannel;
 	P_PARAM_GET_CHN_INFO prGetChnLoad;
 	UINT_8 i;
@@ -3910,7 +3910,7 @@ void p2pFunProcessAcsReport(IN P_ADAPTER_T prAdapter,
 	/* TODO: Add support for 5G FW mask */
 	if (prLteSafeChnInfo && (eBand == BAND_2G4)) {
 		P_CMD_LTE_SAFE_CHN_INFO_T prLteSafeChnList;
-		RF_CHANNEL_INFO_T aucChannelList[MAX_2G_BAND_CHN_NUM];
+		RF_CHANNEL_INFO_T aucChannelList[MAX_2G_BAND_CHN_NUM] = { { 0 } };
 		UINT_8 ucNumOfChannel;
 		UINT_8 i;
 		BOOLEAN fgIsMaskValid = FALSE;
@@ -4076,7 +4076,7 @@ void p2pFunCalAcsChnScores(IN P_ADAPTER_T prAdapter,
 		IN ENUM_BAND_T eBand)
 {
 	UINT_8 ucNumOfChannel;
-	RF_CHANNEL_INFO_T aucChannelList[MAX_CHN_NUM];
+	RF_CHANNEL_INFO_T aucChannelList[MAX_CHN_NUM] = { { 0 } };
 	P_PARAM_GET_CHN_INFO prGetChnLoad;
 	UINT_8 i, ucIdx;
 
