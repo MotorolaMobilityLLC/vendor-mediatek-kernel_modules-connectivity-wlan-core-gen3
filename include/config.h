@@ -911,14 +911,19 @@
 #else
 #define CFG_SUPPORT_SCAN_RANDOM_MAC     0
 #endif
-
+/*------------------------------------------------------------------------------
+ * Need FW support
+ * If FW can support, then driver enables it.
+ *------------------------------------------------------------------------------
+ */
+/*
 #if defined(__LP64__) || defined(LP64)
 #if defined(MT6631)
 #define CFG_SUPPORT_DATA_STALL
 #define CFG_SUPPORT_LINK_QUALITY_MONITOR
 #endif
 #endif
-
+*/
 /*------------------------------------------------------------------------------
  * Link Quality Monitor
  * Link quality monitor execution period base on performance monitor timer

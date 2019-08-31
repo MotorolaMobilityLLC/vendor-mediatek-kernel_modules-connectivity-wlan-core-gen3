@@ -2063,11 +2063,11 @@ int mtk_cfg80211_vendor_driver_memory_dump(struct wiphy *wiphy,
 	struct NETDEV_PRIVATE_GLUE_INFO *prNetDevPrivate;
 	struct WIFI_LINK_QUALITY_INFO rLinkQualityInfo;
 	P_GLUE_INFO_T prGlueInfo;
+	UINT_32 u4BufLen;
 #endif
 	struct sk_buff *skb;
 	UINT_32 *puBuufer = NULL;
 	INT_32 i4Status = -EINVAL;
-	UINT_32 u4BufLen;
 	UINT_16 u2CopySize = 0;
 
 	ASSERT(wiphy);
