@@ -218,15 +218,21 @@ const struct iw_handler_def wext_handler_def = {
 #else
 	.num_standard = 0,
 #endif
+#if defined(CONFIG_WEXT_PRIV)
+
 	.num_private = (__u16) sizeof(rIwPrivHandler) / sizeof(iw_handler),
 	.num_private_args = (__u16) sizeof(rIwPrivTable) / sizeof(struct iw_priv_args),
+#endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 14, 0))
 	.standard = rIwStdHandler,
 #else
 	.standard = (iw_handler *)NULL,
 #endif
+#if defined(CONFIG_WEXT_PRIV)
+
 	.private = rIwPrivHandler,
 	.private_args = rIwPrivTable,
+#endif
 	.get_wireless_stats = wext_get_wireless_stats,
 };
 
