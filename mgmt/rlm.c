@@ -2890,6 +2890,14 @@ schedule_next:
 				rlmTxRadioMeasurementReport(prAdapter);
 				pucReportFrame = prRmRep->pucReportFrameBuff + prRmRep->u2ReportFrameLen;
 			}
+			/* rlmTxRadioMeasureMentReport fail will not reset u2ReportFrameLen.
+			 * It will cause to KE.
+			 */
+			if (u2IeSize + prRmRep->u2ReportFrameLen > RM_REPORT_FRAME_MAX_LENGTH) {
+				DBGLOG(RLM, WARN, "u2IeSize:0x%x, FrameLen:0x%x\n", u2IeSize,
+					prRmRep->u2ReportFrameLen);
+				break;
+			}
 			kalMemCopy(pucReportFrame, prReportEntry->aucMeasReport, u2IeSize);
 			pucReportFrame += u2IeSize;
 			prRmRep->u2ReportFrameLen += u2IeSize;
@@ -3249,6 +3257,7 @@ VOID rlmProcessRadioMeasurementRequest(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb
 	struct RADIO_MEASUREMENT_REQ_PARAMS *prRmReqParam = NULL;
 	struct RADIO_MEASUREMENT_REPORT_PARAMS *prRmRepParam = NULL;
 	enum RM_REQ_PRIORITY eNewPriority;
+	P_STA_RECORD_T prStaRec = NULL;
 
 	ASSERT(prAdapter);
 	ASSERT(prSwRfb);
@@ -3259,6 +3268,11 @@ VOID rlmProcessRadioMeasurementRequest(P_ADAPTER_T prAdapter, P_SW_RFB_T prSwRfb
 
 	if (!rlmRmFrameIsValid(prSwRfb))
 		return;
+	prStaRec = prAdapter->prAisBssInfo->prStaRecOfAP;
+	if (!prStaRec) {
+		DBGLOG(RLM, WARN, "StaRec of Ais is NULL, ignore the Measurement\n");
+		return;
+	}
 	DBGLOG(RLM, INFO, "RM Request From %pM, DialogToken %d\n",
 			prRmReqFrame->aucSrcAddr, prRmReqFrame->ucDialogToken);
 	eNewPriority = rlmGetRmRequestPriority(prRmReqFrame->aucDestAddr);
