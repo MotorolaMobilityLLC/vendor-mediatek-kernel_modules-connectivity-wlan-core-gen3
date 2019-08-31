@@ -1090,8 +1090,8 @@ VOID wlanbowCmdEventLinkDisconnected(IN P_ADAPTER_T prAdapter, IN P_CMD_INFO_T p
 	P_BOW_LINK_DISCONNECTED prBowLinkDisconnected;
 	P_BOW_FSM_INFO_T prBowFsmInfo;
 	BOW_TABLE_T rBowTable;
-	UINT_8 ucBowTableIdx;
 	ENUM_BOW_DEVICE_STATE eFsmState;
+	UINT_8 ucBowTableIdx = 0;
 	BOOL fgSendDeauth = FALSE;
 
 	ASSERT(prAdapter);
