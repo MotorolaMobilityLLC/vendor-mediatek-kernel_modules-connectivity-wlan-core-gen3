@@ -1055,6 +1055,17 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 					prAisReq->eReqType, prConnSettings->fgIsConnReqIssued,
 					prConnSettings->fgIsDisconnectedByNonRequest);
 			if (prAisReq == NULL || prAisReq->eReqType == AIS_REQUEST_RECONNECT) {
+
+				if (IS_NET_ACTIVE(prAdapter, prAdapter->prAisBssInfo->ucBssIndex)) {
+					UNSET_NET_ACTIVE(prAdapter, prAdapter->prAisBssInfo->ucBssIndex);
+					DBGLOG(AIS, TRACE, "DEACTIVATE AIS from ACTIVE to Disable\n");
+					/* sync with firmware */
+					nicDeactivateNetwork(prAdapter, prAdapter->prAisBssInfo->ucBssIndex);
+				} else {
+					DBGLOG(AIS, INFO, "fgIsNetActive %d\n",
+					prAdapter->aprBssInfo[prAdapter->prAisBssInfo->ucBssIndex]->fgIsNetActive);
+				}
+
 				if (prConnSettings->fgIsConnReqIssued == TRUE &&
 				    prConnSettings->fgIsDisconnectedByNonRequest == FALSE) {
 
@@ -1079,15 +1090,15 @@ VOID aisFsmSteps(IN P_ADAPTER_T prAdapter, ENUM_AIS_STATE_T eNextState)
 #if CFG_SUPPORT_PNO
 					prAisBssInfo->fgIsNetRequestInActive = TRUE;
 					if (prAisBssInfo->fgIsPNOEnable) {
+						SET_NET_ACTIVE(prAdapter, prAdapter->prAisBssInfo->ucBssIndex);
+						/* sync with firmware */
+						nicActivateNetwork(prAdapter, prAdapter->prAisBssInfo->ucBssIndex);
+
 						DBGLOG(BSS, INFO,
 						"[BSSidx][Network]=%d PNOEnable&&OP_MODE_INFRASTRUCTURE,KEEP ACTIVE\n",
 							prAisBssInfo->ucBssIndex);
-					} else
-#endif
-					{
-						UNSET_NET_ACTIVE(prAdapter, prAdapter->prAisBssInfo->ucBssIndex);
-						nicDeactivateNetwork(prAdapter, prAdapter->prAisBssInfo->ucBssIndex);
 					}
+#endif
 #if CFG_SUPPORT_ABORT_SCAN
 					AisFsmHandlePendingScan(prAdapter, prAisReq, &eNextState, &fgIsTransition);
 #else
