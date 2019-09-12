@@ -193,6 +193,22 @@ UINT_16 assocBuildCapabilityInfo(IN P_ADAPTER_T prAdapter, IN P_STA_RECORD_T prS
 			 */
 			u2CapInfo |= CAP_INFO_SHORT_PREAMBLE;
 		}
+#if CFG_SUPPORT_SPEC_MGMT	/*Add by Enlai */
+		/* Support 802.11h */
+		if (prStaRec->u2CapInfo & CAP_INFO_SPEC_MGT) {
+		/*
+		*1.	The Power Capability element shall be present if
+		*	dot11SpectrumManagementRequired is true.
+		*
+		*2.	A STA shall set dot11SpectrumManagementRequired to TRUE before
+		*	associating with a BSS or IBSS in which the Spectrum Management
+		*	bit is set to 1 in the Capability Information field in Beacon frames
+		*	and Probe Response frames received from the BSS or IBSS.
+		*/
+			if (prAdapter->fgEnable5GBand == TRUE)
+				u2CapInfo |= CAP_INFO_SPEC_MGT;
+		}
+#endif
 
 		if (rNonHTPhyAttributes[u4NonHTPhyType].fgIsShortSlotTimeOptionImplemented &&
 		    prAdapter->rWifiVar.fgIsShortSlotTimeOptionEnable) {
