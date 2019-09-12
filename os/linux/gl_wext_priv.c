@@ -1194,7 +1194,7 @@ priv_get_int(IN struct net_device *prNetDev,
 		{
 			UINT_8 ucNumOfChannel, i;
 			UINT_8 ucMaxChannelNum = 50;
-			RF_CHANNEL_INFO_T aucChannelList[50];
+			RF_CHANNEL_INFO_T aucChannelList[50] = { {0} };
 			INT_32 ch[50];
 
 			kalGetChannelList(prGlueInfo, BAND_NULL, ucMaxChannelNum, &ucNumOfChannel, aucChannelList);
@@ -1361,7 +1361,7 @@ priv_get_ints(IN struct net_device *prNetDev,
 		{
 			UINT_8 ucNumOfChannel, i;
 			UINT_8 ucMaxChannelNum = 50;
-			RF_CHANNEL_INFO_T aucChannelList[50];
+			RF_CHANNEL_INFO_T aucChannelList[50] = { {0} };
 			INT_32 ch[50];
 
 			kalGetChannelList(prGlueInfo, BAND_NULL, ucMaxChannelNum, &ucNumOfChannel, aucChannelList);
@@ -2472,7 +2472,7 @@ static int priv_driver_get_sw_ctrl(IN struct net_device *prNetDev, IN char *pcCo
 	PCHAR apcArgv[WLAN_CFG_ARGV_MAX] = {0};
 	INT_32 u4Ret = 0;
 
-	PARAM_CUSTOM_SW_CTRL_STRUCT_T rSwCtrlInfo;
+	PARAM_CUSTOM_SW_CTRL_STRUCT_T rSwCtrlInfo = { {0} };
 
 	ASSERT(prNetDev);
 	if (GLUE_CHK_PR2(prNetDev, pcCommand) == FALSE)
@@ -3016,11 +3016,11 @@ int priv_driver_set_txpower(IN struct net_device *prNetDev, IN char *pcCommand, 
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 	UINT_32 u4BufLen = 0;
 	INT_32 i4Argc = 0;
-	PCHAR apcArgv[WLAN_CFG_ARGV_MAX];
+	PCHAR apcArgv[WLAN_CFG_ARGV_MAX] = {0};
 	P_SET_TXPWR_CTRL_T prTxpwr;
 	UINT_16 i;
 	INT_32 u4Ret = 0;
-	INT_32 ai4Setting[4];
+	INT_32 ai4Setting[4] = {0};
 
 	ASSERT(prNetDev);
 	if (GLUE_CHK_PR2(prNetDev, pcCommand) == FALSE)
@@ -3129,7 +3129,7 @@ int priv_driver_set_country(IN struct net_device *prNetDev, IN char *pcCommand, 
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
 	UINT_32 u4BufLen = 0;
 	INT_32 i4Argc = 0;
-	PCHAR apcArgv[WLAN_CFG_ARGV_MAX];
+	PCHAR apcArgv[WLAN_CFG_ARGV_MAX] = {0};
 	UINT_8 aucCountry[2];
 
 	ASSERT(prNetDev);

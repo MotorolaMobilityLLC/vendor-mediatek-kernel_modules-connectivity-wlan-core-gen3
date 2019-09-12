@@ -4250,7 +4250,7 @@ UINT_32 kalTrunkPath(const PUINT_8 pucPath)
 INT_32 kalRequestFirmware(const PUINT_8 pucPath, PUINT_8 pucData, UINT_32 u4Size,
 		PUINT_32 pu4ReadSize, struct device *dev)
 {
-	const struct firmware *fw;
+	const struct firmware *fw = NULL;
 	int ret = 0;
 
 	/*

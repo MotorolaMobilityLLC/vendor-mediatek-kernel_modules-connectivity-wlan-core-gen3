@@ -751,7 +751,7 @@ static int wlanSetMacAddress(struct net_device *ndev, void *addr)
 static void glLoadNvram(IN P_GLUE_INFO_T prGlueInfo, OUT P_REG_INFO_T prRegInfo)
 {
 	UINT_32 i, j;
-	UINT_8 aucTmp[2];
+	UINT_8 aucTmp[2] = {0};
 	PUINT_8 pucDest;
 
 	ASSERT(prGlueInfo);
