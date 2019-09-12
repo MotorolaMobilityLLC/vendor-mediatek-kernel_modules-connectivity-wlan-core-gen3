@@ -1249,6 +1249,9 @@ wmmCalculatePktUsedTime(P_BSS_INFO_T prBssInfo, P_STA_RECORD_T prStaRec, UINT_16
 				if ((prStaRec->u2BSSBasicRateSet & BIT(i)) && aucDataRate[i] <= u2DataRate)
 					break;
 			}
+			/*No match??, use 1Mbps as lowest rate*/
+			if (i < 0)
+				i = 0;
 		}
 		if (prBssInfo->fgUseShortPreamble)
 			ucFlags |= FLAG_S_PREAMBLE;
