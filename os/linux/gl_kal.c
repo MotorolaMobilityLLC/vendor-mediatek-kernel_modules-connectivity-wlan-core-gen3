@@ -5615,11 +5615,17 @@ VOID kalPerMonHandler(IN P_ADAPTER_T prAdapter, ULONG ulParam)
 	       (prP2pBssInfo->rStaRecOfClientList.u4NumElem > 0))))
 		kalPerMonStop(prGlueInfo);
 	else {
-		DBGLOG(SW4, TRACE, "throughput:%ld bps\n", prPerMonitor->ulThroughput);
 		if (prPerMonitor->u4TarPerfLevel != prPerMonitor->u4CurrPerfLevel) {
 			/* if tar level = 0; core_number=prPerMonitor->u4TarPerfLevel+1*/
-			if (prPerMonitor->u4TarPerfLevel)
+			if (prPerMonitor->u4TarPerfLevel) {
+				DBGLOG(SW4, INFO,
+				"PerfMon total:%3lu.%03lu mbps lv:%u fg:0x%lx\n",
+				prPerMonitor->ulThroughput >> 20,
+				(prPerMonitor->ulThroughput >> 10) & BITS(0, 9),
+				prPerMonitor->u4TarPerfLevel,
+				prPerMonitor->ulPerfMonFlag);
 				kalBoostCpu(prPerMonitor->u4TarPerfLevel+1);
+			}
 			else
 				kalBoostCpu(0);
 		}

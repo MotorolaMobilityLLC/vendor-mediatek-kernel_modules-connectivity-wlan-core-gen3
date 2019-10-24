@@ -14,10 +14,10 @@
 
 #include <linux/version.h>
 
-#ifdef CONFIG_MTK_CPU_CTRL
-#include <cpu_ctrl.h>
-#elif LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 146)
+#if LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 146)
 #include "legacy_controller.h"
+#else
+#include <cpu_ctrl.h>
 #endif
 
 #include <linux/pm_qos.h>
@@ -35,8 +35,6 @@
 #define MAX_CPU_FREQ 2340000 /* in kHZ */
 #define CLUSTER_NUM  2       /* 2 clusters, 4 big cores + 4 little cores */
 
-#if defined(COFNIG_MTK_CPU_CTRL) || \
-	(LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 146))
 #ifdef CONFIG_MTK_QOS_SUPPORT
 
 static struct mutex grPmQosLock;
@@ -62,7 +60,7 @@ int kalBoostCpu(unsigned int level)
 		freq_to_set[i].max = -1; /* -1 means don't care */
 		freq_to_set[i].min = level ? MAX_CPU_FREQ : -1;
 	}
-	update_userlimit_cpu_freq(PPM_KIR_WIFI, CLUSTER_NUM, freq_to_set);
+	update_userlimit_cpu_freq(CPU_KIR_WIFI, CLUSTER_NUM, freq_to_set);
 
 #ifdef CONFIG_MTK_QOS_SUPPORT
 
@@ -84,7 +82,6 @@ int kalBoostCpu(unsigned int level)
 
 	return 0;
 }
-#endif
 
 #ifdef CONFIG_MTK_EMI
 VOID kalSetEmiMpuProtection(phys_addr_t emiPhyBase, UINT_32 size, BOOLEAN enable)
