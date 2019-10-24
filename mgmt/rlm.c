@@ -210,8 +210,6 @@ VOID rlmReqGenerateExtCapIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo)
 {
 	P_BSS_INFO_T prBssInfo;
 	P_STA_RECORD_T prStaRec;
-	P_EXT_CAP_T prExtCap = NULL;
-	BOOLEAN fgExistExtCap = TRUE;
 
 	ASSERT(prAdapter);
 	ASSERT(prMsduInfo);
@@ -222,8 +220,6 @@ VOID rlmReqGenerateExtCapIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo)
 
 	prStaRec = cnmGetStaRecByIndex(prAdapter, prMsduInfo->ucStaRecIndex);
 
-	prExtCap = (P_EXT_CAP_T)
-	    (((PUINT_8) prMsduInfo->prPacket) + prMsduInfo->u2FrameLength);
 	if ((prAdapter->rWifiVar.ucAvailablePhyTypeSet & PHY_TYPE_SET_802_11N) &&
 	    (!prStaRec || (prStaRec->ucPhyTypeSet & PHY_TYPE_SET_802_11N)))
 		rlmFillExtCapIE(prAdapter, prBssInfo, prMsduInfo);
@@ -231,23 +227,6 @@ VOID rlmReqGenerateExtCapIE(P_ADAPTER_T prAdapter, P_MSDU_INFO_T prMsduInfo)
 	else if (prAdapter->prGlueInfo->fgConnectHS20AP == TRUE)
 		hs20FillExtCapIE(prAdapter, prBssInfo, prMsduInfo);
 #endif /* CFG_SUPPORT_PASSPOINT */
-	else
-		fgExistExtCap = FALSE;
-
-#if CFG_SUPPORT_802_11V_BSS_TRANSITION_MGT
-	if (!fgExistExtCap) {
-		prExtCap->ucId = ELEM_ID_EXTENDED_CAP;
-		prExtCap->ucLength = ELEM_MAX_LEN_EXT_CAP;
-		/* Reset memory */
-		kalMemZero(prExtCap->aucCapabilities, ELEM_MAX_LEN_EXT_CAP);
-		prMsduInfo->u2FrameLength += IE_SIZE(prExtCap);
-	} else if (prExtCap->ucLength < ELEM_MAX_LEN_EXT_CAP) {
-		prMsduInfo->u2FrameLength += ELEM_MAX_LEN_EXT_CAP - prExtCap->ucLength;
-		prExtCap->ucLength = ELEM_MAX_LEN_EXT_CAP;
-	}
-
-	SET_EXT_CAP(prExtCap->aucCapabilities, ELEM_MAX_LEN_EXT_CAP, ELEM_EXT_CAP_BSS_TRANSITION_BIT);
-#endif
 
 }
 
@@ -703,6 +682,14 @@ static VOID rlmFillExtCapIE(P_ADAPTER_T prAdapter, P_BSS_INFO_T prBssInfo, P_MSD
 		SET_EXT_CAP(prExtCap->aucCapabilities, ELEM_MAX_LEN_EXT_CAP, ELEM_EXT_CAP_WNM_NOTIFICATION_BIT);
 	}
 #endif /* CFG_SUPPORT_PASSPOINT */
+
+#if CFG_SUPPORT_802_11V_BSS_TRANSITION_MGT
+	if (prExtCap->ucLength < ELEM_MAX_LEN_EXT_CAP)
+		prExtCap->ucLength = ELEM_MAX_LEN_EXT_CAP;
+
+	SET_EXT_CAP(prExtCap->aucCapabilities, ELEM_MAX_LEN_EXT_CAP, ELEM_EXT_CAP_BSS_TRANSITION_BIT);
+#endif
+
 	ASSERT(IE_SIZE(prExtCap) <= (ELEM_HDR_LEN + ELEM_MAX_LEN_EXT_CAP));
 
 	prMsduInfo->u2FrameLength += IE_SIZE(prExtCap);
