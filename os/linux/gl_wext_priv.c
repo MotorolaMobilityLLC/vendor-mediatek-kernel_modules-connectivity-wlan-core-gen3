@@ -2472,7 +2472,7 @@ static int priv_driver_get_sw_ctrl(IN struct net_device *prNetDev, IN char *pcCo
 	PCHAR apcArgv[WLAN_CFG_ARGV_MAX] = {0};
 	INT_32 u4Ret = 0;
 
-	PARAM_CUSTOM_SW_CTRL_STRUCT_T rSwCtrlInfo = { {0} };
+	PARAM_CUSTOM_SW_CTRL_STRUCT_T rSwCtrlInfo = { 0, 0 };
 
 	ASSERT(prNetDev);
 	if (GLUE_CHK_PR2(prNetDev, pcCommand) == FALSE)
