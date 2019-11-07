@@ -2065,7 +2065,7 @@ int mtk_cfg80211_vendor_driver_memory_dump(struct wiphy *wiphy,
 	P_GLUE_INFO_T prGlueInfo;
 	UINT_32 u4BufLen;
 #endif
-	struct sk_buff *skb;
+	struct sk_buff *skb = NULL;
 	UINT_32 *puBuufer = NULL;
 	INT_32 i4Status = -EINVAL;
 	UINT_16 u2CopySize = 0;
@@ -2130,6 +2130,7 @@ int mtk_cfg80211_vendor_driver_memory_dump(struct wiphy *wiphy,
 	if (unlikely(nla_put_nohdr(skb, u2CopySize, puBuufer) < 0)) {
 		DBGLOG(REQ, ERROR, "nla_put_nohdr failed: len=%u, ptr=%p\n",
 			   u2CopySize, puBuufer);
+		kfree_skb(skb);
 		i4Status = -EINVAL;
 		goto err_handle_label;
 	}
