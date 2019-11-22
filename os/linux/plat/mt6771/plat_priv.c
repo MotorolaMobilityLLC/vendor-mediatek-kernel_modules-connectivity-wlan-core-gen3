@@ -37,13 +37,8 @@
 
 #ifdef CONFIG_MTK_QOS_SUPPORT
 
-static struct mutex grPmQosLock;
+static DEFINE_MUTEX(grPmQosLock);
 
-int kalInitPmQosLock(void)
-{
-	mutex_init(&grPmQosLock);
-	return 0;
-}
 #endif
 
 int kalBoostCpu(unsigned int level)

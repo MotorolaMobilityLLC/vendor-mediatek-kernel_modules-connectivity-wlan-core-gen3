@@ -5400,13 +5400,6 @@ inline INT_32 kalPerMonInit(IN P_GLUE_INFO_T prGlueInfo)
 	KAL_SET_BIT(PERF_MON_STOP_BIT, prPerMonitor->ulPerfMonFlag);
 	prPerMonitor->u4UpdatePeriod = 1000;
 
-#if defined(COFNIG_MTK_CPU_CTRL) || \
-	(LINUX_VERSION_CODE <= KERNEL_VERSION(4, 4, 146))
-#ifdef CONFIG_MTK_QOS_SUPPORT
-	kalInitPmQosLock();
-#endif
-#endif
-
 	cnmTimerInitTimer(prGlueInfo->prAdapter,
 		&prPerMonitor->rPerfMonTimer,
 		(PFN_MGMT_TIMEOUT_FUNC) kalPerMonHandler, (ULONG) NULL);
