@@ -6049,7 +6049,7 @@ VOID wlanCfgSetDebugLevel(IN P_ADAPTER_T prAdapter)
 	CHAR *pcDupValue;
 	CHAR *pcPtr = NULL;
 
-	UINT_32 au4Values[2];
+	UINT_32 au4Values[2] = {0};
 	UINT_32 u4TokenCount = 0;
 	UINT_32 u4DbgIdx = 0;
 	UINT_32 u4DbgMask = 0;
