@@ -1707,6 +1707,7 @@ p2pFuncValidateAuth(IN P_ADAPTER_T prAdapter,
 			/* P2P 3.2.8 */
 			DBGLOG(P2P, WARN, "Group Limit Full. (%d)\n", bssGetClientCount(prAdapter, prP2pBssInfo));
 			cnmStaRecFree(prAdapter, prStaRec);
+			*pu2StatusCode = STATUS_CODE_ASSOC_DENIED_AP_OVERLOAD;
 			break;
 		}
 #if CFG_SUPPORT_HOTSPOT_WPS_MANAGER
