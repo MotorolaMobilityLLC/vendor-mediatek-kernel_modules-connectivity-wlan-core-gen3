@@ -5940,7 +5940,7 @@ VOID wlanCfgSetSwCtrl(IN P_ADAPTER_T prAdapter)
 	CHAR aucValue[WLAN_CFG_VALUE_LEN_MAX];
 	CHAR *pcPtr = NULL;
 	CHAR *pcDupValue = NULL;
-	UINT_32 au4Values[2];
+	UINT_32 au4Values[2] = {0};
 	UINT_32 u4TokenCount = 0;
 	UINT_32 u4BufLen = 0;
 	WLAN_STATUS rStatus = WLAN_STATUS_SUCCESS;
