@@ -1456,7 +1456,7 @@ INT_32 wlanUpdateDfsChannelTable(P_GLUE_INFO_T prGlueInfo, UINT_8 ucCurrChNo)
 {
 	UINT_8 i, j;
 	UINT_8 ucNumOfChannel;
-	RF_CHANNEL_INFO_T aucChannelList[ARRAY_SIZE(mtk_5ghz_channels)];
+	RF_CHANNEL_INFO_T aucChannelList[ARRAY_SIZE(mtk_5ghz_channels)] = { {0} };
 
 	DBGLOG(INIT, TRACE, "ucCurrChNo %u.\n", ucCurrChNo);
 
